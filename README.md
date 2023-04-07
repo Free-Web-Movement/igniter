@@ -1,11 +1,19 @@
-# igniter
+# Free Web Android Proxy Backed by Igniter
 
-[![CircleCI](https://circleci.com/gh/trojan-gfw/igniter/tree/master.svg?style=svg)](https://circleci.com/gh/trojan-gfw/igniter/tree/master)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-A trojan client for Android.
+## Get Code
 
-## Thanks
+1. Clone the repo.
+```
+gh repo clone Free-Web-Movement/igniter -- --recurse-submodules
+```
+> if failed, execute the following command:
+> ```
+> cd igniter
+> git submodule update --init --recursive
+> ```
 
-* Dreamacro/clash [GPLv3](https://github.com/Dreamacro/clash/blob/master/LICENSE)
-* eycorsican/go-tun2socks [MIT](https://github.com/eycorsican/go-tun2socks/blob/master/LICENSE)
-* bingoogolapple/BGAQRCode-Android [Apache License 2.0](https://github.com/bingoogolapple/BGAQRCode-Android)
+## Lincense 
+
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
