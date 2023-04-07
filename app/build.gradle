@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 33
     defaultConfig {
-        applicationId "io.github.trojan_gfw.igniter"
+        applicationId "io.github.freewebmovement.igniter"
         minSdkVersion 21
         targetSdkVersion 33
         versionCode 1
@@ -49,7 +49,7 @@ android {
         unitTests.returnDefaultValues = true
         unitTests.includeAndroidResources = true
     }
-    namespace 'io.github.trojan_gfw.igniter'
+    namespace 'io.github.freewebmovement.igniter'
 }
 
 dependencies {

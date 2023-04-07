@@ -58,8 +58,8 @@
             tools:targetApi="N">
             <intent-filter>
                 <action android:name="android.net.VpnService" />
-                <action android:name="io.github.trojan_gfw.igniter.STOP_SERVICE" />
-                <action android:name="io.github.trojan_gfw.igniter.BIND_SERVICE" />
+                <action android:name="io.github.freewebmovement.igniter.STOP_SERVICE" />
+                <action android:name="io.github.freewebmovement.igniter.BIND_SERVICE" />
             </intent-filter>
         </service>
         <service

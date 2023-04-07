@@ -23,9 +23,9 @@
     <string name="enable_ipv6">Enable IPv6</string>
     <string name="enable_lan">Enable LAN</string>
     <string name="enable_auto_start">Enable Auto Start</string>
-    <string name="bc_service_state">io.github.trojan_gfw.igniter.BC_SERVICE_STATE</string>
-    <string name="stop_service">io.github.trojan_gfw.igniter.STOP_SERVICE</string>
-    <string name="bind_service">io.github.trojan_gfw.igniter.BIND_SERVICE</string>
+    <string name="bc_service_state">io.github.freewebmovement.igniter.BC_SERVICE_STATE</string>
+    <string name="stop_service">io.github.freewebmovement.igniter.STOP_SERVICE</string>
+    <string name="bind_service">io.github.freewebmovement.igniter.BIND_SERVICE</string>
     <string name="connected_to__in__ms">Connected to %1$s in %2$sms.</string>
     <string name="failed_to_connect_to__">Failed to connect to %1$s: %2$s</string>
     <string name="invalid_configuration">Invalid Configuration</string>
