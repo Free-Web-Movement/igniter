@@ -59,7 +59,12 @@ public class ExemptAppDataManager implements ExemptAppDataSource {
 
     @NonNull
     private String[] readExemptAppListConfig() {
-        String exemptApps = new String(Storage.read(app.storage.getExemptedAppListPath()));
+        String[] list = {};
+        byte[] config = Storage.read(app.storage.getExemptedAppListPath());
+        if (config == null) {
+            return list;
+        }
+        String exemptApps = new String(config);
         return exemptApps.split("\\r?\\n");
     }
 

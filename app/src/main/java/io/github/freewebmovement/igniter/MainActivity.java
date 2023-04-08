@@ -47,6 +47,7 @@ import io.github.freewebmovement.igniter.proxy.aidl.ITrojanService;
 import io.github.freewebmovement.igniter.servers.activity.ServerListActivity;
 import io.github.freewebmovement.igniter.servers.data.ServerListDataManager;
 import io.github.freewebmovement.igniter.servers.data.ServerListDataSource;
+import io.github.freewebmovement.igniter.settings.SettingsActivity;
 
 public class MainActivity extends AppCompatActivity implements TrojanConnection.Callback {
     private static final String TAG = "MainActivity";
@@ -473,12 +474,17 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Bind menu items to their relative actions
+        Intent intent;
         switch (item.getItemId()) {
+            case (R.id.action_view_settings):
+                intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
+                return true;
             case (R.id.action_test_connection):
                 testConnection();
                 return true;
             case (R.id.menu_clash_editor):
-                Intent intent = new Intent(this, ClashFileEditorActivity.class);
+                intent = new Intent(this, ClashFileEditorActivity.class);
                 startActivity(intent);
                 return true;
             case (R.id.action_view_server_list):
