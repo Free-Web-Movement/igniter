@@ -151,18 +151,18 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/passwordText" />
 
-        <androidx.appcompat.widget.SwitchCompat
-            android:id="@+id/ipv6Switch"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
-            android:minHeight="48dp"
-            android:text="@string/enable_ipv6"
-            android:textSize="@dimen/text_size"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/trojanURLText" />
+<!--        <androidx.appcompat.widget.SwitchCompat-->
+<!--            android:id="@+id/ipv6Switch"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginStart="20dp"-->
+<!--            android:layout_marginEnd="20dp"-->
+<!--            android:minHeight="48dp"-->
+<!--            android:text="@string/enable_ipv6"-->
+<!--            android:textSize="@dimen/text_size"-->
+<!--            app:layout_constraintEnd_toEndOf="parent"-->
+<!--            app:layout_constraintStart_toStartOf="parent"-->
+<!--            app:layout_constraintTop_toBottomOf="@+id/trojanURLText" />-->
 
         <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/verifySwitch"
@@ -214,44 +214,44 @@
                 tools:ignore="TouchTargetSizeCheck" />
         </LinearLayout>
 
-        <androidx.appcompat.widget.SwitchCompat
-            android:id="@+id/switch_enable_lan"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="20dp"
-            android:layout_marginBottom="16dp"
-            android:checked="false"
-            android:minHeight="48dp"
-            android:text="@string/enable_lan"
-            android:textSize="@dimen/text_size" />
+<!--        <androidx.appcompat.widget.SwitchCompat-->
+<!--            android:id="@+id/switch_enable_lan"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginStart="20dp"-->
+<!--            android:layout_marginTop="16dp"-->
+<!--            android:layout_marginEnd="20dp"-->
+<!--            android:layout_marginBottom="16dp"-->
+<!--            android:checked="false"-->
+<!--            android:minHeight="48dp"-->
+<!--            android:text="@string/enable_lan"-->
+<!--            android:textSize="@dimen/text_size" />-->
 
-        <androidx.appcompat.widget.SwitchCompat
-            android:id="@+id/switch_enable_auto_start"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="20dp"
-            android:layout_marginBottom="16dp"
-            android:checked="false"
-            android:minHeight="48dp"
-            android:text="@string/enable_auto_start"
-            android:textSize="@dimen/text_size" />
+<!--        <androidx.appcompat.widget.SwitchCompat-->
+<!--            android:id="@+id/switch_enable_auto_start"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginStart="20dp"-->
+<!--            android:layout_marginTop="16dp"-->
+<!--            android:layout_marginEnd="20dp"-->
+<!--            android:layout_marginBottom="16dp"-->
+<!--            android:checked="false"-->
+<!--            android:minHeight="48dp"-->
+<!--            android:text="@string/enable_auto_start"-->
+<!--            android:textSize="@dimen/text_size" />-->
 
-        <androidx.appcompat.widget.SwitchCompat
-            android:id="@+id/switch_enable_boot_start"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="20dp"
-            android:layout_marginBottom="16dp"
-            android:checked="false"
-            android:minHeight="48dp"
-            android:text="@string/enable_boot_start"
-            android:textSize="@dimen/text_size" />
+<!--        <androidx.appcompat.widget.SwitchCompat-->
+<!--            android:id="@+id/switch_enable_boot_start"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginStart="20dp"-->
+<!--            android:layout_marginTop="16dp"-->
+<!--            android:layout_marginEnd="20dp"-->
+<!--            android:layout_marginBottom="16dp"-->
+<!--            android:checked="false"-->
+<!--            android:minHeight="48dp"-->
+<!--            android:text="@string/enable_boot_start"-->
+<!--            android:textSize="@dimen/text_size" />-->
 
     </LinearLayout>
 </ScrollView>

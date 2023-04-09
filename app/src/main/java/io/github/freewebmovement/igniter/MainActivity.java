@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
                                 passwordText.setText(app.trojanConfig.getPassword());
                             });
                             trojanURLText.setText(TrojanConfig.toURIString(app.trojanConfig));
-                            ipv6Switch.setChecked(app.trojanPreferences.getEnableIPV6());
+//                            ipv6Switch.setChecked(app.trojanPreferences.getEnableIPV6());
                             verifySwitch.setChecked(app.trojanConfig.getVerifyCert());
                         }
                     }
@@ -116,11 +116,11 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
     private EditText remotePortText;
     private EditText localOrClashPortText;
     private EditText passwordText;
-    private SwitchCompat ipv6Switch;
+//    private SwitchCompat ipv6Switch;
     private SwitchCompat verifySwitch;
-    private SwitchCompat clashSwitch;
-    private SwitchCompat enableLanSwitch;
-    private TextView clashLink;
+//    private SwitchCompat clashSwitch;
+//    private SwitchCompat enableLanSwitch;
+//    private TextView clashLink;
     private ImageButton startButton;
     private EditText trojanURLText;
     private @ProxyService.ProxyState
@@ -204,13 +204,13 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
         remoteAddressText.setEnabled(inputEnabled);
         remotePortText.setEnabled(inputEnabled);
         localOrClashPortText.setEnabled(inputEnabled);
-        ipv6Switch.setEnabled(inputEnabled);
+//        ipv6Switch.setEnabled(inputEnabled);
         passwordText.setEnabled(inputEnabled);
         trojanURLText.setEnabled(inputEnabled);
         verifySwitch.setEnabled(inputEnabled);
-        clashSwitch.setEnabled(inputEnabled);
-        enableLanSwitch.setEnabled(inputEnabled);
-        clashLink.setEnabled(inputEnabled);
+//        clashSwitch.setEnabled(inputEnabled);
+//        enableLanSwitch.setEnabled(inputEnabled);
+//        clashLink.setEnabled(inputEnabled);
     }
 
     @Override
@@ -231,14 +231,14 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
         localOrClashPortText = findViewById(R.id.localOrClashPortText);
         passwordText = findViewById(R.id.passwordText);
         trojanURLText = findViewById(R.id.trojanURLText);
-        ipv6Switch = findViewById(R.id.ipv6Switch);
+//        ipv6Switch = findViewById(R.id.ipv6Switch);
         verifySwitch = findViewById(R.id.verifySwitch);
-        clashSwitch = findViewById(R.id.clashSwitch);
-        enableLanSwitch = findViewById(R.id.switch_enable_lan);
-        SwitchCompat enableAutoStartSwitch = findViewById(R.id.switch_enable_auto_start);
-        SwitchCompat enableBootStartSwitch = findViewById(R.id.switch_enable_boot_start);
-        clashLink = findViewById(R.id.clashLink);
-        clashLink.setMovementMethod(LinkMovementMethod.getInstance());
+//        clashSwitch = findViewById(R.id.clashSwitch);
+//        enableLanSwitch = findViewById(R.id.switch_enable_lan);
+//        SwitchCompat enableAutoStartSwitch = findViewById(R.id.switch_enable_auto_start);
+//        SwitchCompat enableBootStartSwitch = findViewById(R.id.switch_enable_boot_start);
+//        clashLink = findViewById(R.id.clashLink);
+//        clashLink.setMovementMethod(LinkMovementMethod.getInstance());
 
         startButton = findViewById(R.id.imageButton_start);
         ImageButton stopButton = findViewById(R.id.imageButton_stop);
@@ -259,37 +259,37 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
             }
         });
 
-        clashSwitch.setChecked(app.trojanPreferences.getEnableClash());
-        clashSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            app.trojanPreferences.setEnableClash(isChecked);
-            int port;
-            if (app.trojanPreferences.getEnableClash()) {
-                port = app.clashConfig.getPort();
-            } else {
-                port = app.trojanConfig.getLocalPort();
-            }
-            localOrClashPortText.setText(String.valueOf(port));
-            NetWorkConfig.setPort(app, port);
-            Log.wtf("MAIN", "" + app.clashConfig.getPort());
-            Log.wtf("MAIN", "" + app.trojanConfig.getLocalPort());
-        });
+//        clashSwitch.setChecked(app.trojanPreferences.getEnableClash());
+//        clashSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+//            app.trojanPreferences.setEnableClash(isChecked);
+//            int port;
+//            if (app.trojanPreferences.getEnableClash()) {
+//                port = app.clashConfig.getPort();
+//            } else {
+//                port = app.trojanConfig.getLocalPort();
+//            }
+//            localOrClashPortText.setText(String.valueOf(port));
+//            NetWorkConfig.setPort(app, port);
+//            Log.wtf("MAIN", "" + app.clashConfig.getPort());
+//            Log.wtf("MAIN", "" + app.trojanConfig.getLocalPort());
+//        });
+//
+//        enableLanSwitch.setChecked(app.trojanPreferences.isEnableLan());
+//        enableLanSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> app.trojanPreferences.setEnableLan(isChecked));
+//
+//        enableAutoStartSwitch.setChecked(app.trojanPreferences.isEnableAutoStart());
+//        enableAutoStartSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+//            Log.v(TAG, " auto start : " + isChecked);
+//            app.trojanPreferences.setEnableAutoStart(isChecked);
+//        });
+//
+//        enableBootStartSwitch.setChecked(app.trojanPreferences.isEnableBootStart());
+//        enableBootStartSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+//            Log.v(TAG, " auto start : " + isChecked);
+//            app.trojanPreferences.setEnableBootStart(isChecked);
+//        });
 
-        enableLanSwitch.setChecked(app.trojanPreferences.isEnableLan());
-        enableLanSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> app.trojanPreferences.setEnableLan(isChecked));
-
-        enableAutoStartSwitch.setChecked(app.trojanPreferences.isEnableAutoStart());
-        enableAutoStartSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            Log.v(TAG, " auto start : " + isChecked);
-            app.trojanPreferences.setEnableAutoStart(isChecked);
-        });
-
-        enableBootStartSwitch.setChecked(app.trojanPreferences.isEnableBootStart());
-        enableBootStartSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            Log.v(TAG, " auto start : " + isChecked);
-            app.trojanPreferences.setEnableBootStart(isChecked);
-        });
-
-        ipv6Switch.setOnCheckedChangeListener((buttonView, isChecked) -> app.trojanPreferences.setEnableIPV6(isChecked));
+//        ipv6Switch.setOnCheckedChangeListener((buttonView, isChecked) -> app.trojanPreferences.setEnableIPV6(isChecked));
 
         verifySwitch.setOnCheckedChangeListener((buttonView, isChecked) -> app.trojanConfig.setVerifyCert(isChecked));
 
@@ -512,7 +512,7 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
             localOrClashPortText.setText(String.valueOf(app.trojanConfig.getLocalPort()));
         }
         passwordText.setText(trojanConfig.getPassword());
-        ipv6Switch.setChecked(app.trojanPreferences.getEnableIPV6());
+//        ipv6Switch.setChecked(app.trojanPreferences.getEnableIPV6());
         verifySwitch.setChecked(trojanConfig.getVerifyCert());
         remoteAddressText.setSelection(remoteAddressText.length());
     }
