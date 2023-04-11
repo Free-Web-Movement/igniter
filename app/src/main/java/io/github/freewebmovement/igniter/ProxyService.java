@@ -281,7 +281,11 @@ public class ProxyService extends VpnService implements TestConnection.OnResultL
         stopSelf();
 
         setState(STOPPED);
-        stopForeground(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            stopForeground(STOP_FOREGROUND_DETACH);
+        } else {
+            stopForeground(true);
+        }
         destroyNotificationChannel(getString(R.string.notification_channel_id));
     }
 

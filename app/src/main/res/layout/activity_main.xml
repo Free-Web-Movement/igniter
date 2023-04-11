@@ -180,39 +180,39 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/ipv6Switch" />
 
-        <LinearLayout
-            android:id="@+id/columnContainer"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="20dp"
-            android:layout_marginBottom="16dp"
-            android:orientation="horizontal"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/verifySwitch">
+<!--        <LinearLayout-->
+<!--            android:id="@+id/columnContainer"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="match_parent"-->
+<!--            android:layout_marginStart="20dp"-->
+<!--            android:layout_marginTop="16dp"-->
+<!--            android:layout_marginEnd="20dp"-->
+<!--            android:layout_marginBottom="16dp"-->
+<!--            android:orientation="horizontal"-->
+<!--            app:layout_constraintEnd_toEndOf="parent"-->
+<!--            app:layout_constraintStart_toStartOf="parent"-->
+<!--            app:layout_constraintTop_toBottomOf="@+id/verifySwitch">-->
 
-            <TextView
-                android:id="@+id/clashLink"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="0"
-                android:linksClickable="true"
-                android:text="@string/label_clash"
-                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                android:textSize="@dimen/text_size"
-                android:visibility="visible" />
+<!--            <TextView-->
+<!--                android:id="@+id/clashLink"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_weight="0"-->
+<!--                android:linksClickable="true"-->
+<!--                android:text="@string/label_clash"-->
+<!--                android:textAppearance="@style/TextAppearance.AppCompat.Body1"-->
+<!--                android:textSize="@dimen/text_size"-->
+<!--                android:visibility="visible" />-->
 
-            <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/clashSwitch"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:layout_weight="0"
-                android:linksClickable="true"
-                tools:ignore="TouchTargetSizeCheck" />
-        </LinearLayout>
+<!--            <androidx.appcompat.widget.SwitchCompat-->
+<!--                android:id="@+id/clashSwitch"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:checked="true"-->
+<!--                android:layout_weight="0"-->
+<!--                android:linksClickable="true"-->
+<!--                tools:ignore="TouchTargetSizeCheck" />-->
+<!--        </LinearLayout>-->
 
 <!--        <androidx.appcompat.widget.SwitchCompat-->
 <!--            android:id="@+id/switch_enable_lan"-->

@@ -35,17 +35,25 @@ public class ServerListDataManager implements ServerListDataSource {
 
     @Override
     public void saveServerConfig(TrojanConfig config) {
-        boolean configRemoteAddrExists = false;
+        boolean configExisted = false;
         List<TrojanConfig> trojanConfigs = loadServerConfigList();
         Log.wtf("SERVER_LIST_DATA_MANAGER", "" + trojanConfigs.size());
         for (int i = trojanConfigs.size() - 1; i >= 0; i--) {
-            if (trojanConfigs.get(i).getRemoteAddr().equals(config.getRemoteAddr())) {
+            String[] remoteAddress = new String[2];
+            int[] remotePort = new int[2];
+
+            remoteAddress[0] = trojanConfigs.get(i).getRemoteAddr();
+            remoteAddress[1] = config.getRemoteAddr();
+            remotePort[0] = trojanConfigs.get(i).getRemotePort();
+            remotePort[1] = config.getRemotePort();
+
+            if (remoteAddress[0].equals(remoteAddress[1]) && remotePort[0] == remotePort[1]) {
                 trojanConfigs.set(i, config);
-                configRemoteAddrExists = true;
+                configExisted = true;
                 break;
             }
         }
-        if (!configRemoteAddrExists) {
+        if (!configExisted) {
             trojanConfigs.add(config);
         }
         replaceServerConfigs(trojanConfigs);
