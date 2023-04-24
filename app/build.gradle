@@ -50,6 +50,9 @@ android {
         unitTests.includeAndroidResources = true
     }
     namespace 'io.github.freewebmovement.igniter'
+    buildFeatures {
+        aidl true
+    }
 }
 
 dependencies {
