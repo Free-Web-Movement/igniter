@@ -6,11 +6,11 @@
 
 ## Goal
 
-This project is an initial and important step to the free web. It makes possible people to hide its web activity as much as possible by interacting with proxy servers, where these servers are running trojan by now and then by the free web server.
+This project is an initial and important step to the free web. It makes possible people to hide their web activities as much as possible by interacting with proxy servers backed by trojan and finally the free web server.
 
 ## Name
 
-The current name Igniter will be replace by `free web proxy` when most of the original source codes are modified.
+The current name Igniter will be replace by `free web proxy` when most of the original source codes are migrated.
 
 ## Recent Plans
 
