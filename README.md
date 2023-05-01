@@ -15,8 +15,11 @@ The current name Igniter will be replace by `free web proxy` when most of the or
 ## Recent Plans
 
 1. Separate trojan configuration from global settings
-2. Enabled ordered trojan server list and default server selection.
-3. Enalbed realtime connection status
+2. Enable ordered trojan server list and default server selection.
+3. Enable realtime connection status
+4. Minimize Running module to enable Android TV/Auto/Watch
+5. Enable Sharing Server with QRCODE and URI
+
 
 ## Get Code
 
