@@ -12,6 +12,12 @@ This project is an initial and important step to the free web. It makes possible
 
 The current name Igniter will be replace by `free web proxy` when most of the original source codes are modified.
 
+## Recent Plans
+
+1. Separate trojan configuration from global settings
+2. Enabled ordered trojan server list and default server selection.
+3. Enalbed realtime connection status
+
 ## Get Code
 
 1. Clone the repo.
