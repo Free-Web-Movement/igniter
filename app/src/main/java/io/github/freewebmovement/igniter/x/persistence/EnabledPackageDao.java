@@ -1,5 +1,4 @@
-package io.github.trojan_gfw.igniter.x.persistence;
-
+package io.github.freewebmovement.igniter.x.persistence;
 
 import androidx.room.Dao;
 import androidx.room.Delete;
