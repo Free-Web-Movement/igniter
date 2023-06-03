@@ -98,7 +98,7 @@ public class NetWorkConfig {
         boolean enableIPV6 = app.trojanPreferences.enableIPV6;
         for (String packageName : packages) {
             try {
-                b.addDisallowedApplication(packageName);
+                b.addAllowedApplication(packageName);
             } catch (PackageManager.NameNotFoundException e) {
                 e.printStackTrace();
             }
