@@ -4,21 +4,21 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-## Goal
+## Goals
 
-This project is an initial and important step to the free web. It makes possible people to hide their web activities as much as possible by interacting with proxy servers backed by trojan and finally the free web server.
+This project is a first and important step towards the free web. It allows people to hide their web activities as much as possible by interacting with proxy servers supported by trojan servers and finally by free web movement servers.
 
 ## Name
 
 The current name Igniter will be replace by `free web proxy` when most of the original source codes are migrated.
 
-## Recent Plans
+## Current Plans
 
-1. Separate trojan configuration from global settings
-2. Enable ordered trojan server list and default server selection.
-3. Enable realtime connection status
-4. Minimize Running module to enable Android TV/Auto/Watch
-5. Enable Sharing Server with QRCODE and URI
+1. Separation of Trojan configuration from global settings
+2. Enabling the ordered Trojan server list and default server selection.
+3. Enable real-time connection status
+4. Minimize running modules to enable Android TV/Auto/Watch support
+5. Enable share servers with QRCODE and URI
 
 
 ## Get Code
@@ -27,7 +27,7 @@ The current name Igniter will be replace by `free web proxy` when most of the or
 ```
 gh repo clone Free-Web-Movement/igniter -- --recurse-submodules
 ```
-> if failed, execute the following command:
+> if failed, run the following command:
 > ```
 > cd igniter
 > git submodule update --init --recursive
@@ -40,6 +40,6 @@ This project follows [Effective Versioning](https://github.com/calidion/effectiv
 
 ## License
 
-New code added by Free Web Movement Project will follow GPL， that means you can't close source this project for your private business.
+New code added by Free Web Movement Project is subject to GPL， which means you cannot close source of this project for your private purposes.
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
