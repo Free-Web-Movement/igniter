@@ -3,6 +3,7 @@ package io.github.freewebmovement.igniter.persistence;
 import android.content.pm.PackageManager;
 import android.net.VpnService;
 import android.os.ParcelFileDescriptor;
+import android.util.Log;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -98,7 +99,7 @@ public class NetWorkConfig {
         boolean enableIPV6 = app.trojanPreferences.enableIPV6;
         for (String packageName : packages) {
             try {
-                b.addAllowedApplication(packageName);
+                b.addDisallowedApplication(packageName);
             } catch (PackageManager.NameNotFoundException e) {
                 e.printStackTrace();
             }
