@@ -8,6 +8,7 @@ import androidx.core.content.ContextCompat;
 import io.github.freewebmovement.igniter.persistence.ClashConfig;
 import io.github.freewebmovement.igniter.persistence.ServerList;
 import io.github.freewebmovement.igniter.persistence.Storage;
+import io.github.freewebmovement.igniter.persistence.SystemAppsConfig;
 import io.github.freewebmovement.igniter.persistence.TrojanConfig;
 import io.github.freewebmovement.igniter.persistence.TrojanPreferences;
 
@@ -24,6 +25,7 @@ public class IgniterApplication extends Application {
     public TrojanConfig trojanConfig;
     public TrojanPreferences trojanPreferences;
     public ServerList servers;
+    public SystemAppsConfig systemAppsConfig;
 
     @Override
     public void onCreate() {
@@ -41,6 +43,7 @@ public class IgniterApplication extends Application {
         trojanConfig = TrojanConfig.getInstance(storage);
         clashConfig = new ClashConfig(storage.getClashConfigPath());
         servers = new ServerList(this);
+        systemAppsConfig = new SystemAppsConfig(this);
     }
 
     public void startProxyService() {

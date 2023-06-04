@@ -1,20 +1,12 @@
 package io.github.freewebmovement.igniter.exempt.data;
 
-import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import androidx.annotation.NonNull;
-import android.text.TextUtils;
+import android.util.Log;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import androidx.annotation.NonNull;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -51,9 +43,9 @@ public class ExemptAppDataManager implements ExemptAppDataSource {
             return;
         }
         StringBuilder exemptApps = new StringBuilder();
-            for (String name : exemptAppPackageNames) {
-                exemptApps.append(name).append("\n");
-            }
+        for (String name : exemptAppPackageNames) {
+            exemptApps.append(name).append("\n");
+        }
         Storage.write(app.storage.getExemptedAppListPath(), exemptApps.toString().getBytes());
     }
 
@@ -99,8 +91,15 @@ public class ExemptAppDataManager implements ExemptAppDataSource {
     @Override
     public List<AppInfo> getAllAppInfoList() {
         List<ApplicationInfo> applicationInfoList = queryCurrentInstalledApps();
-        List<AppInfo> appInfoList = new ArrayList<>(applicationInfoList.size());
+        boolean showSystemApps = IgniterApplication.getApplication().trojanPreferences.getShowSystemApps();
+
+        List<AppInfo> appInfoList = new ArrayList<>();
         for (ApplicationInfo applicationInfo : applicationInfoList) {
+            if (!showSystemApps) {
+                if (app.systemAppsConfig.isSystemApps(applicationInfo.packageName)) {
+                    continue;
+                }
+            }
             AppInfo appInfo = new AppInfo();
             appInfo.setAppName(mPackageManager.getApplicationLabel(applicationInfo).toString());
             appInfo.setPackageName(applicationInfo.packageName);

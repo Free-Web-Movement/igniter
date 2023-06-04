@@ -102,26 +102,30 @@ public class ExemptAppPresenter implements ExemptAppContract.Presenter {
         Threads.instance().runOnWorkThread(new Task() {
             @Override
             public void onRun() {
-                final List<AppInfo> allAppInfoList = mDataSource.getAllAppInfoList();
-                mExemptAppPackageNameSet = mDataSource.loadExemptAppPackageNameSet();
-                for (AppInfo appInfo : allAppInfoList) {
-                    if (mExemptAppPackageNameSet.contains(appInfo.getPackageName())) {
-                        appInfo.setExempt(true);
-                    }
-                }
-                // cluster exempted apps.
-                Collections.sort(allAppInfoList, (o1, o2) -> {
-                    if (o1.isExempt() != o2.isExempt()) {
-                        return o1.isExempt() ? -1 : 1;
-                    }
-                    return o1.getAppName().compareTo(o2.getAppName());
-                });
-                mAllAppInfoList = allAppInfoList;
-                Threads.instance().runOnUiThread(() -> {
-                    mView.showAppList(allAppInfoList);
-                    mView.dismissLoading();
-                });
+                showData();
             }
+        });
+    }
+
+    private void showData() {
+        final List<AppInfo> allAppInfoList = mDataSource.getAllAppInfoList();
+        mExemptAppPackageNameSet = mDataSource.loadExemptAppPackageNameSet();
+        for (AppInfo appInfo : allAppInfoList) {
+            if (mExemptAppPackageNameSet.contains(appInfo.getPackageName())) {
+                appInfo.setExempt(true);
+            }
+        }
+        // cluster exempted apps.
+        Collections.sort(allAppInfoList, (o1, o2) -> {
+            if (o1.isExempt() != o2.isExempt()) {
+                return o1.isExempt() ? -1 : 1;
+            }
+            return o1.getAppName().compareTo(o2.getAppName());
+        });
+        mAllAppInfoList = allAppInfoList;
+        Threads.instance().runOnUiThread(() -> {
+            mView.showAppList(allAppInfoList);
+            mView.dismissLoading();
         });
     }
 }

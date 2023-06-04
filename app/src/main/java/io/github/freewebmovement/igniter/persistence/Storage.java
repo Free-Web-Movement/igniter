@@ -11,10 +11,15 @@ import androidx.core.content.ContextCompat;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 import io.github.freewebmovement.igniter.R;
 
@@ -124,6 +129,10 @@ public class Storage {
         return getPath(FILES, context.getString(R.string.ca_cert_config));
     }
 
+    public String getSystemAppsPath() {
+        return getPath(FILES, context.getString(R.string.system_apps_config));
+    }
+
     public boolean isExternalWritable() {
         String[] permissions = {
                 Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -201,17 +210,22 @@ public class Storage {
                 getCaCertPath(),
                 getCountryMmdbPath(),
                 getClashConfigPath(),
-                getTrojanConfigPath()
+                getTrojanConfigPath(),
+                getSystemAppsPath()
         };
         int[] ids = {
                 R.raw.cacert,
                 R.raw.country,
                 R.raw.clash_config,
-                R.raw.config
+                R.raw.config,
+                R.raw.system_apps
         };
-        for (int i = 0; i < ids.length; i++) {
+        for (int i = 0; i < ids.length - 1; i++) {
             check(paths[i], ids[i]);
         }
+
+        // Keep this line before system apps filters can be edited.
+        reset(paths[ids.length - 1], ids[ids.length - 1]);
     }
 
     public void check(String filename, int resId) {
@@ -221,5 +235,29 @@ public class Storage {
             Log.v(TAG, "File: " + filename + " not found! Resetting...");
             reset(filename, resId);
         }
+    }
+
+    public static String[] readLines(String filename) {
+        ArrayList<String> records = new ArrayList<String>();
+        try {
+            FileInputStream is;
+            BufferedReader reader;
+            final File file = new File(filename);
+            if (file.exists()) {
+                is = new FileInputStream(file);
+                reader = new BufferedReader(new InputStreamReader(is));
+                String line = reader.readLine();
+                while (line != null) {
+                    records.add(line);
+                    line = reader.readLine();
+                }
+                String[] ret = new String[records.size()];
+                records.toArray(ret);
+                return ret;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

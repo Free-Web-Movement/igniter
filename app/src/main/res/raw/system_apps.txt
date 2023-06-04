@@ -1,0 +1,10 @@
+com.android.
+com.google.android.
+org.lineageos.
+android
+android.
+lineageos.
+com.sony.timekeep
+org.protonaosp.deviceconfig
+org.calyxos.backup.contacts
+io.github.freewebmovement.igniter

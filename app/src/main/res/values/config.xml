@@ -4,7 +4,8 @@
     <string name="clash_config">config.yaml</string>
     <string name="trojan_config">config.json</string>
     <string name="trojan_list_config">config_list.json</string>
-    <string name="exempted_app_list_config">config_list.json</string>
+    <string name="exempted_app_list_config">config_exempted_app_list.json</string>
+    <string name="system_apps_config">config_system_apps.txt</string>
     <string name="ca_cert_config">cacert.pem</string>
     <string name="key_local_address">local_addr</string>
     <string name="key_remote_address">remote_addr</string>

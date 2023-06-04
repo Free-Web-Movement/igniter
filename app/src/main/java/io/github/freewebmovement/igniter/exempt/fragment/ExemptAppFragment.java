@@ -129,6 +129,7 @@ public class ExemptAppFragment extends BaseFragment implements ExemptAppContract
             switchCompat.setChecked(app.trojanPreferences.getShowSystemApps());
             switchCompat.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 app.trojanPreferences.setShowSystemApps(isChecked);
+                mPresenter.start();
             });
         }
     }
