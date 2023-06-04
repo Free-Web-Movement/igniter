@@ -1,7 +1,9 @@
 package io.github.freewebmovement.igniter.exempt.fragment;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -13,7 +15,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -24,6 +28,7 @@ import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
 
+import io.github.freewebmovement.igniter.IgniterApplication;
 import io.github.freewebmovement.igniter.R;
 import io.github.freewebmovement.igniter.common.app.BaseFragment;
 import io.github.freewebmovement.igniter.common.dialog.LoadingDialog;
@@ -38,7 +43,7 @@ public class ExemptAppFragment extends BaseFragment implements ExemptAppContract
     private RecyclerView mAppRv;
     private AppInfoAdapter mAppInfoAdapter;
     private LoadingDialog mLoadingDialog;
-
+    IgniterApplication app;
     public ExemptAppFragment() {
         // Required empty public constructor
     }
@@ -56,6 +61,7 @@ public class ExemptAppFragment extends BaseFragment implements ExemptAppContract
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        app = IgniterApplication.getApplication();
         super.onViewCreated(view, savedInstanceState);
         findViews();
         initViews();
@@ -83,10 +89,17 @@ public class ExemptAppFragment extends BaseFragment implements ExemptAppContract
         mAppInfoAdapter.setOnItemOperationListener((exempt, appInfo, position) -> mPresenter.updateAppInfo(appInfo, position, exempt));
     }
 
+    @SuppressLint("RestrictedApi")
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         menu.clear();
         inflater.inflate(R.menu.menu_exempt_app, menu);
+        if(menu instanceof MenuBuilder){
+            MenuBuilder m = (MenuBuilder) menu;
+            m.setOptionalIconsVisible(true);
+        }
+
+        initHideSystemSwitch(menu);
 
         MenuItem item = menu.findItem(R.id.action_search_app);
         SearchView searchView = null;
@@ -105,6 +118,17 @@ public class ExemptAppFragment extends BaseFragment implements ExemptAppContract
                     mPresenter.filterAppsByName(s);
                     return true;
                 }
+            });
+        }
+    }
+
+    public void initHideSystemSwitch(Menu menu) {
+        MenuItem item = (MenuItem) menu.findItem(R.id.hide_system_apps);
+        if (item != null) {
+            SwitchCompat switchCompat = (SwitchCompat)item.getActionView();
+            switchCompat.setChecked(app.trojanPreferences.getShowSystemApps());
+            switchCompat.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                app.trojanPreferences.setShowSystemApps(isChecked);
             });
         }
     }

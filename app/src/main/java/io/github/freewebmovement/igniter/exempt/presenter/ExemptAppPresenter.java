@@ -4,7 +4,6 @@ import android.text.TextUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -58,12 +57,7 @@ public class ExemptAppPresenter implements ExemptAppContract.Presenter {
                         tmpInfoList.add(appInfo);
                     }
                 }
-                Threads.instance().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mView.showAppList(tmpInfoList);
-                    }
-                });
+                Threads.instance().runOnUiThread(() -> mView.showAppList(tmpInfoList));
             }
         });
     }
@@ -81,12 +75,9 @@ public class ExemptAppPresenter implements ExemptAppContract.Presenter {
             public void onRun() {
                 mDataSource.saveExemptAppInfoSet(mExemptAppPackageNameSet);
                 mDirty = false;
-                Threads.instance().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mView.dismissLoading();
-                        mView.showSaveSuccess();
-                    }
+                Threads.instance().runOnUiThread(() -> {
+                    mView.dismissLoading();
+                    mView.showSaveSuccess();
                 });
             }
         });
@@ -119,22 +110,16 @@ public class ExemptAppPresenter implements ExemptAppContract.Presenter {
                     }
                 }
                 // cluster exempted apps.
-                Collections.sort(allAppInfoList, new Comparator<AppInfo>() {
-                    @Override
-                    public int compare(AppInfo o1, AppInfo o2) {
-                        if (o1.isExempt() != o2.isExempt()) {
-                            return o1.isExempt() ? -1 : 1;
-                        }
-                        return o1.getAppName().compareTo(o2.getAppName());
+                Collections.sort(allAppInfoList, (o1, o2) -> {
+                    if (o1.isExempt() != o2.isExempt()) {
+                        return o1.isExempt() ? -1 : 1;
                     }
+                    return o1.getAppName().compareTo(o2.getAppName());
                 });
                 mAllAppInfoList = allAppInfoList;
-                Threads.instance().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mView.showAppList(allAppInfoList);
-                        mView.dismissLoading();
-                    }
+                Threads.instance().runOnUiThread(() -> {
+                    mView.showAppList(allAppInfoList);
+                    mView.dismissLoading();
                 });
             }
         });

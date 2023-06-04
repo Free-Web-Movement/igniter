@@ -50,6 +50,9 @@ public class Storage {
     public static byte[] read(String filename) {
         try {
             File file = new File(filename);
+            if (!file.exists()) {
+                return null;
+            }
             FileInputStream fis = new FileInputStream(file);
             int length = (int) file.length();
             byte[] content = new byte[length];

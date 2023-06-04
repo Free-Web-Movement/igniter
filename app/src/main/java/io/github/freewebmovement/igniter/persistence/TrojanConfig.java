@@ -194,6 +194,9 @@ public class TrojanConfig implements Parcelable {
     }
 
     public String getRemoteAddr() {
+        if (remoteAddr == null || remoteAddr.length() == 0) {
+            return "0.0.0.0";
+        }
         return remoteAddr;
     }
 

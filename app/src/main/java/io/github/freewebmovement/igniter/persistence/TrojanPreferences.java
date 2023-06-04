@@ -5,30 +5,41 @@ import android.content.SharedPreferences;
 
 public class TrojanPreferences {
 
+    // User Data Preferences
+
     // Preferences Names
     public static final String TROJAN_PREFERENCE_NAME = "TROJAN_PREFERENCE";
 
     // Private keys
-    public static final String KEY_ENABLE_IPV6 = "enable_ipv6";
 
     // Multi Process shared keys
     public static final String KEY_EVER_STARTED = "ever_started";
     public static final String KEY_ENABLE_CLASH = "enable_clash";
     public static final String KEY_ENABLE_LAN = "enable_lan";
+    public static final String KEY_ENABLE_IPV6 = "enable_ipv6";
     public static final String KEY_ENABLE_AUTO_START = "enable_auto_start";
     public static final String KEY_ENABLE_BOOT_START = "enable_boot_start";
     public static final String KEY_SELECTED_INDEX = "selected_index";
 
+    public static final String KEY_SHOW_SYSTEM_APPS = "show_system_apps";
+
+    // Multi Process shared values
+
+    // Application Status
+    boolean everStarted;
+
+    // Network Settings
     boolean enableIPV6;
     boolean enableClash;
-    boolean everStarted;
     boolean enableLan;
+
+    // Application Switches
     boolean enableAutoStart;
     boolean enableBootStart;
-
     int selectedIndex;
+    boolean showSystemApps;
 
-
+    // Android System Objects
     Context context;
     SharedPreferences sharedPreferences;
 
@@ -42,6 +53,7 @@ public class TrojanPreferences {
         enableAutoStart = sharedPreferences.getBoolean(KEY_ENABLE_AUTO_START, false);
         enableBootStart = sharedPreferences.getBoolean(KEY_ENABLE_BOOT_START, false);
         selectedIndex = sharedPreferences.getInt(KEY_SELECTED_INDEX, 0);
+        showSystemApps = sharedPreferences.getBoolean(KEY_SHOW_SYSTEM_APPS, false);
     }
 
     public void setEnableIPV6(boolean enableIPV6) {
@@ -130,5 +142,14 @@ public class TrojanPreferences {
     public void setSelectedIndex(int index) {
         this.selectedIndex = index;
         setInt(KEY_SELECTED_INDEX, index);
+    }
+
+    public boolean getShowSystemApps() {
+        return showSystemApps;
+    }
+
+    public void setShowSystemApps(boolean showSystemApps) {
+        this.showSystemApps = showSystemApps;
+        setBoolean(KEY_SHOW_SYSTEM_APPS, showSystemApps);
     }
 }
