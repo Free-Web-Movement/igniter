@@ -15,13 +15,13 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Singleton implementation of {@link IThreads}. Call {@link #instance()} to get the instance.
  */
 public final class Threads implements IThreads {
-    private ExecutorService mThreadPool;
-    private Handler mHandler;
+    private final ExecutorService mThreadPool;
+    private final Handler mHandler;
 
     private Threads() {
         mThreadPool = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
                 30L, TimeUnit.SECONDS,
-                new SynchronousQueue<Runnable>(),
+                new SynchronousQueue<>(),
                 new DefaultThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
         mHandler = new Handler(Looper.getMainLooper());
     }
@@ -75,12 +75,7 @@ public final class Threads implements IThreads {
 
     @Override
     public void runOnWorkThread(final Task task, long delayMillis) {
-        mHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                mThreadPool.execute(task);
-            }
-        }, delayMillis);
+        mHandler.postDelayed(() -> mThreadPool.execute(task), delayMillis);
     }
 
     @Override

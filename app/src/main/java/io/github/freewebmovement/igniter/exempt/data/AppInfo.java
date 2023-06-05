@@ -2,6 +2,8 @@ package io.github.freewebmovement.igniter.exempt.data;
 
 import android.graphics.drawable.Drawable;
 
+import androidx.annotation.NonNull;
+
 public class AppInfo implements Cloneable {
     private String appName;
     private Drawable icon;
@@ -40,6 +42,7 @@ public class AppInfo implements Cloneable {
         this.exempt = exempt;
     }
 
+    @NonNull
     @Override
     protected Object clone() throws CloneNotSupportedException {
         AppInfo appInfo = (AppInfo) super.clone();

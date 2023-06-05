@@ -3,7 +3,6 @@ package io.github.freewebmovement.igniter.exempt.data;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 

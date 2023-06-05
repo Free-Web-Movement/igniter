@@ -4,22 +4,11 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.FragmentActivity;
-import androidx.core.content.ContextCompat;
-import androidx.core.graphics.drawable.DrawableCompat;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.appcompat.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,15 +17,26 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
+import androidx.fragment.app.FragmentActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import io.github.freewebmovement.igniter.R;
-import io.github.freewebmovement.igniter.persistence.TrojanConfig;
 import io.github.freewebmovement.igniter.common.app.BaseFragment;
-import io.github.freewebmovement.igniter.tile.qrcode.ScanQRCodeActivity;
+import io.github.freewebmovement.igniter.persistence.TrojanConfig;
 import io.github.freewebmovement.igniter.servers.activity.ServerListActivity;
 import io.github.freewebmovement.igniter.servers.contract.ServerListContract;
+import io.github.freewebmovement.igniter.tile.qrcode.ScanQRCodeActivity;
 
 public class ServerListFragment extends BaseFragment implements ServerListContract.View {
     private static final int FILE_IMPORT_REQUEST_CODE = 120;
@@ -84,7 +84,7 @@ public class ServerListFragment extends BaseFragment implements ServerListContra
             setHasOptionsMenu(true);
         }
         mServerListRv.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false));
-        mServerListAdapter = new ServerListAdapter(getContext(), new ArrayList<TrojanConfig>());
+        mServerListAdapter = new ServerListAdapter(getContext(), new ArrayList<>());
         mServerListRv.setAdapter(mServerListAdapter);
     }
 
@@ -111,22 +111,12 @@ public class ServerListFragment extends BaseFragment implements ServerListContra
 
     @Override
     public void showAddTrojanConfigSuccess() {
-        mRootView.post(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(getApplicationContext(), R.string.scan_qr_code_success, Toast.LENGTH_SHORT).show();
-            }
-        });
+        mRootView.post(() -> Toast.makeText(getApplicationContext(), R.string.scan_qr_code_success, Toast.LENGTH_SHORT).show());
     }
 
     @Override
     public void showQRCodeScanError(final String scanContent) {
-        mRootView.post(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(getApplicationContext(), getString(R.string.scan_qr_code_failed, scanContent), Toast.LENGTH_SHORT).show();
-            }
-        });
+        mRootView.post(() -> Toast.makeText(getApplicationContext(), getString(R.string.scan_qr_code_failed, scanContent), Toast.LENGTH_SHORT).show());
     }
 
     @Override
@@ -214,17 +204,7 @@ public class ServerListFragment extends BaseFragment implements ServerListContra
     public void showImportFileDescription() {
         mImportConfigDialog = new AlertDialog.Builder(mContext).setTitle(R.string.common_alert)
                 .setMessage(R.string.server_list_import_file_desc)
-                .setPositiveButton(R.string.common_confirm, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        mPresenter.importConfigFromFile();
-                    }
-                }).setNegativeButton(R.string.common_cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        mPresenter.hideImportFileDescription();
-                    }
-                }).create();
+                .setPositiveButton(R.string.common_confirm, (dialog, which) -> mPresenter.importConfigFromFile()).setNegativeButton(R.string.common_cancel, (dialog, which) -> mPresenter.hideImportFileDescription()).create();
         mImportConfigDialog.show();
     }
 
@@ -246,22 +226,12 @@ public class ServerListFragment extends BaseFragment implements ServerListContra
 
     @Override
     public void showServerConfigList(final List<TrojanConfig> configs) {
-        mRootView.post(new Runnable() {
-            @Override
-            public void run() {
-                mServerListAdapter.replaceData(configs);
-            }
-        });
+        mRootView.post(() -> mServerListAdapter.replaceData(configs));
     }
 
     @Override
     public void removeServerConfig(TrojanConfig config, final int pos) {
-        mRootView.post(new Runnable() {
-            @Override
-            public void run() {
-                mServerListAdapter.removeItemOnPosition(pos);
-            }
-        });
+        mRootView.post(() -> mServerListAdapter.removeItemOnPosition(pos));
     }
 
     @Override

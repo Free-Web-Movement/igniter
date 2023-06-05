@@ -19,7 +19,6 @@ import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.core.app.NotificationCompat;
 
-import java.util.Collections;
 import java.util.Set;
 
 import io.github.freewebmovement.igniter.connection.TestConnection;

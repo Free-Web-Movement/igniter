@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.net.VpnService;
 import android.os.Bundle;
 import android.os.RemoteException;
-import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -17,7 +16,6 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
@@ -76,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
                     if (result.getResultCode() == Activity.RESULT_OK) {
                         Intent data = result.getData();
                         trojanURLText.setText("");
+                        assert data != null;
                         final TrojanConfig temp = data.getParcelableExtra(ServerListActivity.KEY_TROJAN_CONFIG);
                         if (temp != null) {
                             temp.setCaCertPath(app.storage.getCaCertPath());
