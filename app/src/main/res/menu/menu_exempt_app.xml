@@ -23,7 +23,7 @@
         android:id="@+id/action_save_exempt_apps"
         android:icon="@drawable/ic_action_save"
         android:orderInCategory="100"
-        android:title="@string/menu_action_exempt_app_save"
+        android:title="@string/save"
         app:showAsAction="always|collapseActionView"
         />
 

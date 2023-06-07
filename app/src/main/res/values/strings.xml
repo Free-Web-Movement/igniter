@@ -72,8 +72,6 @@
     <string name="scan_qr_code_failed">Cannot recognize trojanURL: %s</string>
     <string name="scan_qr_code">Scan QR</string>
     <string name="scan_qr_code_camera_error">Camera Error</string>
-
-    <string name="menu_action_exempt_app_save">Save</string>
     <string name="menu_action_exempt_app">Exempt Apps</string>
     <string name="exempt_app_search_title">Search Apps</string>
     <string name="menu_action_exempt_app_hide_system_apps">System Apps</string>
@@ -83,4 +81,6 @@
     <string name="exempt_app_exit_without_saving_confirm">Exit without saving exempt app list?</string>
     <string name="service_is_running">Igniter is running</string>
     <string name="enable_boot_start">Enable Boot Start</string>
+
+
 </resources>

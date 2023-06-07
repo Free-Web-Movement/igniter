@@ -11,60 +11,15 @@
     android:layout_marginEnd="8dp"
     android:layout_marginRight="8dp"
     android:layout_marginBottom="8dp"
-    android:gravity="center"
     android:orientation="vertical"
-    android:paddingBottom="16dp"
     tools:context=".servers.activity.AddServerActivity">
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginEnd="16dp"
-        android:gravity="center"
-        android:orientation="horizontal">
-
-        <ImageButton
-            android:id="@+id/imageButton_save"
-            android:layout_width="50dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="0dp"
-            android:layout_marginEnd="8dp"
-            android:layout_weight="1"
-            android:contentDescription="@string/save"
-            app:srcCompat="@drawable/ic_action_save"
-            tools:ignore="TouchTargetSizeCheck,TouchTargetSizeCheck" />
-
-        <ImageButton
-            android:id="@+id/imageButton_start"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_weight="1"
-            android:contentDescription="@string/play"
-            app:srcCompat="@drawable/ic_action_play"
-            tools:ignore="TouchTargetSizeCheck" />
-
-        <ImageButton
-            android:id="@+id/imageButton_stop"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="0dp"
-            android:layout_weight="1"
-            android:contentDescription="@string/stop"
-            app:srcCompat="@drawable/ic_action_stop"
-            tools:ignore="TouchTargetSizeCheck,ImageContrastCheck" />
-    </LinearLayout>
 
     <EditText
         android:id="@+id/remoteAddrText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="0dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="12dp"
         android:ems="10"
@@ -161,4 +116,11 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ipv6Switch" />
 
+        <Button
+            android:id="@+id/text_save"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:gravity="center"
+            android:textAllCaps="false"
+            android:text="@string/save" />
 </LinearLayout>

@@ -1,8 +1,8 @@
 package io.github.freewebmovement.igniter.servers.activity;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import io.github.freewebmovement.igniter.R;
 
