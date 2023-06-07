@@ -1,9 +1,164 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_marginStart="8dp"
+    android:layout_marginLeft="8dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginEnd="8dp"
+    android:layout_marginRight="8dp"
+    android:layout_marginBottom="8dp"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:paddingBottom="16dp"
     tools:context=".servers.activity.AddServerActivity">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="16dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/imageButton_save"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="0dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:contentDescription="@string/save"
+            app:srcCompat="@drawable/ic_action_save"
+            tools:ignore="TouchTargetSizeCheck,TouchTargetSizeCheck" />
+
+        <ImageButton
+            android:id="@+id/imageButton_start"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:contentDescription="@string/play"
+            app:srcCompat="@drawable/ic_action_play"
+            tools:ignore="TouchTargetSizeCheck" />
+
+        <ImageButton
+            android:id="@+id/imageButton_stop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="0dp"
+            android:layout_weight="1"
+            android:contentDescription="@string/stop"
+            app:srcCompat="@drawable/ic_action_stop"
+            tools:ignore="TouchTargetSizeCheck,ImageContrastCheck" />
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/remoteAddrText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="12dp"
+        android:ems="10"
+        android:hint="@string/remote_addr"
+        android:importantForAutofill="no"
+        android:inputType="textUri"
+        android:textColorHint="#78909C"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="16dp"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/remotePortText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:autofillHints=""
+            android:ems="10"
+            android:hint="@string/remote_port"
+            android:inputType="number"
+            android:text="@string/default_port"
+            android:textSize="20sp" />
+
+        <EditText
+            android:id="@+id/localOrClashPortText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:autofillHints=""
+            android:ems="10"
+            android:hint="@string/local_or_clash_port"
+            android:inputType="number"
+            android:maxLength="5"
+            android:text="@string/default_local_or_clash_port"
+            android:textSize="20sp" />
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/passwordText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="12dp"
+        android:autofillHints=""
+        android:ems="10"
+        android:hint="@string/password"
+        android:inputType="textPassword"
+        android:textColorHint="#78909C"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/remotePortText" />
+
+    <EditText
+        android:id="@+id/trojanURLText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:autofillHints=""
+        android:ems="10"
+        android:hint="@string/trojan_url"
+        android:inputType="textUri"
+        android:textColorHint="#78909C"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/passwordText" />
+
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/verifySwitch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="16dp"
+        android:checked="true"
+        android:minHeight="48dp"
+        android:text="@string/verify_certificate"
+        android:textSize="@dimen/text_size"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ipv6Switch" />
+
+</LinearLayout>
