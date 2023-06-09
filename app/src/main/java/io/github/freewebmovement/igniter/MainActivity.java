@@ -287,7 +287,7 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
                 }
             });
         });
-        serverListDataManager = new ServerListDataManager(app.storage.getTrojanConfigListPath());
+        serverListDataManager = new ServerListDataManager();
         connection.connect(this, this);
         if (!app.storage.isExternalWritable() && ActivityCompat
                 .shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {

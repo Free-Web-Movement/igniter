@@ -2,6 +2,7 @@ package io.github.freewebmovement.igniter.servers.fragment;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
@@ -9,6 +10,8 @@ import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -19,7 +22,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
@@ -31,6 +33,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.github.freewebmovement.igniter.IgniterApplication;
 import io.github.freewebmovement.igniter.R;
 import io.github.freewebmovement.igniter.common.app.BaseFragment;
 import io.github.freewebmovement.igniter.persistence.TrojanConfig;
@@ -80,7 +83,7 @@ public class ServerListFragment extends BaseFragment implements ServerListContra
     private void initViews() {
         FragmentActivity activity = getActivity();
         if (activity instanceof AppCompatActivity) {
-            ((AppCompatActivity) activity).setSupportActionBar((Toolbar)findViewById(R.id.toolbar));
+            ((AppCompatActivity) activity).setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
             setHasOptionsMenu(true);
         }
         mServerListRv.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false));
@@ -97,7 +100,14 @@ public class ServerListFragment extends BaseFragment implements ServerListContra
 
             @Override
             public void onItemDelete(TrojanConfig config, int pos) {
-                mPresenter.deleteServerConfig(config, pos);
+                new AlertDialog.Builder(ServerListFragment.this.mContext)
+                        .setTitle(R.string.warning_delete_server)
+                        .setMessage(R.string.warngin_delete_server_confirm)
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> new Thread(() -> {
+                            mPresenter.deleteServerConfig(config, pos);
+                        }).start())
+                        .setNegativeButton(android.R.string.no, null).show();
             }
         });
     }
@@ -167,7 +177,6 @@ public class ServerListFragment extends BaseFragment implements ServerListContra
             activity.finish();
         }
     }
-
 
 
     @Override

@@ -1,17 +1,27 @@
 package io.github.freewebmovement.igniter.servers.data;
 
+import android.app.Activity;
+import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
+
+import androidx.appcompat.app.AlertDialog;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import io.github.freewebmovement.igniter.IgniterApplication;
+import io.github.freewebmovement.igniter.R;
 import io.github.freewebmovement.igniter.persistence.ServerList;
 import io.github.freewebmovement.igniter.persistence.TrojanConfig;
+import io.github.freewebmovement.igniter.x.persistence.AccessDatabase;
+import io.github.freewebmovement.igniter.x.persistence.AppDatabase;
+import io.github.freewebmovement.igniter.x.persistence.ServerDao;
 
 public class ServerListDataManager implements ServerListDataSource {
 
-    public ServerListDataManager(String configFilePath) {
+    public ServerListDataManager() {
     }
 
     @Override
@@ -21,14 +31,9 @@ public class ServerListDataManager implements ServerListDataSource {
 
     @Override
     public void deleteServerConfig(TrojanConfig config) {
-        List<TrojanConfig> trojanConfigs = loadServerConfigList();
-        for (int i = trojanConfigs.size() - 1; i >= 0; i--) {
-            if (trojanConfigs.get(i).getRemoteAddr().equals(config.getRemoteAddr())) {
-                trojanConfigs.remove(i);
-                replaceServerConfigs(trojanConfigs);
-                break;
-            }
-        }
+        AppDatabase appDatabase = AccessDatabase.getDatabase(IgniterApplication.getApplication());
+        ServerDao serverDao = appDatabase.serverDao();
+        serverDao.deleteByUniquePair(config.getRemoteAddr(), config.getRemotePort());
     }
 
     @Override
@@ -59,7 +64,5 @@ public class ServerListDataManager implements ServerListDataSource {
 
     @Override
     public void replaceServerConfigs(List<TrojanConfig> list) {
-//        ServerList.write(list, mConfigFilePath);
-//        Storage.print(mConfigFilePath, ServerList.CONFIG_LIST_TAG);
     }
 }

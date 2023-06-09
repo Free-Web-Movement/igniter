@@ -88,6 +88,8 @@
     <string name="local_port">Local Port</string>
     <string name="remote_password">Remote Password</string>
     <string name="error_dabase_unique_constraint_failed">Unique Constraint Failed!</string>
+    <string name="warning_delete_server">Are You Sure to Remove the Server?</string>
+    <string name="warngin_delete_server_confirm">Sure to Remove Server?</string>
 
 
 </resources>
