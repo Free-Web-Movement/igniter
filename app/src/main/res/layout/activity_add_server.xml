@@ -15,7 +15,7 @@
     tools:context=".servers.activity.AddServerActivity">
 
     <EditText
-        android:id="@+id/remoteAddrText"
+        android:id="@+id/remote_address"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -23,7 +23,7 @@
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="12dp"
         android:ems="10"
-        android:hint="@string/remote_addr"
+        android:hint="@string/remote_address"
         android:importantForAutofill="no"
         android:inputType="textUri"
         android:textColorHint="#78909C"
@@ -41,7 +41,7 @@
         android:orientation="horizontal">
 
         <EditText
-            android:id="@+id/remotePortText"
+            android:id="@+id/remote_port"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -53,13 +53,13 @@
             android:textSize="20sp" />
 
         <EditText
-            android:id="@+id/localOrClashPortText"
+            android:id="@+id/local_port"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:autofillHints=""
             android:ems="10"
-            android:hint="@string/local_or_clash_port"
+            android:hint="@string/local_port"
             android:inputType="number"
             android:maxLength="5"
             android:text="@string/default_local_or_clash_port"
@@ -67,7 +67,7 @@
     </LinearLayout>
 
     <EditText
-        android:id="@+id/passwordText"
+        android:id="@+id/remote_password"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -76,7 +76,7 @@
         android:layout_marginBottom="12dp"
         android:autofillHints=""
         android:ems="10"
-        android:hint="@string/password"
+        android:hint="@string/remote_password"
         android:inputType="textPassword"
         android:textColorHint="#78909C"
         android:textSize="20sp"
@@ -84,15 +84,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/remotePortText" />
 
-    <EditText
-        android:id="@+id/trojanURLText"
+    <TextView
+        android:id="@+id/trojan_uri"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        android:autofillHints=""
         android:ems="10"
-        android:hint="@string/trojan_url"
+        android:hint="@string/trojan_uri"
         android:inputType="textUri"
         android:textColorHint="#78909C"
         android:textSize="20sp"
@@ -122,5 +121,6 @@
             android:layout_height="50dp"
             android:gravity="center"
             android:textAllCaps="false"
+            android:onClick="onSave"
             android:text="@string/save" />
 </LinearLayout>

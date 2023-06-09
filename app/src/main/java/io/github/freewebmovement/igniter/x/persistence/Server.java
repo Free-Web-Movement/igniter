@@ -3,12 +3,14 @@ package io.github.freewebmovement.igniter.x.persistence;
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "servers")
+@Entity(tableName = "servers", indices = @Index(value = {"hostname", "port"},
+        unique = true))
 public class Server {
 
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     public int id;
 
     @ColumnInfo(name = "hostname")
@@ -23,8 +25,7 @@ public class Server {
     @NonNull
     public String password;
 
-    @ColumnInfo(name = "localhost")
-    @NonNull
+    @ColumnInfo(name = "localhost", defaultValue = "127.0.0.1")
     public String localhost;
 
     @ColumnInfo(name = "local_port")

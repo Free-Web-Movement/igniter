@@ -7,13 +7,13 @@
     <string name="common_cancel">Cancel</string>
     <string name="common_save_success">Save success</string>
 
-    <string name="remote_addr">Remote Address</string>
+    <string name="remote_address">Remote Address</string>
     <string name="remote_port">Remote Port</string>
     <string name="local_or_clash_port">Local/Clash Port</string>
     <string name="default_port">443</string>
     <string name="default_local_or_clash_port">1080</string>
     <string name="password">Password</string>
-    <string name="trojan_url">Trojan URL</string>
+    <string name="trojan_uri">Trojan URI</string>
     <string name="button_service__start">Start</string>
     <string name="button_service__starting">Starting</string>
     <string name="button_service__stop">Stop</string>
@@ -81,6 +81,13 @@
     <string name="exempt_app_exit_without_saving_confirm">Exit without saving exempt app list?</string>
     <string name="service_is_running">Igniter is running</string>
     <string name="enable_boot_start">Enable Boot Start</string>
+    <string name="error_remote_address">Remote Address is Missing or Wrong!</string>
+    <string name="error_remote_port">Remote Port is Missing or Wrong!</string>
+    <string name="error_remote_password">Password is Missing or Some Thing is Wrong!</string>
+    <string name="error_local_port">Local Port is Wrong!</string>
+    <string name="local_port">Local Port</string>
+    <string name="remote_password">Remote Password</string>
+    <string name="error_dabase_unique_constraint_failed">Unique Constraint Failed!</string>
 
 
 </resources>
