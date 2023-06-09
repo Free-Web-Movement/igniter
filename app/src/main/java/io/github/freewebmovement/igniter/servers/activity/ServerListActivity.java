@@ -32,10 +32,9 @@ public class ServerListActivity extends AppCompatActivity {
             (result) -> {
                 if (result.getResultCode() == Activity.RESULT_OK) {
                     Log.wtf("OK", "RESULT_OK");
-                    new Thread(() -> {
-                        List<TrojanConfig> trojanConfigList = ServerList.readDatabase(ServerListActivity.this);
-                        ServerListActivity.this.runOnUiThread(() -> fragment.mServerListAdapter.replaceData(trojanConfigList));
-                    });
+                    Intent intent = getIntent();
+                    finish();
+                    startActivity(intent);
                 }
             });
 
