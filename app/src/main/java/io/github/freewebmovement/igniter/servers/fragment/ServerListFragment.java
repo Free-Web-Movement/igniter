@@ -46,7 +46,7 @@ public class ServerListFragment extends BaseFragment implements ServerListContra
     public static final String KEY_TROJAN_CONFIG = ServerListActivity.KEY_TROJAN_CONFIG;
     private ServerListContract.Presenter mPresenter;
     private RecyclerView mServerListRv;
-    private ServerListAdapter mServerListAdapter;
+    public ServerListAdapter mServerListAdapter;
     private Dialog mImportConfigDialog;
 
     public ServerListFragment() {

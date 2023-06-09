@@ -5,20 +5,18 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.github.freewebmovement.igniter.IgniterApplication;
 import io.github.freewebmovement.igniter.persistence.ServerList;
-import io.github.freewebmovement.igniter.persistence.Storage;
 import io.github.freewebmovement.igniter.persistence.TrojanConfig;
 
 public class ServerListDataManager implements ServerListDataSource {
-    private final String mConfigFilePath;
 
     public ServerListDataManager(String configFilePath) {
-        mConfigFilePath = configFilePath;
     }
 
     @Override
     public List<TrojanConfig> loadServerConfigList() {
-        return new ArrayList<>(ServerList.read(mConfigFilePath));
+        return new ArrayList<>(ServerList.readDatabase(IgniterApplication.getApplication()));
     }
 
     @Override
@@ -61,7 +59,7 @@ public class ServerListDataManager implements ServerListDataSource {
 
     @Override
     public void replaceServerConfigs(List<TrojanConfig> list) {
-        ServerList.write(list, mConfigFilePath);
-        Storage.print(mConfigFilePath, ServerList.CONFIG_LIST_TAG);
+//        ServerList.write(list, mConfigFilePath);
+//        Storage.print(mConfigFilePath, ServerList.CONFIG_LIST_TAG);
     }
 }

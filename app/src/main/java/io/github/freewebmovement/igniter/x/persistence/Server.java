@@ -19,7 +19,7 @@ public class Server {
 
     @ColumnInfo(name = "port")
     @NonNull
-    public String port;
+    public int port;
 
     @ColumnInfo(name = "password")
     @NonNull
@@ -30,5 +30,5 @@ public class Server {
 
     @ColumnInfo(name = "local_port")
     @NonNull
-    public String local_port;
+    public int local_port;
 }

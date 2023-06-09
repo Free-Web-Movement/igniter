@@ -1,5 +1,6 @@
 package io.github.freewebmovement.igniter.servers.activity;
 
+import android.app.Activity;
 import android.database.sqlite.SQLiteConstraintException;
 import android.os.Bundle;
 import android.util.Log;
@@ -67,12 +68,6 @@ public class AddServerActivity extends AppCompatActivity {
         String trojanURI = "trojan://" + remotePassword + "@" + remoteAddress + ":" + remotePort;
 
         tvTrojanURI.setText(trojanURI);
-
-        Log.wtf(TAG, "ON Saving");
-        Log.wtf(TAG, remoteAddress);
-        Log.wtf(TAG, remotePort);
-        Log.wtf(TAG, remotePassword);
-        Log.wtf(TAG, localPort);
         new Thread(() -> {
             // A potentially time consuming task.
             try {
@@ -80,10 +75,11 @@ public class AddServerActivity extends AppCompatActivity {
                 ServerDao serverDao = db.serverDao();
                 Server server = new Server();
                 server.hostname = remoteAddress;
-                server.port = remotePort;
+                server.port = Integer.parseInt(remotePort);
                 server.password = remotePassword;
-                server.local_port = localPort;
+                server.local_port = Integer.parseInt(localPort);
                 serverDao.insert(server);
+                setResult(Activity.RESULT_OK);
             } catch (SQLiteConstraintException e) {
                 e.printStackTrace();
                 if (Objects.requireNonNull(e.getMessage()).startsWith("UNIQUE constraint failed")) {
@@ -91,7 +87,9 @@ public class AddServerActivity extends AppCompatActivity {
                             R.string.error_dabase_unique_constraint_failed,
                             Toast.LENGTH_LONG).show());
                 }
+                setResult(Activity.RESULT_CANCELED);
             }
+            finish();
         }).start();
     }
 }

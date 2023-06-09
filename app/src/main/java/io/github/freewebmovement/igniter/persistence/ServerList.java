@@ -1,5 +1,7 @@
 package io.github.freewebmovement.igniter.persistence;
 
+import android.content.Context;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,6 +17,10 @@ import java.util.Collections;
 import java.util.List;
 
 import io.github.freewebmovement.igniter.IgniterApplication;
+import io.github.freewebmovement.igniter.x.persistence.AccessDatabase;
+import io.github.freewebmovement.igniter.x.persistence.AppDatabase;
+import io.github.freewebmovement.igniter.x.persistence.Server;
+import io.github.freewebmovement.igniter.x.persistence.ServerDao;
 
 public class ServerList {
     public static final String CONFIG_LIST_TAG = "TrojanConfigList";
@@ -28,21 +34,21 @@ public class ServerList {
         currentIndex = app.trojanPreferences.getSelectedIndex();
     }
 
-    public void selectIndex(int index) {
-        app.trojanPreferences.setSelectedIndex(index);
-        currentIndex = index;
-    }
+//    public void selectIndex(int index) {
+//        app.trojanPreferences.setSelectedIndex(index);
+//        currentIndex = index;
+//    }
 
-    public TrojanConfig getDefaultConfig() {
-        List<TrojanConfig> list = ServerList.read(filename);
-        if (list == null || list.size() <= currentIndex) {
-            List<TrojanConfig> newList = new ArrayList<>();
-            newList.add(app.trojanConfig);
-            write(newList, filename);
-            currentIndex = 0;
-        }
-        return list.get(currentIndex);
-    }
+//    public TrojanConfig getDefaultConfig() {
+//        List<TrojanConfig> list = ServerList.read(filename);
+//        if (list == null || list.size() <= currentIndex) {
+//            List<TrojanConfig> newList = new ArrayList<>();
+//            newList.add(app.trojanConfig);
+//            write(newList, filename);
+//            currentIndex = 0;
+//        }
+//        return list.get(currentIndex);
+//    }
     public static void write(List<TrojanConfig> configList, String filename) {
         try {
             JSONArray jsonArray = new JSONArray();
@@ -62,27 +68,19 @@ public class ServerList {
             e.printStackTrace();
         }
     }
-
-    public static List<TrojanConfig> read(String filename) {
-        File file = new File(filename);
-        if (!file.exists()) {
-            return Collections.emptyList();
+    public static List<TrojanConfig> readDatabase(Context context) {
+        AppDatabase appDatabase = AccessDatabase.getDatabase(context);
+        ServerDao serverDao = appDatabase.serverDao();
+        List<Server> servers = serverDao.all();
+        List<TrojanConfig> configList = new ArrayList<>(servers.size());
+        for(Server server: servers) {
+            TrojanConfig tc = new TrojanConfig();
+            tc.setRemoteAddr(server.hostname);
+            tc.setRemotePort(server.port);
+            tc.setPassword(server.password);
+            tc.setLocalPort(server.local_port);
+            configList.add(tc);
         }
-        try (InputStream fis = new FileInputStream(file)) {
-            byte[] data = new byte[(int) file.length()];
-            fis.read(data);
-            String json = new String(data);
-            JSONArray jsonArr = new JSONArray(json);
-            int len = jsonArr.length();
-            List<TrojanConfig> list = new ArrayList<>(len);
-            for (int i = 0; i < len; i++) {
-                TrojanConfig tc = new TrojanConfig().fromJSON(jsonArr.getJSONObject(i));
-                list.add(tc);
-            }
-            return list;
-        } catch (IOException | JSONException e) {
-            e.printStackTrace();
-        }
-        return Collections.emptyList();
+        return configList;
     }
 }

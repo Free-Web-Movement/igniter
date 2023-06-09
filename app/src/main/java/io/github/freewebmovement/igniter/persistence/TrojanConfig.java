@@ -88,6 +88,9 @@ public class TrojanConfig implements Parcelable {
         this.fromJSON(defaultJSON);
     }
 
+    public static JSONObject getDefaultJSON(Storage storage) {
+        return storage.readRawJSON(R.raw.config);
+    }
     // Parcel processing
 
     @Override
