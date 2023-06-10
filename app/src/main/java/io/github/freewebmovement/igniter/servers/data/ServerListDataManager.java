@@ -1,19 +1,11 @@
 package io.github.freewebmovement.igniter.servers.data;
 
-import android.app.Activity;
-import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
-
-import androidx.appcompat.app.AlertDialog;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import io.github.freewebmovement.igniter.IgniterApplication;
-import io.github.freewebmovement.igniter.R;
-import io.github.freewebmovement.igniter.persistence.ServerList;
 import io.github.freewebmovement.igniter.persistence.TrojanConfig;
 import io.github.freewebmovement.igniter.x.persistence.AccessDatabase;
 import io.github.freewebmovement.igniter.x.persistence.AppDatabase;
@@ -26,14 +18,14 @@ public class ServerListDataManager implements ServerListDataSource {
 
     @Override
     public List<TrojanConfig> loadServerConfigList() {
-        return new ArrayList<>(ServerList.readDatabase(IgniterApplication.getApplication()));
+        return new ArrayList<>(AccessDatabase.readServers(IgniterApplication.getApplication()));
     }
 
     @Override
     public void deleteServerConfig(TrojanConfig config) {
-        AppDatabase appDatabase = AccessDatabase.getDatabase(IgniterApplication.getApplication());
-        ServerDao serverDao = appDatabase.serverDao();
-        serverDao.deleteByUniquePair(config.getRemoteAddr(), config.getRemotePort());
+        AccessDatabase.deleteServer(IgniterApplication.getApplication(),
+                config.getRemoteAddr(),
+                config.getRemotePort());
     }
 
     @Override
