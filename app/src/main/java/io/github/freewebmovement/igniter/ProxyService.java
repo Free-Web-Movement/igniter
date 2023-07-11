@@ -37,7 +37,6 @@ public class ProxyService extends VpnService implements TestConnection.OnResultL
     public static final int STOPPING = 2;
     public static final int STOPPED = 3;
     public static final int PROXY_SERVICE_STATUS_NOTIFY_MSG_ID = 114514;
-    public long tun2socksPort;
     public IgniterApplication app;
     int flags;
 
@@ -84,7 +83,8 @@ public class ProxyService extends VpnService implements TestConnection.OnResultL
                 onResult(TUN2SOCKS5_SERVER_HOST, false, 0L, "ProxyService not yet connected.");
                 return;
             }
-            new TestConnection(TUN2SOCKS5_SERVER_HOST, tun2socksPort, ProxyService.this).execute(testUrl);
+            long port = app.trojanConfig.getLocalPort();
+            new TestConnection(TUN2SOCKS5_SERVER_HOST, port, ProxyService.this).execute(testUrl);
         }
 
         @Override
