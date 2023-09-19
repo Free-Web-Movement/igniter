@@ -6,7 +6,7 @@ import androidx.room.Insert
 import androidx.room.Query
 
 @Dao
-interface UserDao {
+public interface UserDao {
     @Query("SELECT * from users;")
     fun all(): List<Server?>?
 
