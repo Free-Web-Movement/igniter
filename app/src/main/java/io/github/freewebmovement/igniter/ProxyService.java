@@ -22,11 +22,12 @@ import androidx.core.app.NotificationCompat;
 import java.util.Set;
 
 import io.github.freewebmovement.igniter.connection.TestConnection;
-import io.github.freewebmovement.igniter.exempt.data.ExemptAppDataManager;
-import io.github.freewebmovement.igniter.exempt.data.ExemptAppDataSource;
+import io.github.freewebmovement.igniter.ui.exempt.data.ExemptAppDataManager;
+import io.github.freewebmovement.igniter.ui.exempt.data.ExemptAppDataSource;
 import io.github.freewebmovement.igniter.persistence.NetWorkConfig;
 import io.github.freewebmovement.igniter.proxy.aidl.ITrojanService;
 import io.github.freewebmovement.igniter.proxy.aidl.ITrojanServiceCallback;
+import io.github.freewebmovement.igniter.ui.MainActivity;
 
 public class ProxyService extends VpnService implements TestConnection.OnResultListener {
     private static final String TAG = "ProxyService";

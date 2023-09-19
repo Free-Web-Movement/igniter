@@ -10,6 +10,7 @@ import io.github.freewebmovement.igniter.persistence.Storage;
 import io.github.freewebmovement.igniter.persistence.SystemAppsConfig;
 import io.github.freewebmovement.igniter.persistence.TrojanConfig;
 import io.github.freewebmovement.igniter.persistence.TrojanPreferences;
+import io.github.freewebmovement.igniter.ui.MainActivity;
 
 public class IgniterApplication extends Application {
     public static IgniterApplication instance;

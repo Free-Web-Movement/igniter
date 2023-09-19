@@ -5,7 +5,7 @@
     android:id="@+id/parent_fl"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".servers.activity.ServerListActivity">
+    tools:context=".ui.servers.activity.ServerListActivity">
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"

@@ -12,7 +12,7 @@
     android:layout_marginRight="8dp"
     android:layout_marginBottom="8dp"
     android:orientation="vertical"
-    tools:context=".servers.activity.AddServerActivity">
+    tools:context=".ui.servers.activity.AddServerActivity">
 
     <EditText
         android:id="@+id/remote_address"

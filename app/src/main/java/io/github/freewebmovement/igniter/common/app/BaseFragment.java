@@ -12,7 +12,6 @@ import android.view.View;
 public abstract class BaseFragment extends Fragment {
     protected View mRootView;
     protected Context mContext;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
