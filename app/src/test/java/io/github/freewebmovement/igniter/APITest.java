@@ -8,10 +8,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 import io.github.freewebmovement.igniter.connection.API;
 import io.github.freewebmovement.igniter.connection.Quota;
+import io.github.freewebmovement.igniter.connection.ReAPI;
 
 @RunWith(AndroidJUnit4.class)
 
@@ -25,11 +24,17 @@ public class APITest {
         String password = "1234";
         API api = new API();
         String quotaStr = api.quota(username, password);
-        JSONObject quota = new JSONObject(quotaStr);
-        assert (quota != null);
-        assert (quota.getString("username").equals(username));
-        assert (quota.getInt("quota") == 0);
-        assert (quota.getInt("upload") == 0);
-        assert (quota.getInt("download") == 0);
+        JSONObject quotaJSON = new JSONObject(quotaStr);
+        assert (quotaJSON != null);
+        assert (quotaJSON.getString("username").equals(username));
+        assert (quotaJSON.getInt("quota") == 0);
+        assert (quotaJSON.getInt("upload") == 0);
+        assert (quotaJSON.getInt("download") == 0);
+
+        ReAPI reAPI = new ReAPI();
+        reAPI.start(username, password);
+        Quota quota = reAPI.quota;
+
+
     }
 }
