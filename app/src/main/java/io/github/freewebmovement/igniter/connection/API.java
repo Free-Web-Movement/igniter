@@ -1,34 +1,44 @@
 package io.github.freewebmovement.igniter.connection;
 
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import java.io.IOException;
+
+import okhttp3.Call;
 import okhttp3.OkHttpClient;
-import retrofit2.Call;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.scalars.ScalarsConverterFactory;
+import okhttp3.RequestBody;
+import okhttp3.FormBody;
+import okhttp3.Request;
+import okhttp3.OkHttpClient;
+import okhttp3.Response;
+
 
 public class API {
 
-    static String BASE_URL = "http://games.yikuaijiasu.top/";
-    OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
+    static String BASE_URL = "https://games.yikuaijiasu.top/";
+    public Quota quota;
+    OkHttpClient httpClient = new OkHttpClient();
 
-    Retrofit retrofit = new Retrofit.Builder()
-            .addConverterFactory(ScalarsConverterFactory.create())
-            .client(httpClient.build())
-            .baseUrl(BASE_URL)
-            .build();
-    APIService apiService = retrofit.create(APIService.class);
+        public String quota(String username , String password) {
+        RequestBody formBody = new FormBody.Builder()
+                .add("username", username)
+                .add("password", password)
+                .build();
 
-    public Quota getQuota(String username, String password) {
-        Call<Quota> quotaCall = apiService.getQuota(username, password);
-        try {
-            Response<Quota> response = quotaCall.execute();
-            Quota quota = response.body();
-            return quota;
-        } catch (Exception ex) {
-            System.out.println(ex);
+        Request request = new Request.Builder()
+                .url(BASE_URL + "user/quota")
+                .post(formBody)
+                .build();
+
+        Call call = httpClient.newCall(request);
+            try {
+                Response response = call.execute();
+                return response.body().string();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
-        return null;
-    }
 
 }
