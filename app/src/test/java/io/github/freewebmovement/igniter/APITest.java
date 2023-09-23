@@ -9,8 +9,8 @@ import org.junit.runner.RunWith;
 
 import java.util.concurrent.CountDownLatch;
 import io.github.freewebmovement.igniter.connection.API;
-import io.github.freewebmovement.igniter.connection.Quota;
-import io.github.freewebmovement.igniter.connection.ReAPI;
+//import io.github.freewebmovement.igniter.connection.Quota;
+//import io.github.freewebmovement.igniter.connection.ReAPI;
 
 @RunWith(AndroidJUnit4.class)
 
@@ -31,9 +31,9 @@ public class APITest {
         assert (quotaJSON.getInt("upload") == 0);
         assert (quotaJSON.getInt("download") == 0);
 
-        ReAPI reAPI = new ReAPI();
-        reAPI.start(username, password);
-        Quota quota = reAPI.quota;
+//        ReAPI reAPI = new ReAPI();
+//        reAPI.start(username, password);
+//        Quota quota = reAPI.quota;
 
 
     }
