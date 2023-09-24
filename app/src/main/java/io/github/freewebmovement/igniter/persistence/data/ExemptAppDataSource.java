@@ -1,4 +1,4 @@
-package io.github.freewebmovement.igniter.ui.exempt.data;
+package io.github.freewebmovement.igniter.persistence.data;
 
 import androidx.annotation.WorkerThread;
 

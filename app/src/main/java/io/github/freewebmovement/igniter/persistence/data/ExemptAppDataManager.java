@@ -1,4 +1,4 @@
-package io.github.freewebmovement.igniter.ui.exempt.data;
+package io.github.freewebmovement.igniter.persistence.data;
 
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;

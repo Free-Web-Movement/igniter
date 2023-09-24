@@ -7,7 +7,7 @@ import java.util.List;
 
 import io.github.freewebmovement.igniter.common.mvp.BasePresenter;
 import io.github.freewebmovement.igniter.common.mvp.BaseView;
-import io.github.freewebmovement.igniter.ui.exempt.data.AppInfo;
+import io.github.freewebmovement.igniter.persistence.data.AppInfo;
 
 public interface ExemptAppContract {
     interface Presenter extends BasePresenter {

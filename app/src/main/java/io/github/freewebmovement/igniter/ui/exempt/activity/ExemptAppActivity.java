@@ -9,7 +9,7 @@ import androidx.fragment.app.FragmentManager;
 import io.github.freewebmovement.igniter.IgniterApplication;
 import io.github.freewebmovement.igniter.R;
 import io.github.freewebmovement.igniter.ui.exempt.contract.ExemptAppContract;
-import io.github.freewebmovement.igniter.ui.exempt.data.ExemptAppDataManager;
+import io.github.freewebmovement.igniter.persistence.data.ExemptAppDataManager;
 import io.github.freewebmovement.igniter.ui.exempt.fragment.ExemptAppFragment;
 import io.github.freewebmovement.igniter.ui.exempt.presenter.ExemptAppPresenter;
 

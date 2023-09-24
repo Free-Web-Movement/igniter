@@ -10,8 +10,8 @@ import java.util.Set;
 import io.github.freewebmovement.igniter.common.os.Task;
 import io.github.freewebmovement.igniter.common.os.Threads;
 import io.github.freewebmovement.igniter.ui.exempt.contract.ExemptAppContract;
-import io.github.freewebmovement.igniter.ui.exempt.data.AppInfo;
-import io.github.freewebmovement.igniter.ui.exempt.data.ExemptAppDataSource;
+import io.github.freewebmovement.igniter.persistence.data.AppInfo;
+import io.github.freewebmovement.igniter.persistence.data.ExemptAppDataSource;
 
 public class ExemptAppPresenter implements ExemptAppContract.Presenter {
     private final ExemptAppContract.View mView;

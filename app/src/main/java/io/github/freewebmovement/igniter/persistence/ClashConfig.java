@@ -1,5 +1,12 @@
 package io.github.freewebmovement.igniter.persistence;
 
+import static io.github.freewebmovement.igniter.constants.Clash.DEFAULT_TROJAN_PORT;
+import static io.github.freewebmovement.igniter.constants.Clash.KEY_NAME;
+import static io.github.freewebmovement.igniter.constants.Clash.KEY_PORT;
+import static io.github.freewebmovement.igniter.constants.Clash.KEY_PROXIES;
+import static io.github.freewebmovement.igniter.constants.Clash.KEY_SOCKS_PORT;
+import static io.github.freewebmovement.igniter.constants.Clash.KEY_TROJAN_NAME;
+
 import android.util.Log;
 
 import org.yaml.snakeyaml.Yaml;
@@ -17,16 +24,6 @@ import clash.ClashStartOptions;
 
 public class ClashConfig {
     public static String TAG = "ClashConfig";
-    // KEYS
-    private static final String KEY_SOCKS_PORT = "socks-port";
-    private static final String KEY_PROXIES = "proxies";
-    private static final String KEY_NAME = "name";
-    private static final String KEY_PORT = "port";
-    private static final String KEY_TROJAN_NAME = "trojan";
-
-    //    private static final int DEFAULT_PORT = 1080;
-    private static final int DEFAULT_TROJAN_PORT = 1081;
-
     private String filename;
     public Map<String, Object> data;
     Yaml yaml;

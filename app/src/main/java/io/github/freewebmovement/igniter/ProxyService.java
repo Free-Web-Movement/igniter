@@ -22,8 +22,8 @@ import androidx.core.app.NotificationCompat;
 import java.util.Set;
 
 import io.github.freewebmovement.igniter.connection.TestConnection;
-import io.github.freewebmovement.igniter.ui.exempt.data.ExemptAppDataManager;
-import io.github.freewebmovement.igniter.ui.exempt.data.ExemptAppDataSource;
+import io.github.freewebmovement.igniter.persistence.data.ExemptAppDataManager;
+import io.github.freewebmovement.igniter.persistence.data.ExemptAppDataSource;
 import io.github.freewebmovement.igniter.persistence.NetWorkConfig;
 import io.github.freewebmovement.igniter.proxy.aidl.ITrojanService;
 import io.github.freewebmovement.igniter.proxy.aidl.ITrojanServiceCallback;

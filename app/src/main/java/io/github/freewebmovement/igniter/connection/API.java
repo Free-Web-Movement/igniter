@@ -1,10 +1,11 @@
 package io.github.freewebmovement.igniter.connection;
 
 
-import static io.github.freewebmovement.igniter.common.Constant.API_QUOTA_KEY_PASSWORD;
-import static io.github.freewebmovement.igniter.common.Constant.API_QUOTA_KEY_USERNAME;
-import static io.github.freewebmovement.igniter.common.Constant.API_QUOTA_PATH;
-import static io.github.freewebmovement.igniter.common.Constant.BASE_URL;
+import static io.github.freewebmovement.igniter.constants.API.API_QUOTA_KEY_PASSWORD;
+import static io.github.freewebmovement.igniter.constants.API.API_QUOTA_KEY_USERNAME;
+import static io.github.freewebmovement.igniter.constants.API.API_QUOTA_PATH;
+import static io.github.freewebmovement.igniter.constants.API.BASE_URL;
+import static io.github.freewebmovement.igniter.constants.API.SERVER_LIST_URI;
 
 import java.io.IOException;
 
@@ -19,6 +20,21 @@ import okhttp3.Response;
 public class API {
 
     OkHttpClient httpClient = new OkHttpClient();
+
+    public String server() {
+        Request request = new Request.Builder()
+                .url(SERVER_LIST_URI)
+                .build();
+
+        Call call = httpClient.newCall(request);
+        try {
+            Response response = call.execute();
+            assert response.body() != null;
+            return response.body().string();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public String quota(String username, String password) {
         RequestBody formBody = new FormBody.Builder()

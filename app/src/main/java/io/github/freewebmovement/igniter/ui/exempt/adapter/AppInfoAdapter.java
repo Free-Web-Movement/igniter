@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.github.freewebmovement.igniter.R;
-import io.github.freewebmovement.igniter.ui.exempt.data.AppInfo;
+import io.github.freewebmovement.igniter.persistence.data.AppInfo;
 
 public class AppInfoAdapter extends RecyclerView.Adapter<AppInfoAdapter.ViewHolder> {
     private final List<AppInfo> mData = new ArrayList<>();

@@ -33,7 +33,7 @@ import io.github.freewebmovement.igniter.common.app.BaseFragment;
 import io.github.freewebmovement.igniter.common.dialog.LoadingDialog;
 import io.github.freewebmovement.igniter.ui.exempt.adapter.AppInfoAdapter;
 import io.github.freewebmovement.igniter.ui.exempt.contract.ExemptAppContract;
-import io.github.freewebmovement.igniter.ui.exempt.data.AppInfo;
+import io.github.freewebmovement.igniter.persistence.data.AppInfo;
 
 public class ExemptAppFragment extends BaseFragment implements ExemptAppContract.View {
     public static final String TAG = "ExemptAppFragment";

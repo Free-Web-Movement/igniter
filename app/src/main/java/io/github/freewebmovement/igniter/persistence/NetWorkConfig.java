@@ -1,5 +1,14 @@
 package io.github.freewebmovement.igniter.persistence;
 
+import static io.github.freewebmovement.igniter.constants.Net.DNS_SERVERS;
+import static io.github.freewebmovement.igniter.constants.Net.FAKE_IP_RANGE;
+import static io.github.freewebmovement.igniter.constants.Net.IPV6_DNS_SERVERS;
+import static io.github.freewebmovement.igniter.constants.Net.PRIVATE_VLAN4_CLIENT;
+import static io.github.freewebmovement.igniter.constants.Net.PRIVATE_VLAN6_CLIENT;
+import static io.github.freewebmovement.igniter.constants.Net.TUN2SOCKS5_SERVER_HOST;
+import static io.github.freewebmovement.igniter.constants.Net.TUNNEL_TO_SOCKS_LOG_LEVEL;
+import static io.github.freewebmovement.igniter.constants.Net.VPN_MTU;
+
 import android.content.pm.PackageManager;
 import android.net.VpnService;
 import android.os.ParcelFileDescriptor;
@@ -18,25 +27,6 @@ import tun2socks.Tun2socks;
 import tun2socks.Tun2socksStartOptions;
 
 public class NetWorkConfig {
-//    public static final String LOCAL_HOST = "127.0.0.1";
-    private static final int VPN_MTU = 1500;
-    private static final String PRIVATE_VLAN4_CLIENT = "172.19.0.1";
-    private static final String PRIVATE_VLAN6_CLIENT = "fdfe:dcba:9876::1";
-    private static final String TUN2SOCKS5_SERVER_HOST = "127.0.0.1";
-    private static final String FAKE_IP_RANGE = "198.18.0.1/16";
-    private static final String TUNNEL_TO_SOCKS_LOG_LEVEL = "info";
-
-    private static final String[] DNS_SERVERS = {
-            "8.8.8.8",
-            "8.8.4.4",
-            "1.1.1.1",
-            "1.0.0.1"
-    };
-
-    private static final String[] IPV6_DNS_SERVERS = {
-            "2001:4860:4860::8888",
-            "2001:4860:4860::8844"
-    };
 
     public static boolean isPortTaken(final String ip, final int port, final int timeout) {
         try {

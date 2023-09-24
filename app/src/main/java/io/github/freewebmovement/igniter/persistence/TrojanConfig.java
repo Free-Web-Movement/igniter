@@ -1,5 +1,17 @@
 package io.github.freewebmovement.igniter.persistence;
 
+import static io.github.freewebmovement.igniter.constants.Trojan.KEY_CA_CERT_PATH;
+import static io.github.freewebmovement.igniter.constants.Trojan.KEY_CIPHER_LIST;
+import static io.github.freewebmovement.igniter.constants.Trojan.KEY_LOCAL_ADDR;
+import static io.github.freewebmovement.igniter.constants.Trojan.KEY_LOCAL_PORT;
+import static io.github.freewebmovement.igniter.constants.Trojan.KEY_PASSWORD;
+import static io.github.freewebmovement.igniter.constants.Trojan.KEY_REMOTE_ADDR;
+import static io.github.freewebmovement.igniter.constants.Trojan.KEY_REMOTE_PORT;
+import static io.github.freewebmovement.igniter.constants.Trojan.KEY_SSL;
+import static io.github.freewebmovement.igniter.constants.Trojan.KEY_TLS13_CIPHER_LIST;
+import static io.github.freewebmovement.igniter.constants.Trojan.KEY_VERIFY_CERT;
+import static io.github.freewebmovement.igniter.constants.Trojan.SCHEMA;
+
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
@@ -25,28 +37,6 @@ import java.util.List;
 import io.github.freewebmovement.igniter.R;
 
 public class TrojanConfig implements Parcelable {
-
-    // Class Scoped Static Definitions
-
-    // URI
-    public static final String SCHEMA = "trojan";
-
-    // Tags
-    public static final String SINGLE_CONFIG_TAG = "TrojanConfig";
-
-    // Top Level Keys
-    public static final String KEY_LOCAL_ADDR = "local_addr";
-    public static final String KEY_LOCAL_PORT = "local_port";
-    public static final String KEY_REMOTE_ADDR = "remote_addr";
-    public static final String KEY_REMOTE_PORT = "remote_port";
-    public static final String KEY_PASSWORD = "password";
-
-    // SSL Sub Keys
-    public static final String KEY_SSL = "ssl";
-    public static final String KEY_VERIFY_CERT = "verify";
-    public static final String KEY_CA_CERT_PATH = "cert";
-    public static final String KEY_CIPHER_LIST = "cipher";
-    public static final String KEY_TLS13_CIPHER_LIST = "cipher_tls13";
 
     private static TrojanConfig instance = null;
     private static JSONObject defaultJSON = null;
