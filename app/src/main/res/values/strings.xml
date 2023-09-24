@@ -39,9 +39,16 @@
     <string name="tile_starting">Igniter STARTING</string>
     <string name="tile_stopping">Igniter STOPPING</string>
     <string name="tile_off">Igniter OFF</string>
-    <!-- App Bar Menu -->
-    <string name="menu_action_settings">Settings</string>
-    <string name="action_test_connection">Test Connection</string>
+
+    <!-- Main Menu -->
+    <string name="main_menu_action_settings">Settings</string>
+    <string name="main_menu_action_available_server">Available Servers</string>
+    <string name="main_menu_action_server_list">Server List</string>
+    <string name="main_menu_action_test_connection">Test Connection</string>
+    <string name="main_menu_action_exempt_app">Exempt Apps</string>
+    <string name="main_menu_action_clash_editor_file_editor">Clash Config File Editor</string>
+
+
     <string name="action_show_develop_info_logcat">Show develop info in logcat</string>
 
     <string name="server_list_import_file_desc">Import config in file extension (*.txt)</string>
@@ -50,6 +57,7 @@
     <string name="server_list_delete_btn">@string/common_delete</string>
     <string name="server_list_lack_of_camera_permission">Lack of camera permission!</string>
     <string name="server_list_lack_of_read_permission">Lack of read permission!</string>
+
     <string name="main_save_config_btn">Save</string>
     <string name="main_save_success">@string/common_save_success</string>
     <string name="main_save_failed">Save failed</string>
@@ -66,13 +74,11 @@
     <string name="main_exempt_feature_permission_requirement">
         Please grant read and write external storage permission in Igniter application settings first.
     </string>
-    <string name="main_menu_server_list">Server List</string>
 
     <string name="scan_qr_code_success">Add server success</string>
     <string name="scan_qr_code_failed">Cannot recognize trojanURL: %s</string>
     <string name="scan_qr_code">Scan QR</string>
     <string name="scan_qr_code_camera_error">Camera Error</string>
-    <string name="menu_action_exempt_app">Exempt Apps</string>
     <string name="exempt_app_search_title">Search Apps</string>
     <string name="menu_action_exempt_app_hide_system_apps">System Apps</string>
     <string name="exempt_app_exit">Exit</string>

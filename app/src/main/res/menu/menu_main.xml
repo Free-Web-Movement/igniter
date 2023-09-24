@@ -6,28 +6,34 @@
         android:id="@+id/action_view_settings"
         android:icon="@drawable/ic_action_settings"
         android:orderInCategory="100"
-        android:title="@string/menu_action_settings" />
+        android:title="@string/main_menu_action_settings" />
     <item
         android:id="@+id/action_view_server_list"
         android:icon="@drawable/ic_action_server_list"
         android:orderInCategory="100"
-        android:title="@string/main_menu_server_list" />
+        android:title="@string/main_menu_action_server_list" />
 
     <item
-        android:id="@+id/menu_clash_editor"
+        android:id="@+id/action_view_available_servers"
+        android:icon="@drawable/ic_action_available_servers"
+        android:orderInCategory="100"
+        android:title="@string/main_menu_action_available_server" />
+
+    <item
+        android:id="@+id/action_view_clash_editor"
         android:icon="@drawable/ic_action_editor"
         android:orderInCategory="100"
-        android:title="@string/clash_editor_file_editor" />
+        android:title="@string/main_menu_action_clash_editor_file_editor" />
 
     <item
-        android:id="@+id/action_exempt_app"
+        android:id="@+id/action_view_exempt_app"
         android:icon="@drawable/ic_action_apps"
         android:orderInCategory="100"
-        android:title="@string/menu_action_exempt_app" />
+        android:title="@string/main_menu_action_exempt_app" />
 
     <item
-        android:id="@+id/action_test_connection"
+        android:id="@+id/action_view_test_connection"
         android:icon="@drawable/ic_action_connection"
         android:orderInCategory="100"
-        android:title="@string/action_test_connection" />
+        android:title="@string/main_menu_action_test_connection" />
 </menu>

@@ -432,10 +432,14 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
                 intent = new Intent(this, SettingsActivity.class);
                 startActivity(intent);
                 return true;
-            case (R.id.action_test_connection):
+            case (R.id.action_view_available_servers):
+                intent = new Intent(this, ServersActivity.class);
+                startActivity(intent);
+                return true;
+            case (R.id.action_view_test_connection):
                 testConnection();
                 return true;
-            case (R.id.menu_clash_editor):
+            case (R.id.action_view_clash_editor):
                 intent = new Intent(this, ClashFileEditorActivity.class);
                 startActivity(intent);
                 return true;
@@ -443,7 +447,7 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
                 clearEditTextFocus();
                 serverListLauncher.launch(new Intent(this, ServerListActivity.class));
                 return true;
-            case (R.id.action_exempt_app):
+            case (R.id.action_view_exempt_app):
                 exemptAppLauncher.launch(new Intent(this, ExemptAppActivity.class));
                 return true;
             default:
