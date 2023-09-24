@@ -11,7 +11,7 @@ import android.os.RemoteException;
 
 import androidx.annotation.NonNull;
 
-import io.github.freewebmovement.igniter.ProxyService;
+import io.github.freewebmovement.igniter.services.ProxyService;
 import io.github.freewebmovement.igniter.R;
 import io.github.freewebmovement.igniter.proxy.aidl.ITrojanService;
 import io.github.freewebmovement.igniter.proxy.aidl.ITrojanServiceCallback;

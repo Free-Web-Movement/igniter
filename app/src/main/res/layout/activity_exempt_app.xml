@@ -5,6 +5,6 @@
     android:id="@+id/parent_fl"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.exempt.activity.ExemptAppActivity">
+    tools:context=".activities.exempt.activity.ExemptAppActivity">
 
 </FrameLayout>

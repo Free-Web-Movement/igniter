@@ -2,17 +2,12 @@ package io.github.freewebmovement.igniter;
 
 import androidx.test.runner.AndroidJUnit4;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.concurrent.CountDownLatch;
 import io.github.freewebmovement.igniter.connection.API;
 
 @RunWith(AndroidJUnit4.class)
@@ -20,22 +15,20 @@ import io.github.freewebmovement.igniter.connection.API;
 public class APITest {
 
     @Test
-    public void shouldGetServer() throws InterruptedException, JSONException {
+    public void shouldGetServer() throws JSONException {
         API api = new API();
         String serversStr = api.server();
         JSONArray servers = new JSONArray(serversStr);
-        assert (servers != null);
         assert (servers.length() >= 1);
 
     }
     @Test
-    public void shouldGetQuota() throws InterruptedException, JSONException {
+    public void shouldGetQuota() throws JSONException {
         String username = "sammy";
         String password = "1234";
         API api = new API();
         String quotaStr = api.quota(username, password);
         JSONObject quotaJSON = new JSONObject(quotaStr);
-        assert (quotaJSON != null);
         assert (quotaJSON.getString("username").equals(username));
         assert (quotaJSON.getInt("quota") == 0);
         assert (quotaJSON.getInt("upload") == 0);

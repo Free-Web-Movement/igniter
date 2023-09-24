@@ -1,9 +1,6 @@
 package io.github.freewebmovement.igniter;
 
 import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertFalse;
-
-import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
 
@@ -12,8 +9,6 @@ import androidx.test.runner.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.io.File;
 
 import io.github.freewebmovement.igniter.persistence.Storage;
 

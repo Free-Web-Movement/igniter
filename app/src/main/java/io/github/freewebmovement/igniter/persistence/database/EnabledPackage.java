@@ -11,4 +11,8 @@ public class EnabledPackage {
     @ColumnInfo(name = "package_name")
     @NonNull
     public String packageName;
+
+    public EnabledPackage() {
+        packageName = "";
+    }
 }

@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".ui.exempt.fragment.ExemptAppFragment">
+    tools:context=".activities.exempt.fragment.ExemptAppFragment">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/exemptAppTopBar"
