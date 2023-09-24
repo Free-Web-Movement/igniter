@@ -2,6 +2,11 @@ package io.github.freewebmovement.igniter;
 
 import androidx.test.runner.AndroidJUnit4;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -16,21 +21,11 @@ public class APITest {
 
     @Test
     public void shouldGetServer() throws InterruptedException, JSONException {
-//        String username = "sammy";
-//        String password = "1234";
-//        API api = new API();
-//        String serversStr = api.server();
-//        JSONObject servers = new JSONObject(serversStr);
-//        assert (servers != null);
-//        assert (quotaJSON.getString("username").equals(username));
-//        assert (quotaJSON.getInt("quota") == 0);
-//        assert (quotaJSON.getInt("upload") == 0);
-//        assert (quotaJSON.getInt("download") == 0);
-
-//        ReAPI reAPI = new ReAPI();
-//        reAPI.start(username, password);
-//        Quota quota = reAPI.quota;
-
+        API api = new API();
+        String serversStr = api.server();
+        JSONArray servers = new JSONArray(serversStr);
+        assert (servers != null);
+        assert (servers.length() >= 1);
 
     }
     @Test
@@ -45,11 +40,5 @@ public class APITest {
         assert (quotaJSON.getInt("quota") == 0);
         assert (quotaJSON.getInt("upload") == 0);
         assert (quotaJSON.getInt("download") == 0);
-
-//        ReAPI reAPI = new ReAPI();
-//        reAPI.start(username, password);
-//        Quota quota = reAPI.quota;
-
-
     }
 }

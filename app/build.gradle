@@ -1,6 +1,6 @@
 apply plugin: 'com.android.application'
 android {
-    compileSdkVersion 33
+    compileSdk 33
     defaultConfig {
         applicationId "io.github.freewebmovement.igniter"
         minSdkVersion 21
@@ -45,6 +45,14 @@ android {
             jniLibs.srcDirs = ['libs']
         }
     }
+    tasks.withType(Test) {
+        useJUnitPlatform()
+        testLogging {
+            exceptionFormat "full"
+            events "started", "skipped", "passed", "failed"
+            showStandardStreams true
+        }
+    }
     testOptions {
         unitTests.returnDefaultValues = true
         unitTests.includeAndroidResources = true
@@ -87,6 +95,10 @@ dependencies {
     androidTestImplementation "androidx.test:rules:1.5.0"
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+
+    testImplementation('org.junit.jupiter:junit-jupiter-api:5.9.3')
+    testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.9.3')
+    testRuntimeOnly('org.junit.vintage:junit-vintage-engine:5.4.0')
 
     implementation files('src/libs/golibs.aar')
 }
