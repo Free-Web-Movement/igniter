@@ -25,26 +25,10 @@ import io.github.freewebmovement.igniter.R;
 
 public class Storage {
     public static final String TAG = "STORAGE";
-    Context context;
-    public static final int CACHE = 0;
-    public static final int FILES = 1;
-
-    public File[] dirs = new File[2];
+    public Path path;
 
     public Storage(Context context) {
-        this.context = context;
-        dirs[CACHE] = context.getCacheDir();
-        dirs[FILES] = context.getFilesDir();
-    }
-
-    public String getPath(int type, String filename) {
-        switch (type) {
-            case CACHE:
-            case FILES:
-                return new File(dirs[type], filename).getPath();
-            default:
-                return null;
-        }
+        this.path = new Path(context);
     }
 
     public static void print(String filename, String tag) {
@@ -105,41 +89,13 @@ public class Storage {
         }
     }
 
-    public String getCountryMmdbPath() {
-        return getPath(FILES, context.getString(R.string.country_mmdb_config));
-    }
-
-    public String getClashConfigPath() {
-        return getPath(FILES, context.getString(R.string.clash_config));
-    }
-
-    public String getTrojanConfigPath() {
-        return getPath(FILES, context.getString(R.string.trojan_config));
-    }
-
-    public String getTrojanConfigListPath() {
-        return getPath(FILES, context.getString(R.string.trojan_list_config));
-    }
-
-    public String getExemptedAppListPath() {
-        return getPath(FILES, context.getString(R.string.exempted_app_list_config));
-    }
-
-    public String getCaCertPath() {
-        return getPath(FILES, context.getString(R.string.ca_cert_config));
-    }
-
-    public String getSystemAppsPath() {
-        return getPath(FILES, context.getString(R.string.system_apps_config));
-    }
-
     public boolean isExternalWritable() {
         String[] permissions = {
                 Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
         };
         for (String permission : permissions) {
-            if (ContextCompat.checkSelfPermission(context, permission) !=
+            if (ContextCompat.checkSelfPermission(path.context, permission) !=
                     PackageManager.PERMISSION_GRANTED) {
                 return false;
             }
@@ -149,9 +105,9 @@ public class Storage {
 
     public void reset() {
         String[] paths = {
-                getCaCertPath(),
-                getCountryMmdbPath(),
-                getClashConfigPath()
+                path.caCert,
+                path.countryMmdb,
+                path.clashConfig
         };
         int[] ids = {
                 R.raw.cacert,
@@ -166,7 +122,7 @@ public class Storage {
 
     public byte[] readRawBytes(int id) {
         try {
-            Resources res = context.getResources();
+            Resources res = path.context.getResources();
             InputStream inputStream = res.openRawResource(id);
             byte[] b = new byte[inputStream.available()];
             inputStream.read(b);
@@ -194,9 +150,9 @@ public class Storage {
 
     public void deleteConfigs() {
         String[] paths = {
-                getCaCertPath(),
-                getCountryMmdbPath(),
-                getClashConfigPath()
+                path.caCert,
+                path.countryMmdb,
+                path.clashConfig
         };
 
         for (String filename : paths) {
@@ -206,12 +162,13 @@ public class Storage {
     }
 
     public void check() {
+
         String[] paths = {
-                getCaCertPath(),
-                getCountryMmdbPath(),
-                getClashConfigPath(),
-                getTrojanConfigPath(),
-                getSystemAppsPath()
+                path.caCert,
+                path.countryMmdb,
+                path.clashConfig,
+                path.trojanConfig,
+                path.systemApps
         };
         int[] ids = {
                 R.raw.cacert,

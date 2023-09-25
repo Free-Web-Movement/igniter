@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
                         assert data != null;
                         final TrojanConfig temp = data.getParcelableExtra(ServerListActivity.KEY_TROJAN_CONFIG);
                         if (temp != null) {
-                            temp.setCaCertPath(app.storage.getCaCertPath());
+                            temp.setCaCertPath(app.storage.path.caCert);
                             app.trojanConfig.fromJSON(temp.toJSON());
                             runOnUiThread(() -> {
                                 remoteAddressText.setText(app.trojanConfig.getRemoteAddr());
@@ -258,7 +258,7 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
             if (proxyState == ProxyService.STATE_NONE || proxyState == ProxyService.STOPPED) {
                 TrojanConfig.write(
                         app.trojanConfig,
-                        app.storage.getTrojanConfigPath()
+                        app.storage.path.trojanConfig
                 );
                 startVPN();
             }
@@ -278,9 +278,9 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
             Threads.instance().runOnWorkThread(new Task() {
                 @Override
                 public void onRun() {
-                    TrojanConfig.write(app.trojanConfig, app.storage.getTrojanConfigPath());
+                    TrojanConfig.write(app.trojanConfig, app.storage.path.trojanConfig);
                     try {
-                        app.clashConfig.save(app.storage.getClashConfigPath());
+                        app.clashConfig.save(app.storage.path.clashConfig);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

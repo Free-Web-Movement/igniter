@@ -41,7 +41,7 @@ public class IgniterApplication extends Application {
         storage.check();
         // Make sure the CA file exists;
         trojanConfig = TrojanConfig.getInstance(storage);
-        clashConfig = new ClashConfig(storage.getClashConfigPath());
+        clashConfig = new ClashConfig(storage.path.clashConfig);
         systemAppsConfig = new SystemAppsConfig(this);
     }
 

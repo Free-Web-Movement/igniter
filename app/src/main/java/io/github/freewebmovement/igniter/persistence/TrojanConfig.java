@@ -58,7 +58,7 @@ public class TrojanConfig implements Parcelable {
         }
         defaultJSON = storage.readRawJSON(R.raw.config);
 
-        String filename = storage.getTrojanConfigPath();
+        String filename = storage.path.trojanConfig;
         TrojanConfig trojanConfig = TrojanConfig.read(filename);
 
         if (trojanConfig == null) {
@@ -66,7 +66,7 @@ public class TrojanConfig implements Parcelable {
             TrojanConfig.write(trojanConfig, filename);
         }
 
-        trojanConfig.setCaCertPath(storage.getCaCertPath());
+        trojanConfig.setCaCertPath(storage.path.caCert);
         instance = trojanConfig;
         return  instance;
     }

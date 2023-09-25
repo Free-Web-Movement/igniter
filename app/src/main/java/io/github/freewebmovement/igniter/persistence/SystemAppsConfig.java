@@ -8,7 +8,7 @@ public class SystemAppsConfig {
     IgniterApplication app;
     public SystemAppsConfig(IgniterApplication app) {
         this.app = app;
-        records = Storage.readLines(app.storage.getSystemAppsPath());
+        records = Storage.readLines(app.storage.path.systemApps);
     }
 
     public String[] getRecords() {

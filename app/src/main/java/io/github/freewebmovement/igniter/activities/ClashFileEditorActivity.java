@@ -22,7 +22,7 @@ public class ClashFileEditorActivity extends AppCompatActivity {
     }
 
     public void onLoad(View view) {
-        String clashConfigText = new String(Storage.read(app.storage.getClashConfigPath()));
+        String clashConfigText = new String(Storage.read(app.storage.path.clashConfig));
         clashConfigEditor.setText(clashConfigText);
     }
 
@@ -32,6 +32,6 @@ public class ClashFileEditorActivity extends AppCompatActivity {
     }
 
     public void onSave(View view) {
-       Storage.write(app.storage.getClashConfigPath(), clashConfigEditor.getText().toString().getBytes());
+       Storage.write(app.storage.path.clashConfig, clashConfigEditor.getText().toString().getBytes());
     }
 }

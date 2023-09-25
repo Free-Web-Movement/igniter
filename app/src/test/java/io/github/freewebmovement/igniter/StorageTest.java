@@ -10,6 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import io.github.freewebmovement.igniter.persistence.Path;
 import io.github.freewebmovement.igniter.persistence.Storage;
 
 @RunWith(AndroidJUnit4.class)
@@ -24,11 +25,12 @@ public class StorageTest {
     public void shouldInit() {
 
         Storage storage = new Storage(instrumentationContext);
+        Path path = storage.path;
 
         String[] paths = {
-                storage.getCaCertPath(),
-                storage.getCountryMmdbPath(),
-                storage.getClashConfigPath()
+                path.caCert,
+                path.countryMmdb,
+                path.clashConfig
         };
 
         int[] ids = {

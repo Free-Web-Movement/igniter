@@ -59,7 +59,7 @@ public class NetWorkConfig {
     }
 
     public static String startService(IgniterApplication app, int fd) {
-        JNIHelper.start(app.storage.getTrojanConfigPath());
+        JNIHelper.start(app.storage.path.trojanConfig);
 
         boolean enableClash = app.trojanPreferences.enableClash;
         boolean enableIPV6 = app.trojanPreferences.enableIPV6;
