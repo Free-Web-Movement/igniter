@@ -6,6 +6,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.VpnService;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.util.Log;
@@ -36,6 +37,7 @@ import com.google.android.material.snackbar.Snackbar;
 import java.io.IOException;
 
 import io.github.freewebmovement.igniter.IgniterApplication;
+import io.github.freewebmovement.igniter.common.UnifyVersions;
 import io.github.freewebmovement.igniter.services.ProxyService;
 import io.github.freewebmovement.igniter.R;
 import io.github.freewebmovement.igniter.common.os.Task;
@@ -77,7 +79,15 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
                         Intent data = result.getData();
                         trojanURLText.setText("");
                         assert data != null;
-                        final TrojanConfig temp = data.getParcelableExtra(ServerListActivity.KEY_TROJAN_CONFIG);
+                        TrojanConfig temp = UnifyVersions.getParcel(getIntent(),
+                                ServerListActivity.KEY_TROJAN_CONFIG,
+                                TrojanConfig.class
+                        );
+//                        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+//                            temp = getIntent().getParcelableExtra(ServerListActivity.KEY_TROJAN_CONFIG, TrojanConfig.class);
+//                        } else {
+//                            temp = getIntent().getParcelableExtra(ServerListActivity.KEY_TROJAN_CONFIG);
+//                        }
                         if (temp != null) {
                             temp.setCaCertPath(app.storage.path.caCert);
                             app.trojanConfig.fromJSON(temp.toJSON());

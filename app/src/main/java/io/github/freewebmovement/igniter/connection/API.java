@@ -7,8 +7,13 @@ import static io.github.freewebmovement.igniter.constants.API.API_QUOTA_PATH;
 import static io.github.freewebmovement.igniter.constants.API.BASE_URL;
 import static io.github.freewebmovement.igniter.constants.API.SERVER_LIST_URI;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import java.io.IOException;
 
+import io.github.freewebmovement.igniter.models.Server;
 import okhttp3.Call;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
@@ -21,7 +26,7 @@ public class API {
 
     OkHttpClient httpClient = new OkHttpClient();
 
-    public String server() {
+    public Server[] server() {
         Request request = new Request.Builder()
                 .url(SERVER_LIST_URI)
                 .build();
@@ -30,7 +35,11 @@ public class API {
         try {
             Response response = call.execute();
             assert response.body() != null;
-            return response.body().string();
+            String body = response.body().string();
+            Gson gson = new Gson();
+//            JsonParser parser = new JsonParser();
+//            JsonObject object = (JsonObject) parser.parse(body);
+            return gson.fromJson(body, Server[].class);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -17,9 +17,7 @@ public class SettingsActivity extends AppCompatActivity {
     private SwitchCompat ipv6Switch;
     private SwitchCompat clashSwitch;
     private SwitchCompat enableLanSwitch;
-
     private SwitchCompat enableAutoStartSwitch;
-
     private SwitchCompat enableBootStartSwitch;
 
     IgniterApplication app;

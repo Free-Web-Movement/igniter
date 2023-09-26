@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import io.github.freewebmovement.igniter.connection.API;
+import io.github.freewebmovement.igniter.models.Server;
 
 @RunWith(AndroidJUnit4.class)
 
@@ -17,9 +18,8 @@ public class APITest {
     @Test
     public void shouldGetServer() throws JSONException {
         API api = new API();
-        String serversStr = api.server();
-        JSONArray servers = new JSONArray(serversStr);
-        assert (servers.length() >= 1);
+        Server[] servers = api.server();
+        assert (servers.length >= 1);
 
     }
     @Test
