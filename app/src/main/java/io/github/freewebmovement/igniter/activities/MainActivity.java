@@ -6,7 +6,6 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.VpnService;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.util.Log;
@@ -50,6 +49,12 @@ import io.github.freewebmovement.igniter.proxy.aidl.ITrojanService;
 import io.github.freewebmovement.igniter.activities.servers.activity.ServerListActivity;
 import io.github.freewebmovement.igniter.activities.servers.data.ServerListDataManager;
 import io.github.freewebmovement.igniter.activities.servers.data.ServerListDataSource;
+import io.github.freewebmovement.igniter.ui.component.textview.URIEditText;
+import io.github.freewebmovement.igniter.ui.component.textview.listener.LocalOrClashPort;
+import io.github.freewebmovement.igniter.ui.component.textview.listener.Password;
+import io.github.freewebmovement.igniter.ui.component.textview.listener.RemoteAddress;
+import io.github.freewebmovement.igniter.ui.component.textview.listener.RemotePort;
+import io.github.freewebmovement.igniter.ui.component.textview.listener.TextViewListener;
 
 public class MainActivity extends AppCompatActivity implements TrojanConnection.Callback {
     private static final String TAG = "MainActivity";
@@ -83,11 +88,6 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
                                 ServerListActivity.KEY_TROJAN_CONFIG,
                                 TrojanConfig.class
                         );
-//                        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-//                            temp = getIntent().getParcelableExtra(ServerListActivity.KEY_TROJAN_CONFIG, TrojanConfig.class);
-//                        } else {
-//                            temp = getIntent().getParcelableExtra(ServerListActivity.KEY_TROJAN_CONFIG);
-//                        }
                         if (temp != null) {
                             temp.setCaCertPath(app.storage.path.caCert);
                             app.trojanConfig.fromJSON(temp.toJSON());
@@ -134,61 +134,17 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
     private final TrojanConnection connection = new TrojanConnection(false);
     private ITrojanService trojanService;
     private ServerListDataSource serverListDataManager;
-    private final TextViewListener remoteAddressTextListener = new TextViewListener() {
-        @Override
-        protected void onTextChanged(String before, String old, String aNew, String after) {
-            // update TextView
-            startUpdates(); // to prevent infinite loop.
-            if (remoteAddressText.hasFocus()) {
-                app.trojanConfig.setRemoteAddr(remoteAddressText.getText().toString());
-            }
-            endUpdates();
-        }
-    };
-    private final TextViewListener remotePortTextListener = new TextViewListener() {
-        @Override
-        protected void onTextChanged(String before, String old, String aNew, String after) {
-            // update TextView
-            startUpdates(); // to prevent infinite loop.
-            if (remotePortText.hasFocus()) {
-                String portStr = remotePortText.getText().toString();
-                try {
-                    int port = Integer.parseInt(portStr);
-                    app.trojanConfig.setRemotePort(port);
-                } catch (NumberFormatException e) {
-                    // Ignore when we get invalid number
-                    e.printStackTrace();
-                }
-            }
-            endUpdates();
-        }
-    };
 
-    private final TextViewListener localOrClashPortTextListener = new TextViewListener() {
-        @Override
-        protected void onTextChanged(String before, String old, String aNew, String after) {
-            // update TextView
-            startUpdates(); // to prevent infinite loop.
-            if (localOrClashPortText.hasFocus()) {
-                String portStr = localOrClashPortText.getText().toString();
-                int port = Integer.parseInt(portStr);
-                NetWorkConfig.setPort(app, port);
-            }
-            endUpdates();
-        }
-    };
+    private TextViewListener remoteAddressTextListener;
 
-    private final TextViewListener passwordTextListener = new TextViewListener() {
-        @Override
-        protected void onTextChanged(String before, String old, String aNew, String after) {
-            // update TextView
-            startUpdates(); // to prevent infinite loop.
-            if (passwordText.hasFocus()) {
-                app.trojanConfig.setPassword(passwordText.getText().toString());
-            }
-            endUpdates();
-        }
-    };
+    private TextViewListener remotePortTextListener;
+
+    private TextViewListener localOrClashPortTextListener;
+
+    private TextViewListener passwordTextListener;
+
+    private URIEditText uriEditText;
+
 
     private void updateViews(int state) {
         proxyState = state;
@@ -237,11 +193,17 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
         startButton = findViewById(R.id.imageButton_start);
         ImageButton stopButton = findViewById(R.id.imageButton_stop);
 
-        remoteAddressText.addTextChangedListener(remoteAddressTextListener);
 
-        remotePortText.addTextChangedListener(remotePortTextListener);
-        localOrClashPortText.addTextChangedListener(localOrClashPortTextListener);
-        passwordText.addTextChangedListener(passwordTextListener);
+        // Init Listeners
+
+        remoteAddressTextListener = new RemoteAddress(remoteAddressText, app);
+
+        remotePortTextListener = new RemotePort(remoteAddressText, app);
+
+        localOrClashPortTextListener = new LocalOrClashPort(localOrClashPortText, app);
+
+        passwordTextListener = new Password(passwordText, app);
+
 
         passwordText.setOnFocusChangeListener((v, hasFocus) -> {
             if (!hasFocus) {
@@ -511,40 +473,9 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
 
     public void initURIEditor() {
 
-        trojanURLText.setOnLongClickListener(v -> {
-            trojanURLText.selectAll();
-            return false;
-        });
+        uriEditText = new URIEditText(trojanURLText, app);
 
-        trojanURLText.setOnFocusChangeListener((v, hasFocus) -> {
-            if (!hasFocus) {
-                trojanURLText.setInputType(EditorInfo.TYPE_CLASS_TEXT | EditorInfo.TYPE_TEXT_VARIATION_PASSWORD);
-            } else {
-                // it seems we don't have to place cursor on the end for Trojan URL
-                trojanURLText.setInputType(EditorInfo.TYPE_CLASS_TEXT);
-            }
-        });
-
-        trojanURLText.addTextChangedListener(new TextViewListener() {
-            @Override
-            protected void onTextChanged(String before, String old, String aNew, String after) {
-                // update TextView
-                startUpdates(); // to prevent infinite loop.
-                TrojanConfig parsedConfig = TrojanConfig.fromURIString(before + aNew + after);
-                if (parsedConfig != null) {
-                    String remoteAddress = parsedConfig.getRemoteAddr();
-                    int remotePort = parsedConfig.getRemotePort();
-                    String password = parsedConfig.getPassword();
-
-                    app.trojanConfig.setRemoteAddr(remoteAddress);
-                    app.trojanConfig.setRemotePort(remotePort);
-                    app.trojanConfig.setPassword(password);
-                }
-                endUpdates();
-            }
-        });
-
-        TextViewListener trojanConfigChangedTextViewListener = new TextViewListener() {
+        TextViewListener trojanConfigChangedTextViewListener = new TextViewListener(trojanURLText, app) {
             @Override
             protected void onTextChanged(String before, String old, String aNew, String after) {
                 startUpdates();
