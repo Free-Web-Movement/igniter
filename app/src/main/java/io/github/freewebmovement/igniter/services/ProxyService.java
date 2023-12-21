@@ -41,7 +41,6 @@ public class ProxyService extends VpnService implements TestConnection.OnResultL
     public static final int STOPPED = 3;
     public static final int PROXY_SERVICE_STATUS_NOTIFY_MSG_ID = 114514;
     public IgniterApplication app;
-    int flags;
 
     @IntDef({STATE_NONE, STARTING, STARTED, STOPPING, STOPPED})
     public @interface ProxyState {
@@ -122,11 +121,6 @@ public class ProxyService extends VpnService implements TestConnection.OnResultL
         filter.addAction(getString(R.string.stop_service));
         registerReceiver(mStopBroadcastReceiver, filter);
         app = IgniterApplication.getApplication();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            flags = PendingIntent.FLAG_IMMUTABLE;
-        } else {
-            flags = PendingIntent.FLAG_UPDATE_CURRENT;
-        }
     }
 
     @Override
@@ -203,7 +197,7 @@ public class ProxyService extends VpnService implements TestConnection.OnResultL
 
         PendingIntent pendingOpenMainActivityIntent = PendingIntent.getActivity(this,
                 0, openMainActivityIntent,
-                flags);
+                PendingIntent.FLAG_IMMUTABLE);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
@@ -258,7 +252,7 @@ public class ProxyService extends VpnService implements TestConnection.OnResultL
 
         Intent openMainActivityIntent = new Intent(this, MainActivity.class);
         openMainActivityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        PendingIntent pendingOpenMainActivityIntent = PendingIntent.getActivity(this, 0, openMainActivityIntent, flags);
+        PendingIntent pendingOpenMainActivityIntent = PendingIntent.getActivity(this, 0, openMainActivityIntent, PendingIntent.FLAG_IMMUTABLE);
         final String channelId = getString(R.string.notification_channel_id);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)

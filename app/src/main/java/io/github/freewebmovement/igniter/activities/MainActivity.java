@@ -198,7 +198,7 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
 
         remoteAddressTextListener = new RemoteAddress(remoteAddressText, app);
 
-        remotePortTextListener = new RemotePort(remoteAddressText, app);
+        remotePortTextListener = new RemotePort(remotePortText, app);
 
         localOrClashPortTextListener = new LocalOrClashPort(localOrClashPortText, app);
 
