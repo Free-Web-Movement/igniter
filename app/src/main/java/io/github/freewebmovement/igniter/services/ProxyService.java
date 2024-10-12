@@ -52,7 +52,7 @@ public class ProxyService extends VpnService implements TestConnection.OnResultL
     private ParcelFileDescriptor pfd;
     private ExemptAppDataSource mExemptAppDataSource;
     /**
-     * Receives stop event.
+     * Receives stop event.ate
      */
     private final BroadcastReceiver mStopBroadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -236,6 +236,10 @@ public class ProxyService extends VpnService implements TestConnection.OnResultL
         packageNames.add(getPackageName());
 
         VpnService.Builder b = new VpnService.Builder();
+        b.addDnsServer("8.8.8.8");
+        b.addDnsServer("8.8.4.4");
+        b.addDnsServer("1.1.1.1");
+//        b.addDnsServer("1.1.1.1");
         pfd = NetWorkConfig.establish(
                 app,
                 b,
