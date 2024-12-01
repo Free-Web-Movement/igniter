@@ -2,11 +2,11 @@ apply plugin: 'com.android.application'
 apply plugin: 'jacoco'
 
 android {
-    compileSdk 34
+    compileSdk 35
     defaultConfig {
         applicationId "io.github.freewebmovement.igniter"
         minSdkVersion 21
-        targetSdkVersion 34
+        targetSdkVersion 35
         versionCode 1
         versionName "0.1.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

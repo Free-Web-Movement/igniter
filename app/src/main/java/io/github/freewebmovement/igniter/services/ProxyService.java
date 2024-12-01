@@ -8,6 +8,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ServiceInfo;
 import android.net.VpnService;
 import android.os.Build;
 import android.os.IBinder;
@@ -119,7 +120,12 @@ public class ProxyService extends VpnService implements TestConnection.OnResultL
         Log.i(TAG, "onCreate");
         IntentFilter filter = new IntentFilter();
         filter.addAction(getString(R.string.stop_service));
-        registerReceiver(mStopBroadcastReceiver, filter);
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            // only for gingerbread and newer versions
+            registerReceiver(mStopBroadcastReceiver, filter, RECEIVER_EXPORTED);
+        } else {
+            registerReceiver(mStopBroadcastReceiver, filter);
+        }
         app = IgniterApplication.getApplication();
     }
 
@@ -216,7 +222,12 @@ public class ProxyService extends VpnService implements TestConnection.OnResultL
         // it's required to create a notification channel before startForeground on SDK >= Android O
         createNotificationChannel(channelId);
         Log.i(TAG, "Start foreground notification");
-        startForeground(PROXY_SERVICE_STATUS_NOTIFY_MSG_ID, builder.build());
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            // only for gingerbread and newer versions
+            startForeground(PROXY_SERVICE_STATUS_NOTIFY_MSG_ID, builder.build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED);
+        } else {
+            startForeground(PROXY_SERVICE_STATUS_NOTIFY_MSG_ID, builder.build());
+        }
     }
 
     @Override
