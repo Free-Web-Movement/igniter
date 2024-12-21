@@ -1,5 +1,6 @@
 package io.github.freewebmovement.igniter.activities.exempt.adapter;
 
+import android.annotation.SuppressLint;
 import android.content.res.Resources;
 import android.graphics.Rect;
 import androidx.annotation.NonNull;
@@ -50,6 +51,7 @@ public class AppInfoAdapter extends RecyclerView.Adapter<AppInfoAdapter.ViewHold
         notifyItemRemoved(position);
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     public void refreshData(List<AppInfo> data) {
         mData.clear();
         mData.addAll(data);

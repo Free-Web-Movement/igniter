@@ -69,6 +69,11 @@ public class ExemptAppDataManager implements ExemptAppDataSource {
             installedAppPackageNames.add(applicationInfo.packageName);
         }
         Set<String> ret = new HashSet<>();
+        if (exemptAppPackageNames.length == 0 ) {
+            //exempt all packages by default!
+            saveExemptAppInfoSet(installedAppPackageNames);
+            return installedAppPackageNames;
+        }
         for (String packageName : exemptAppPackageNames) {
             if (installedAppPackageNames.contains(packageName)) {
                 ret.add(packageName);
