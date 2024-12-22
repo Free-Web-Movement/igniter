@@ -46,11 +46,6 @@ public class AppInfoAdapter extends RecyclerView.Adapter<AppInfoAdapter.ViewHold
         }
     }
 
-    public void removeData(int position) {
-        mData.remove(position);
-        notifyItemRemoved(position);
-    }
-
     @SuppressLint("NotifyDataSetChanged")
     public void refreshData(List<AppInfo> data) {
         mData.clear();
@@ -71,7 +66,7 @@ public class AppInfoAdapter extends RecyclerView.Adapter<AppInfoAdapter.ViewHold
         void onToggle(boolean enabled, AppInfo appInfo, int position);
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder implements CompoundButton.OnCheckedChangeListener {
+public class ViewHolder extends RecyclerView.ViewHolder implements CompoundButton.OnCheckedChangeListener {
         private final TextView mNameTv;
         private final SwitchCompat mExemptSwitch;
         private AppInfo mCurrentInfo;
