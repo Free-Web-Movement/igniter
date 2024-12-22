@@ -8,7 +8,7 @@ public class AppInfo implements Cloneable {
     private String appName;
     private Drawable icon;
     private String packageName;
-    private boolean exempt;
+    private boolean enabled;
 
     public String getAppName() {
         return appName;
@@ -34,12 +34,12 @@ public class AppInfo implements Cloneable {
         this.packageName = packageName;
     }
 
-    public boolean isExempt() {
-        return exempt;
+    public boolean getEnabled() {
+        return enabled;
     }
 
-    public void setExempt(boolean exempt) {
-        this.exempt = exempt;
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     @NonNull
@@ -49,7 +49,7 @@ public class AppInfo implements Cloneable {
         appInfo.appName = appName;
         appInfo.icon = icon;
         appInfo.packageName = packageName;
-        appInfo.exempt = exempt;
+        appInfo.enabled = enabled;
         return appInfo;
     }
 }

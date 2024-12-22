@@ -68,7 +68,7 @@ public class AppInfoAdapter extends RecyclerView.Adapter<AppInfoAdapter.ViewHold
     }
 
     public interface OnItemOperationListener {
-        void onToggle(boolean exempt, AppInfo appInfo, int position);
+        void onToggle(boolean enabled, AppInfo appInfo, int position);
     }
 
     class ViewHolder extends RecyclerView.ViewHolder implements CompoundButton.OnCheckedChangeListener {
@@ -96,7 +96,7 @@ public class AppInfoAdapter extends RecyclerView.Adapter<AppInfoAdapter.ViewHold
             appInfo.getIcon().setBounds(mIconBound);
             mNameTv.setCompoundDrawables(appInfo.getIcon(), null, null, null);
             mExemptSwitch.setOnCheckedChangeListener(null);
-            mExemptSwitch.setChecked(appInfo.isExempt());
+            mExemptSwitch.setChecked(appInfo.getEnabled());
             mExemptSwitch.setOnCheckedChangeListener(this);
         }
     }

@@ -45,7 +45,7 @@
     <string name="main_menu_action_available_server">Available Servers</string>
     <string name="main_menu_action_server_list">Server List</string>
     <string name="main_menu_action_test_connection">Test Connection</string>
-    <string name="main_menu_action_exempt_app">Exempt Apps</string>
+    <string name="main_menu_action_exempt_app">Enabled Apps</string>
     <string name="main_menu_action_clash_editor_file_editor">Clash Config File Editor</string>
 
 
