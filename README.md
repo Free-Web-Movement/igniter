@@ -12,13 +12,13 @@ This project is a first and important step towards the free web. It allows peopl
 
 The current name Igniter will be replace by `free web proxy` when most of the original source codes are migrated.
 
-## Current Plans
+## Current Plans & Status
 
-1. Separation of Trojan configuration from global settings
-2. Enabling the ordered Trojan server list and default server selection.
-3. Enable real-time connection status
-4. Minimize running modules to enable Android TV/Auto/Watch support
-5. Enable share servers with QRCODE and URI
+1. - [x] Separation of Trojan configuration from global settings []
+2. - [ ] Enabling the ordered Trojan server list and default server selection.
+3. - [ ] Enable real-time connection status
+4. - [x] Minimize running modules to enable Android TV/Auto/Watch support
+5. - [ ] Enable share servers with QRCODE and URI
 
 
 ## Get Code
