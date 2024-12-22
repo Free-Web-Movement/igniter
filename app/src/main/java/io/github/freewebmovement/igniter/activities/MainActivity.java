@@ -43,7 +43,6 @@ import io.github.freewebmovement.igniter.common.os.Task;
 import io.github.freewebmovement.igniter.common.os.Threads;
 import io.github.freewebmovement.igniter.connection.TrojanConnection;
 import io.github.freewebmovement.igniter.activities.exempt.activity.ExemptAppActivity;
-import io.github.freewebmovement.igniter.persistence.NetWorkConfig;
 import io.github.freewebmovement.igniter.persistence.TrojanConfig;
 import io.github.freewebmovement.igniter.proxy.aidl.ITrojanService;
 import io.github.freewebmovement.igniter.activities.servers.activity.ServerListActivity;
@@ -135,16 +134,6 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
     private ITrojanService trojanService;
     private ServerListDataSource serverListDataManager;
 
-    private TextViewListener remoteAddressTextListener;
-
-    private TextViewListener remotePortTextListener;
-
-    private TextViewListener localOrClashPortTextListener;
-
-    private TextViewListener passwordTextListener;
-
-    private URIEditText uriEditText;
-
 
     private void updateViews(int state) {
         proxyState = state;
@@ -196,13 +185,13 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
 
         // Init Listeners
 
-        remoteAddressTextListener = new RemoteAddress(remoteAddressText, app);
+        new RemoteAddress(remoteAddressText, app);
 
-        remotePortTextListener = new RemotePort(remotePortText, app);
+        new RemotePort(remotePortText, app);
 
-        localOrClashPortTextListener = new LocalOrClashPort(localOrClashPortText, app);
+        new LocalOrClashPort(localOrClashPortText, app);
 
-        passwordTextListener = new Password(passwordText, app);
+        new Password(passwordText, app);
 
 
         passwordText.setOnFocusChangeListener((v, hasFocus) -> {
@@ -473,7 +462,7 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
 
     public void initURIEditor() {
 
-        uriEditText = new URIEditText(trojanURLText, app);
+        new URIEditText(trojanURLText, app);
 
         TextViewListener trojanConfigChangedTextViewListener = new TextViewListener(trojanURLText, app) {
             @Override
