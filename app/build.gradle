@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'jacoco'
+apply plugin: 'org.jetbrains.kotlin.android'
 
 android {
     compileSdk 35
@@ -70,9 +71,13 @@ android {
     buildFeatures {
         aidl true
     }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
 }
 
 dependencies {
+    implementation 'androidx.core:core-ktx:1.10.1'
     def room_version = "2.6.1"
 
     implementation "androidx.room:room-runtime:$room_version"
