@@ -10,6 +10,7 @@ import io.github.freewebmovement.igniter.persistence.Storage;
 import io.github.freewebmovement.igniter.persistence.SystemAppsConfig;
 import io.github.freewebmovement.igniter.persistence.TrojanConfig;
 import io.github.freewebmovement.igniter.persistence.TrojanPreferences;
+import io.github.freewebmovement.igniter.persistence.data.ExemptAppDataManager;
 import io.github.freewebmovement.igniter.services.ProxyService;
 import io.github.freewebmovement.igniter.activities.MainActivity;
 
@@ -26,6 +27,7 @@ public class IgniterApplication extends Application {
     public TrojanConfig trojanConfig;
     public TrojanPreferences trojanPreferences;
     public SystemAppsConfig systemAppsConfig;
+    public ExemptAppDataManager exemptAppDataManager;
 
     @Override
     public void onCreate() {
@@ -43,6 +45,7 @@ public class IgniterApplication extends Application {
         trojanConfig = TrojanConfig.getInstance(storage);
         clashConfig = new ClashConfig(storage.path.clashConfig);
         systemAppsConfig = new SystemAppsConfig(this);
+        exemptAppDataManager = new ExemptAppDataManager(this);
     }
 
     public void startProxyService() {

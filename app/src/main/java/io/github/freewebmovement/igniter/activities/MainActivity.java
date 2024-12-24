@@ -411,6 +411,16 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
             case (R.id.action_view_exempt_app):
                 exemptAppLauncher.launch(new Intent(this, ExemptAppActivity.class));
                 return true;
+            case (R.id.action_view_exempt_all_app):
+                runOnUiThread(() -> {
+                    app.exemptAppDataManager.enableAll(false);
+                });
+                return true;
+            case (R.id.action_view_enable_all_app):
+                runOnUiThread(() -> {
+                    app.exemptAppDataManager.enableAll(true);
+                });
+                return true;
             default:
                 // Invoke the superclass to handle it.
                 return super.onOptionsItemSelected(item);

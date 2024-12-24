@@ -30,7 +30,16 @@
         android:icon="@drawable/ic_action_apps"
         android:orderInCategory="100"
         android:title="@string/main_menu_action_exempt_app" />
-
+    <item
+        android:id="@+id/action_view_exempt_all_app"
+        android:icon="@drawable/ic_action_apps"
+        android:orderInCategory="100"
+        android:title="@string/main_menu_action_exempt_all_app" />
+    <item
+        android:id="@+id/action_view_enable_all_app"
+        android:icon="@drawable/ic_action_apps"
+        android:orderInCategory="100"
+        android:title="@string/main_menu_action_enable_all_app" />
     <item
         android:id="@+id/action_view_test_connection"
         android:icon="@drawable/ic_action_connection"

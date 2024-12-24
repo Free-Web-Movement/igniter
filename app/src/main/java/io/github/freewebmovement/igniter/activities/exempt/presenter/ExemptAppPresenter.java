@@ -1,10 +1,11 @@
 package io.github.freewebmovement.igniter.activities.exempt.presenter;
 
+import android.annotation.SuppressLint;
 import android.text.TextUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -108,11 +109,12 @@ public class ExemptAppPresenter implements ExemptAppContract.Presenter {
         });
     }
 
+    @SuppressLint("NewApi")
     private void showData() {
         final List<AppInfo> allAppInfoList = mDataSource.getAllAppInfoList();
         mExemptAppPackageNameSet = mDataSource.loadExemptAppPackageNameSet();
-        List<AppInfo> exemptApps = new ArrayList<AppInfo>();
-        List<AppInfo> enabledApps = new ArrayList<AppInfo>();
+        List<AppInfo> exemptApps = new ArrayList<>();
+        List<AppInfo> enabledApps = new ArrayList<>();
         for (AppInfo appInfo : allAppInfoList) {
             if (mExemptAppPackageNameSet.contains(appInfo.getPackageName())) {
                 exemptApps.add(appInfo);
@@ -122,13 +124,9 @@ public class ExemptAppPresenter implements ExemptAppContract.Presenter {
             }
         }
         // cluster exempted apps.
-        Collections.sort(exemptApps, (o1, o2) -> {
-            return o1.getAppName().compareTo(o2.getAppName());
-        });
+        Collections.sort(exemptApps, Comparator.comparing(AppInfo::getAppName));
 
-        Collections.sort(enabledApps, (o1, o2) -> {
-            return o1.getAppName().compareTo(o2.getAppName());
-        });
+        Collections.sort(enabledApps, Comparator.comparing(AppInfo::getAppName));
 
         enabledApps.addAll(exemptApps);
         mAllAppInfoList = enabledApps;

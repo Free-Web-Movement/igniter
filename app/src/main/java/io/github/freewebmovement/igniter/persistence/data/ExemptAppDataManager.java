@@ -92,6 +92,20 @@ public class ExemptAppDataManager implements ExemptAppDataSource {
         return mPackageManager.getInstalledApplications(flags);
     }
 
+    public void enableAll(boolean isEnable) {
+        if (isEnable) {
+            Storage.write(app.storage.path.exemptedAppList, "".getBytes());
+        } else {
+            List<ApplicationInfo> applicationInfoList = queryCurrentInstalledApps();
+            Set<String> installedAppPackageNames = new HashSet<>();
+            for (ApplicationInfo applicationInfo : applicationInfoList) {
+                installedAppPackageNames.add(applicationInfo.packageName);
+            }
+            saveExemptAppInfoSet(installedAppPackageNames);
+        }
+
+    }
+
     @Override
     public List<AppInfo> getAllAppInfoList() {
         List<ApplicationInfo> applicationInfoList = queryCurrentInstalledApps();
