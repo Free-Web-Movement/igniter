@@ -1,5 +1,10 @@
 com.android.
+com.google.mainline.
+com.google.audio.
 com.google.android.
+com.google.ar.core
+com.hiya.star
+com.osp.app.
 org.lineageos.
 android
 android.
@@ -8,3 +13,16 @@ com.sony.timekeep
 org.protonaosp.deviceconfig
 org.calyxos.backup.contacts
 io.github.freewebmovement.igniter
+com.samsung.
+com.sec.
+com.sem.
+com.qti.
+vendor.qti.
+com.dsi.
+com.knox.
+com.test.
+com.qualcomm.
+com.monotype.
+com.microsoft.appmanager
+com.wsomacp
+com.wssyncmldm

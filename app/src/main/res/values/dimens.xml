@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="text_size">18sp</dimen>
+    <dimen name="small_text_size">8sp</dimen>
     <dimen name="top_bar_height">55dp</dimen>
     <dimen name="common_corner_radius">15dp</dimen>
 

@@ -3,16 +3,22 @@ package io.github.freewebmovement.igniter.activities.exempt.adapter;
 import android.annotation.SuppressLint;
 import android.content.res.Resources;
 import android.graphics.Rect;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.widget.TextViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.media.Image;
+import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,16 +72,25 @@ public class AppInfoAdapter extends RecyclerView.Adapter<AppInfoAdapter.ViewHold
         void onToggle(boolean enabled, AppInfo appInfo, int position);
     }
 
-public class ViewHolder extends RecyclerView.ViewHolder implements CompoundButton.OnCheckedChangeListener {
+    public class ViewHolder extends RecyclerView.ViewHolder implements CompoundButton.OnCheckedChangeListener {
+        private final LinearLayout mAppNameLayout;
+        private final ImageView mAppIV;
         private final TextView mNameTv;
+        private final TextView mPackageNameTv;
         private final SwitchCompat mExemptSwitch;
         private AppInfo mCurrentInfo;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
+            mAppNameLayout = itemView.findViewById(R.id.appName);
             mNameTv = itemView.findViewById(R.id.appNameTv);
+            mPackageNameTv = itemView.findViewById(R.id.appPackageNameTv);
+            mAppIV = itemView.findViewById(R.id.appIV);
             TextViewCompat.setAutoSizeTextTypeWithDefaults(mNameTv, TextViewCompat.AUTO_SIZE_TEXT_TYPE_NONE);
+            TextViewCompat.setAutoSizeTextTypeWithDefaults(mPackageNameTv, TextViewCompat.AUTO_SIZE_TEXT_TYPE_NONE);
             mExemptSwitch = itemView.findViewById(R.id.appExemptSwitch);
+
+
         }
 
         @Override
@@ -88,8 +103,20 @@ public class ViewHolder extends RecyclerView.ViewHolder implements CompoundButto
         void bindData(AppInfo appInfo) {
             mCurrentInfo = appInfo;
             mNameTv.setText(appInfo.getAppName());
-            appInfo.getIcon().setBounds(mIconBound);
-            mNameTv.setCompoundDrawables(appInfo.getIcon(), null, null, null);
+            mPackageNameTv.setText(appInfo.getPackageName());
+//            appInfo.getIcon().setBounds(mIconBound);
+            mAppIV.setImageDrawable(appInfo.getIcon());
+
+
+            mAppNameLayout.setOnLongClickListener(v -> {
+                Toast.makeText(itemView.getContext(), appInfo.getAppName() + "\n" + appInfo.getPackageName(), Toast.LENGTH_LONG).show();
+                return false;
+            });
+
+//            mAppNameLayout.set
+
+//            mNameTv.setCompoundDrawables(appInfo.getIcon(), null, null, null);
+//            mPackageNameTv.setCompoundDrawables(appInfo.getIcon(), null, null, null);
             mExemptSwitch.setOnCheckedChangeListener(null);
             mExemptSwitch.setChecked(appInfo.getEnabled());
             mExemptSwitch.setOnCheckedChangeListener(this);
