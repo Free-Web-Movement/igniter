@@ -1,1 +1,8 @@
 include ':app'
+dependencyResolutionManagement {
+    versionCatalogs {
+        versions {
+            from files('gradle/libs.versions.toml')
+        }
+    }
+}

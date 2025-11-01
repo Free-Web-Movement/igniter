@@ -13,6 +13,7 @@ public class Trojan {
     public static final String KEY_LOCAL_ADDR = "local_addr";
     public static final String KEY_LOCAL_PORT = "local_port";
     public static final String KEY_REMOTE_ADDR = "remote_addr";
+    public static final String KEY_REMOTE_IP = "remote_ip";
     public static final String KEY_REMOTE_PORT = "remote_port";
     public static final String KEY_PASSWORD = "password";
 

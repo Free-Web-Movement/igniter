@@ -94,12 +94,13 @@ public class ServerListPresenter implements ServerListContract.Presenter {
             for (int i = 0; i < len; i++) {
                 JSONObject config = configs.getJSONObject(i);
                 String remoteAddr = config.optString("server", "");
-                if (remoteAddr.equals("")) {
+                if (remoteAddr.isEmpty()) {
                     continue;
                 }
 
                 TrojanConfig tmp = new TrojanConfig();
                 tmp.setRemoteAddr(remoteAddr);
+                tmp.setRemoteIP(config.optString("server_ip"));
                 tmp.setRemotePort(config.optInt("server_port"));
                 tmp.setPassword(config.optString("password"));
                 tmp.setVerifyCert(config.optBoolean("verify"));

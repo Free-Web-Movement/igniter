@@ -8,6 +8,8 @@
     <string name="common_save_success">Save success</string>
 
     <string name="remote_address">Remote Address</string>
+    <string name="remote_ip">Remote IP</string>
+    <string name="avoid_dns_pollution">Avoid DNS Pollution</string>
     <string name="remote_port">Remote Port</string>
     <string name="local_or_clash_port">Local/Clash Port</string>
     <string name="default_port">443</string>
@@ -30,6 +32,9 @@
     <string name="failed_to_connect_to__">Failed to connect to %1$s: %2$s</string>
     <string name="invalid_configuration">Invalid Configuration</string>
     <string name="notification_channel_id">igniter_notify_chan</string>
+    <string name="notification_title">Igniter</string>
+
+
     <string name="notification_channel_name">igniter_notify_channel</string>
     <string name="notification_channel_description">Igniter notifications channel</string>
     <string name="notification_starting_service">Starting service</string>

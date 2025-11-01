@@ -230,6 +230,20 @@ public class ProxyService extends VpnService implements TestConnection.OnResultL
         }
     }
 
+    public VpnService.Builder getVPNBuilder() {
+        VpnService.Builder b = new VpnService.Builder();
+
+        b.setSession("trojanVPNService")
+                .addAddress("10.8.0.2", 24) // Assign an IP address to the VPN interface
+                .addRoute("0.0.0.0", 0);   // Route all traffic through the VPN
+
+        b.addDnsServer("8.8.8.8");   // Google Public DNS
+        b.addDnsServer("8.8.4.4");   // Google Public DNS
+        b.addDnsServer("1.1.1.1");
+
+        return b;
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "onStartCommand");
@@ -246,14 +260,10 @@ public class ProxyService extends VpnService implements TestConnection.OnResultL
         Set<String> packageNames = getExemptAppPackageNames();
         packageNames.add(getPackageName());
 
-        VpnService.Builder b = new VpnService.Builder();
-        b.addDnsServer("8.8.8.8");
-        b.addDnsServer("8.8.4.4");
-        b.addDnsServer("1.1.1.1");
-//        b.addDnsServer("1.1.1.1");
+
         pfd = NetWorkConfig.establish(
                 app,
-                b,
+                getVPNBuilder(),
                 getString(R.string.app_name),
                 packageNames
         );

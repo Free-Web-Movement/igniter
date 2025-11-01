@@ -52,6 +52,7 @@ import io.github.freewebmovement.igniter.ui.component.textview.URIEditText;
 import io.github.freewebmovement.igniter.ui.component.textview.listener.LocalOrClashPort;
 import io.github.freewebmovement.igniter.ui.component.textview.listener.Password;
 import io.github.freewebmovement.igniter.ui.component.textview.listener.RemoteAddress;
+import io.github.freewebmovement.igniter.ui.component.textview.listener.RemoteIP;
 import io.github.freewebmovement.igniter.ui.component.textview.listener.RemotePort;
 import io.github.freewebmovement.igniter.ui.component.textview.listener.TextViewListener;
 
@@ -92,6 +93,8 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
                             app.trojanConfig.fromJSON(temp.toJSON());
                             runOnUiThread(() -> {
                                 remoteAddressText.setText(app.trojanConfig.getRemoteAddr());
+                                remoteIPText.setText(app.trojanConfig.getRemoteIP());
+
                                 remotePortText.setText(String.valueOf(app.trojanConfig.getRemotePort()));
                                 if (app.trojanPreferences.getEnableClash()) {
                                     localOrClashPortText.setText(String.valueOf(app.clashConfig.getPort()));
@@ -122,6 +125,7 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
 
     private ViewGroup rootViewGroup;
     private EditText remoteAddressText;
+    private EditText remoteIPText;
     private EditText remotePortText;
     private EditText localOrClashPortText;
     private EditText passwordText;
@@ -153,6 +157,7 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
             }
         }
         remoteAddressText.setEnabled(inputEnabled);
+        remoteIPText.setEnabled(inputEnabled);
         remotePortText.setEnabled(inputEnabled);
         localOrClashPortText.setEnabled(inputEnabled);
         passwordText.setEnabled(inputEnabled);
@@ -174,6 +179,7 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
         rootViewGroup = findViewById(R.id.rootScrollView);
         ImageButton saveServerIb = findViewById(R.id.imageButton_save);
         remoteAddressText = findViewById(R.id.remoteAddrText);
+        remoteIPText = findViewById(R.id.remoteIPText);
         remotePortText = findViewById(R.id.remotePortText);
         localOrClashPortText = findViewById(R.id.localOrClashPortText);
         passwordText = findViewById(R.id.passwordText);
@@ -186,6 +192,7 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
         // Init Listeners
 
         new RemoteAddress(remoteAddressText, app);
+        new RemoteIP(remoteIPText, app);
 
         new RemotePort(remotePortText, app);
 
@@ -243,6 +250,7 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
                     try {
                         app.clashConfig.save(app.storage.path.clashConfig);
                     } catch (IOException e) {
+                        //noinspection CallToPrintStackTrace
                         e.printStackTrace();
                     }
                     serverListDataManager.saveServerConfig(app.trojanConfig);
@@ -292,6 +300,7 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
                     final int state = service.getState();
                     runOnUiThread(() -> updateViews(state));
                 } catch (RemoteException e) {
+                    //noinspection CallToPrintStackTrace
                     e.printStackTrace();
                 }
             }
@@ -351,6 +360,7 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
                 service.testConnection(CONNECTION_TEST_URL);
             } catch (RemoteException e) {
                 showTestConnectionResult(CONNECTION_TEST_URL, false, 0L, "Trojan service throws RemoteException.");
+                //noinspection CallToPrintStackTrace
                 e.printStackTrace();
             }
         }
@@ -358,6 +368,7 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
 
     private void clearEditTextFocus() {
         remoteAddressText.clearFocus();
+        remoteIPText.clearFocus();
         remotePortText.clearFocus();
         localOrClashPortText.clearFocus();
         passwordText.clearFocus();
@@ -412,14 +423,10 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
                 exemptAppLauncher.launch(new Intent(this, ExemptAppActivity.class));
                 return true;
             case (R.id.action_view_exempt_all_app):
-                runOnUiThread(() -> {
-                    app.exemptAppDataManager.enableAll(false);
-                });
+                runOnUiThread(() -> app.exemptAppDataManager.enableAll(false));
                 return true;
             case (R.id.action_view_enable_all_app):
-                runOnUiThread(() -> {
-                    app.exemptAppDataManager.enableAll(true);
-                });
+                runOnUiThread(() -> app.exemptAppDataManager.enableAll(true));
                 return true;
             default:
                 // Invoke the superclass to handle it.
@@ -432,6 +439,7 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
         super.onPostCreate(savedInstanceState);
         TrojanConfig trojanConfig = app.trojanConfig;
         remoteAddressText.setText(trojanConfig.getRemoteAddr());
+        remoteIPText.setText(trojanConfig.getRemoteIP());
         remotePortText.setText(String.valueOf(trojanConfig.getRemotePort()));
         if (app.trojanPreferences.getEnableClash()) {
             localOrClashPortText.setText(String.valueOf(app.clashConfig.getPort()));
@@ -442,6 +450,7 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
 //        ipv6Switch.setChecked(app.trojanPreferences.getEnableIPV6());
         verifySwitch.setChecked(trojanConfig.getVerifyCert());
         remoteAddressText.setSelection(remoteAddressText.length());
+//        remoteIPText.setSelection(remoteIPText.length());
     }
 
     @Override
@@ -487,6 +496,7 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
         };
 
         remoteAddressText.addTextChangedListener(trojanConfigChangedTextViewListener);
+        remoteIPText.addTextChangedListener(trojanConfigChangedTextViewListener);
         remotePortText.addTextChangedListener(trojanConfigChangedTextViewListener);
         passwordText.addTextChangedListener(trojanConfigChangedTextViewListener);
     }

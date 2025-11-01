@@ -6,6 +6,7 @@ import static io.github.freewebmovement.igniter.constants.Trojan.KEY_LOCAL_ADDR;
 import static io.github.freewebmovement.igniter.constants.Trojan.KEY_LOCAL_PORT;
 import static io.github.freewebmovement.igniter.constants.Trojan.KEY_PASSWORD;
 import static io.github.freewebmovement.igniter.constants.Trojan.KEY_REMOTE_ADDR;
+import static io.github.freewebmovement.igniter.constants.Trojan.KEY_REMOTE_IP;
 import static io.github.freewebmovement.igniter.constants.Trojan.KEY_REMOTE_PORT;
 import static io.github.freewebmovement.igniter.constants.Trojan.KEY_SSL;
 import static io.github.freewebmovement.igniter.constants.Trojan.KEY_TLS13_CIPHER_LIST;
@@ -45,6 +46,8 @@ public class TrojanConfig implements Parcelable {
     private String localAddr;
     private int localPort;
     private String remoteAddr;
+
+    private String remoteIP;
     private int remotePort;
     private String password;
     private boolean verifyCert;
@@ -93,6 +96,7 @@ public class TrojanConfig implements Parcelable {
         dest.writeString(localAddr);
         dest.writeInt(localPort);
         dest.writeString(remoteAddr);
+        dest.writeString(remoteIP);
         dest.writeInt(remotePort);
         dest.writeString(password);
         dest.writeByte((byte) (verifyCert ? 1 : 0));
@@ -105,6 +109,7 @@ public class TrojanConfig implements Parcelable {
         localAddr = in.readString();
         localPort = in.readInt();
         remoteAddr = in.readString();
+        remoteIP = in.readString();
         remotePort = in.readInt();
         password = in.readString();
         verifyCert = in.readByte() != 0;
@@ -133,6 +138,7 @@ public class TrojanConfig implements Parcelable {
             json.put(KEY_LOCAL_ADDR, this.localAddr);
             json.put(KEY_LOCAL_PORT, this.localPort);
             json.put(KEY_REMOTE_ADDR, this.remoteAddr);
+            json.put(KEY_REMOTE_IP, this.remoteIP);
             json.put(KEY_REMOTE_PORT, this.remotePort);
             json.put(KEY_PASSWORD, new JSONArray().put(this.password));
             JSONObject ssl = new JSONObject();
@@ -158,6 +164,7 @@ public class TrojanConfig implements Parcelable {
             this.localAddr = json.getString(KEY_LOCAL_ADDR);
             this.localPort = json.getInt(KEY_LOCAL_PORT);
             this.remoteAddr = json.getString(KEY_REMOTE_ADDR);
+            this.remoteIP = json.getString(KEY_REMOTE_IP);
             this.remotePort = json.getInt(KEY_REMOTE_PORT);
             this.password = json.getJSONArray(KEY_PASSWORD).getString(0);
             JSONObject ssl = json.getJSONObject(KEY_SSL);
@@ -187,14 +194,24 @@ public class TrojanConfig implements Parcelable {
     }
 
     public String getRemoteAddr() {
-        if (remoteAddr == null || remoteAddr.length() == 0) {
+        if (remoteAddr == null || remoteAddr.isEmpty()) {
             return "0.0.0.0";
         }
         return remoteAddr;
     }
-
     public void setRemoteAddr(String remoteAddr) {
         this.remoteAddr = remoteAddr;
+    }
+
+    public String getRemoteIP() {
+        if (remoteIP == null || remoteIP.isEmpty()) {
+            return "";
+        }
+        return remoteIP;
+    }
+
+    public void setRemoteIP(String remoteIP) {
+        this.remoteIP = remoteIP;
     }
 
     public int getRemotePort() {
@@ -233,7 +250,9 @@ public class TrojanConfig implements Parcelable {
             return false;
         }
         TrojanConfig that = (TrojanConfig) obj;
-        return (paramEquals(remoteAddr, that.remoteAddr) && paramEquals(remotePort, that.remotePort)
+        return (paramEquals(remoteAddr, that.remoteAddr)
+                && paramEquals(remoteIP, that.remoteIP)
+                && paramEquals(remotePort, that.remotePort)
                 && paramEquals(localAddr, that.localAddr) && paramEquals(localPort, that.localPort))
                 && paramEquals(password, that.password) && paramEquals(verifyCert, that.verifyCert)
                 && paramEquals(caCertPath, that.caCertPath)
