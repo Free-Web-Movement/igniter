@@ -21,7 +21,7 @@
     "session_ticket": false,
     "curves": "",
     "sni": "",
-    "verify": true,
+    "verify": false,
     "verify_hostname": true
   },
   "tcp": {
