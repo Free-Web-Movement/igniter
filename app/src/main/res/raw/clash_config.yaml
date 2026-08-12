@@ -9,12 +9,18 @@ log-level: debug
 
 
 dns:
-  enable: false
-  listen: 0.0.0.0:0  # the DNS server in clash is actually not used, turn it off
-  enhanced-mode: fake-ip
-  fake-ip-range: 198.18.0.1/16
+  # tun2socks fakes DNS for apps (fake-ip, see NetWorkConfig). Clash's own DNS
+  # is enabled so that DIRECT/GEOIP rule targets are resolved against real CN
+  # nameservers dialed directly, instead of the fake-ip DNS - which would loop
+  # DIRECT connections back into the tunnel. Domains routed through the proxy
+  # are still resolved at the remote trojan server, never by this config.
+  enable: true
+  listen: 127.0.0.1:1053
+  enhanced-mode: redir-host
   nameserver:
-    - 114.114.114.114  # not used, just a placeholder
+    - 223.5.5.5
+    - 119.29.29.29
+    - 114.114.114.114
 
 # Use format from Clash dev branch
 
@@ -27,6 +33,19 @@ proxy-groups:
 # from https://github.com/Hackl0us/SS-Rule-Snippet/blob/master/LAZY_RULES/clash.yaml
 
 rules:
+# 优先级最高: Google / Google Play / YouTube 必须走代理（防止被下方国内列表误伤）
+  - DOMAIN-KEYWORD,googleapis,Proxy
+  - DOMAIN-KEYWORD,google,Proxy
+  - DOMAIN-KEYWORD,gmail,Proxy
+  - DOMAIN-KEYWORD,youtube,Proxy
+  - DOMAIN-KEYWORD,googlevideo,Proxy
+  - DOMAIN-SUFFIX,youtu.be,Proxy
+  - DOMAIN-SUFFIX,ytimg.com,Proxy
+  - DOMAIN-SUFFIX,ggpht.com,Proxy
+  - DOMAIN-SUFFIX,gstatic.com,Proxy
+  - DOMAIN-SUFFIX,gvt0.com,Proxy
+  - DOMAIN-SUFFIX,googleusercontent.com,Proxy
+  - DOMAIN-SUFFIX,play.google.com,Proxy
 # Apple
   - DOMAIN,safebrowsing.urlsec.qq.com,DIRECT # 如果您并不信任此服务提供商或防止其下载消耗过多带宽资源，可以进入 Safari 设置，关闭 Fraudulent Website Warning 功能，并使用 REJECT 策略。
   - DOMAIN,safebrowsing.googleapis.com,DIRECT # 如果您并不信任此服务提供商或防止其下载消耗过多带宽资源，可以进入 Safari 设置，关闭 Fraudulent Website Warning 功能，并使用 REJECT 策略。
@@ -802,7 +821,7 @@ rules:
   - DOMAIN-SUFFIX,lightonus.com,DIRECT
   - DOMAIN-SUFFIX,linglonglife.com,DIRECT
   - DOMAIN-SUFFIX,lingshoujia.com,DIRECT
-  - DOMAIN-SUFFIX,linkedin.com,DIRECT
+  - DOMAIN-SUFFIX,linkedin.com,Proxy
   - DOMAIN-SUFFIX,linkvans.com,DIRECT
   - DOMAIN-SUFFIX,linuxidc.com,DIRECT
   - DOMAIN-SUFFIX,liuxiaoer.com,DIRECT
@@ -1246,7 +1265,7 @@ rules:
   - DOMAIN-SUFFIX,wdfok.com,DIRECT
   - DOMAIN-SUFFIX,wdjimg.com,DIRECT
   - DOMAIN-SUFFIX,weand.com,DIRECT
-  - DOMAIN-SUFFIX,weather.com,DIRECT
+  - DOMAIN-SUFFIX,weather.com,Proxy
   - DOMAIN-SUFFIX,webterren.com,DIRECT
   - DOMAIN-SUFFIX,wechat.com,DIRECT
   - DOMAIN-SUFFIX,wegame.com,DIRECT
@@ -1682,9 +1701,8 @@ rules:
 # LAN
   - DOMAIN-SUFFIX,local,DIRECT
 
-# Move CN to last
+# CN to last
   - DOMAIN-SUFFIX,cn,DIRECT
-  - DOMAIN-KEYWORD,-cn,DIRECT
 
 # 最终规则
   - GEOIP,CN,DIRECT

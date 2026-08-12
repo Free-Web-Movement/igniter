@@ -18,9 +18,16 @@ public interface ServerDao {
     @Query("SELECT * FROM servers WHERE hostname like :hostname")
     Server findByHost(String hostname);
 
+    @Query("SELECT * FROM servers WHERE hostname = :hostname AND port = :port LIMIT 1")
+    Server findByHostAndPort(String hostname, int port);
+
 
     @Query("DELETE FROM servers WHERE hostname = :hostname AND port = :port")
     void deleteByUniquePair(String hostname, int port);
+
+    @Query("DELETE FROM servers")
+    void deleteAll();
+
     @Insert
     void insert(Server... servers);
 

@@ -5,17 +5,15 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.VpnService;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
@@ -27,39 +25,48 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.view.menu.MenuBuilder;
-import androidx.appcompat.widget.SwitchCompat;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
-import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.io.IOException;
 
 import io.github.freewebmovement.igniter.IgniterApplication;
-import io.github.freewebmovement.igniter.common.UnifyVersions;
-import io.github.freewebmovement.igniter.services.ProxyService;
 import io.github.freewebmovement.igniter.R;
 import io.github.freewebmovement.igniter.common.os.Task;
 import io.github.freewebmovement.igniter.common.os.Threads;
 import io.github.freewebmovement.igniter.connection.TrojanConnection;
-import io.github.freewebmovement.igniter.activities.exempt.activity.ExemptAppActivity;
+import io.github.freewebmovement.igniter.activities.exempt.fragment.ExemptAppFragment;
+import io.github.freewebmovement.igniter.activities.exempt.presenter.ExemptAppPresenter;
+import io.github.freewebmovement.igniter.activities.servers.fragment.ServerListFragment;
+import io.github.freewebmovement.igniter.activities.servers.data.ServerListDataManager;
+import io.github.freewebmovement.igniter.activities.servers.presenter.ServerListPresenter;
 import io.github.freewebmovement.igniter.persistence.TrojanConfig;
 import io.github.freewebmovement.igniter.proxy.aidl.ITrojanService;
-import io.github.freewebmovement.igniter.activities.servers.activity.ServerListActivity;
-import io.github.freewebmovement.igniter.activities.servers.data.ServerListDataManager;
-import io.github.freewebmovement.igniter.activities.servers.data.ServerListDataSource;
-import io.github.freewebmovement.igniter.ui.component.textview.URIEditText;
-import io.github.freewebmovement.igniter.ui.component.textview.listener.LocalOrClashPort;
-import io.github.freewebmovement.igniter.ui.component.textview.listener.Password;
-import io.github.freewebmovement.igniter.ui.component.textview.listener.RemoteAddress;
-import io.github.freewebmovement.igniter.ui.component.textview.listener.RemoteIP;
-import io.github.freewebmovement.igniter.ui.component.textview.listener.RemotePort;
-import io.github.freewebmovement.igniter.ui.component.textview.listener.TextViewListener;
+import io.github.freewebmovement.igniter.services.ProxyService;
 
+/**
+ * Tab shell hosting the four pages: connect, servers, apps and rules.
+ */
 public class MainActivity extends AppCompatActivity implements TrojanConnection.Callback {
     private static final String TAG = "MainActivity";
     private static final int READ_WRITE_EXT_STORAGE_PERMISSION_REQUEST = 514;
     private static final String CONNECTION_TEST_URL = "https://www.google.com";
+
+    private static final String TAG_HOME = "tab_home";
+    private static final String TAG_SERVERS = "tab_servers";
+    private static final String TAG_APPS = "tab_apps";
+    private static final String TAG_RULES = "tab_rules";
+
+    public static final int TAB_HOME = 0;
+    public static final int TAB_SERVERS = 1;
+    public static final int TAB_APPS = 2;
+    public static final int TAB_RULES = 3;
 
     IgniterApplication app;
 
@@ -75,95 +82,17 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
                 }
             });
 
-    ActivityResultLauncher<Intent> serverListLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            new ActivityResultCallback<ActivityResult>() {
-                @Override
-                public void onActivityResult(ActivityResult result) {
-                    if (result.getResultCode() == Activity.RESULT_OK) {
-                        Intent data = result.getData();
-                        trojanURLText.setText("");
-                        assert data != null;
-                        TrojanConfig temp = UnifyVersions.getParcel(getIntent(),
-                                ServerListActivity.KEY_TROJAN_CONFIG,
-                                TrojanConfig.class
-                        );
-                        if (temp != null) {
-                            temp.setCaCertPath(app.storage.path.caCert);
-                            app.trojanConfig.fromJSON(temp.toJSON());
-                            runOnUiThread(() -> {
-                                remoteAddressText.setText(app.trojanConfig.getRemoteAddr());
-                                remoteIPText.setText(app.trojanConfig.getRemoteIP());
-
-                                remotePortText.setText(String.valueOf(app.trojanConfig.getRemotePort()));
-                                if (app.trojanPreferences.getEnableClash()) {
-                                    localOrClashPortText.setText(String.valueOf(app.clashConfig.getPort()));
-                                } else {
-                                    localOrClashPortText.setText(String.valueOf(app.trojanConfig.getLocalPort()));
-                                }
-                                passwordText.setText(app.trojanConfig.getPassword());
-                            });
-                            trojanURLText.setText(TrojanConfig.toURIString(app.trojanConfig));
-                            verifySwitch.setChecked(app.trojanConfig.getVerifyCert());
-                        }
-                    }
-                }
-            });
-
-    ActivityResultLauncher<Intent> exemptAppLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            new ActivityResultCallback<ActivityResult>() {
-                @Override
-                public void onActivityResult(ActivityResult result) {
-                    if (result.getResultCode() == Activity.RESULT_OK) {
-                        if (ProxyService.STARTED == proxyState) {
-                            Snackbar.make(rootViewGroup, R.string.main_restart_proxy_service_tip, Snackbar.LENGTH_LONG).show();
-                        }
-                    }
-                }
-            });
-
-    private ViewGroup rootViewGroup;
-    private EditText remoteAddressText;
-    private EditText remoteIPText;
-    private EditText remotePortText;
-    private EditText localOrClashPortText;
-    private EditText passwordText;
-    private SwitchCompat verifySwitch;
-    private ImageButton startButton;
-    private EditText trojanURLText;
+    private HomeFragment mHomeFragment;
+    private ServerListFragment mServerFragment;
+    private ExemptAppFragment mAppsFragment;
+    private RulesFragment mRulesFragment;
+    private BottomNavigationView mBottomNav;
+    private int mCurrentTab = TAB_HOME;
     private @ProxyService.ProxyState
     int proxyState = ProxyService.STATE_NONE;
     private final TrojanConnection connection = new TrojanConnection(false);
     private ITrojanService trojanService;
-    private ServerListDataSource serverListDataManager;
-
-
-    private void updateViews(int state) {
-        proxyState = state;
-        boolean inputEnabled;
-        switch (state) {
-            case ProxyService.STARTING:
-            case ProxyService.STARTED:
-            case ProxyService.STOPPING: {
-                inputEnabled = false;
-                startButton.setEnabled(false);
-                break;
-            }
-            default: {
-                inputEnabled = true;
-                startButton.setEnabled(true);
-                break;
-            }
-        }
-        remoteAddressText.setEnabled(inputEnabled);
-        remoteIPText.setEnabled(inputEnabled);
-        remotePortText.setEnabled(inputEnabled);
-        localOrClashPortText.setEnabled(inputEnabled);
-        passwordText.setEnabled(inputEnabled);
-        trojanURLText.setEnabled(inputEnabled);
-        verifySwitch.setEnabled(inputEnabled);
-    }
+    private ServerListDataManager serverListDataManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -171,99 +100,160 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
         setContentView(R.layout.activity_main);
         app = IgniterApplication.getApplication();
 
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
         ActionBar actionBar = getSupportActionBar();
-        assert actionBar != null;
-        actionBar.setDisplayShowHomeEnabled(true);
-        actionBar.setIcon(R.mipmap.ic_launcher);
+        if (actionBar != null) {
+            actionBar.setDisplayShowHomeEnabled(true);
+            actionBar.setIcon(R.mipmap.ic_launcher);
+            actionBar.setTitle(R.string.app_name);
+        }
 
-        rootViewGroup = findViewById(R.id.rootScrollView);
-        ImageButton saveServerIb = findViewById(R.id.imageButton_save);
-        remoteAddressText = findViewById(R.id.remoteAddrText);
-        remoteIPText = findViewById(R.id.remoteIPText);
-        remotePortText = findViewById(R.id.remotePortText);
-        localOrClashPortText = findViewById(R.id.localOrClashPortText);
-        passwordText = findViewById(R.id.passwordText);
-        trojanURLText = findViewById(R.id.trojanURLText);
-        verifySwitch = findViewById(R.id.verifySwitch);
-        startButton = findViewById(R.id.imageButton_start);
-        ImageButton stopButton = findViewById(R.id.imageButton_stop);
-
-
-        // Init Listeners
-
-        new RemoteAddress(remoteAddressText, app);
-        new RemoteIP(remoteIPText, app);
-
-        new RemotePort(remotePortText, app);
-
-        new LocalOrClashPort(localOrClashPortText, app);
-
-        new Password(passwordText, app);
-
-
-        passwordText.setOnFocusChangeListener((v, hasFocus) -> {
-            if (!hasFocus) {
-                passwordText.setInputType(EditorInfo.TYPE_CLASS_TEXT | EditorInfo.TYPE_TEXT_VARIATION_PASSWORD);
-            } else {
-                // place cursor on the end
-                passwordText.setInputType(EditorInfo.TYPE_CLASS_TEXT);
-                passwordText.setSelection(passwordText.getText().length());
-            }
-        });
-
-        verifySwitch.setOnCheckedChangeListener((buttonView, isChecked) -> app.trojanConfig.setVerifyCert(isChecked));
-
-
-        initURIEditor();
-
-        startButton.setOnClickListener(v -> {
-            if (!app.trojanConfig.isValidRunningConfig()) {
-                Toast.makeText(MainActivity.this,
-                        R.string.invalid_configuration,
-                        Toast.LENGTH_LONG).show();
-                return;
-            }
-            if (proxyState == ProxyService.STATE_NONE || proxyState == ProxyService.STOPPED) {
-                TrojanConfig.write(
-                        app.trojanConfig,
-                        app.storage.path.trojanConfig
-                );
-                startVPN();
-            }
-        });
-        stopButton.setOnClickListener(v -> {
-            if (proxyState == ProxyService.STARTED) {
-                // stop ProxyService
-                app.stopProxyService();
-            }
-        });
-
-        saveServerIb.setOnClickListener(v -> {
-            if (!app.trojanConfig.isValidRunningConfig()) {
-                Toast.makeText(MainActivity.this, R.string.invalid_configuration, Toast.LENGTH_SHORT).show();
-                return;
-            }
-            Threads.instance().runOnWorkThread(new Task() {
-                @Override
-                public void onRun() {
-                    TrojanConfig.write(app.trojanConfig, app.storage.path.trojanConfig);
-                    try {
-                        app.clashConfig.save(app.storage.path.clashConfig);
-                    } catch (IOException e) {
-                        //noinspection CallToPrintStackTrace
-                        e.printStackTrace();
-                    }
-                    serverListDataManager.saveServerConfig(app.trojanConfig);
-                    showSaveConfigResult();
-                }
-            });
-        });
         serverListDataManager = new ServerListDataManager();
+
+        mBottomNav = findViewById(R.id.bottomNav);
+        mBottomNav.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.tab_servers) {
+                switchTab(TAB_SERVERS);
+            } else if (id == R.id.tab_apps) {
+                switchTab(TAB_APPS);
+            } else if (id == R.id.tab_rules) {
+                switchTab(TAB_RULES);
+            } else {
+                switchTab(TAB_HOME);
+            }
+            return true;
+        });
+
+        createFragments();
+
         connection.connect(this, this);
         if (!app.storage.isExternalWritable() && ActivityCompat
                 .shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             requestReadWriteExternalStoragePermission();
         }
+    }
+
+    private void createFragments() {
+        FragmentManager fm = getSupportFragmentManager();
+        mHomeFragment = (HomeFragment) fm.findFragmentByTag(TAG_HOME);
+        if (mHomeFragment == null) {
+            mHomeFragment = HomeFragment.newInstance();
+        }
+        mServerFragment = (ServerListFragment) fm.findFragmentByTag(TAG_SERVERS);
+        if (mServerFragment == null) {
+            mServerFragment = ServerListFragment.newInstance();
+        }
+        mAppsFragment = (ExemptAppFragment) fm.findFragmentByTag(TAG_APPS);
+        if (mAppsFragment == null) {
+            mAppsFragment = ExemptAppFragment.newInstance();
+        }
+        mRulesFragment = (RulesFragment) fm.findFragmentByTag(TAG_RULES);
+        if (mRulesFragment == null) {
+            mRulesFragment = RulesFragment.newInstance();
+        }
+
+        new ServerListPresenter(mServerFragment, new ServerListDataManager());
+        new ExemptAppPresenter(mAppsFragment, app.exemptAppDataManager);
+
+        FragmentTransaction ft = fm.beginTransaction();
+        if (!mHomeFragment.isAdded()) {
+            ft.add(R.id.fragmentContainer, mHomeFragment, TAG_HOME);
+        }
+        if (!mServerFragment.isAdded()) {
+            ft.add(R.id.fragmentContainer, mServerFragment, TAG_SERVERS);
+        }
+        if (!mAppsFragment.isAdded()) {
+            ft.add(R.id.fragmentContainer, mAppsFragment, TAG_APPS);
+        }
+        if (!mRulesFragment.isAdded()) {
+            ft.add(R.id.fragmentContainer, mRulesFragment, TAG_RULES);
+        }
+        ft.hide(mServerFragment);
+        ft.hide(mAppsFragment);
+        ft.hide(mRulesFragment);
+        ft.show(mHomeFragment);
+        ft.commitAllowingStateLoss();
+    }
+
+    private void switchTab(int tab) {
+        mCurrentTab = tab;
+        FragmentManager fm = getSupportFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
+        ft.hide(mHomeFragment);
+        ft.hide(mServerFragment);
+        ft.hide(mAppsFragment);
+        ft.hide(mRulesFragment);
+        Fragment selected;
+        int titleRes;
+        switch (tab) {
+            case TAB_SERVERS: {
+                selected = mServerFragment;
+                titleRes = R.string.tab_servers;
+                break;
+            }
+            case TAB_APPS: {
+                selected = mAppsFragment;
+                titleRes = R.string.tab_apps;
+                break;
+            }
+            case TAB_RULES: {
+                selected = mRulesFragment;
+                titleRes = R.string.tab_rules;
+                break;
+            }
+            default: {
+                selected = mHomeFragment;
+                titleRes = R.string.app_name;
+                break;
+            }
+        }
+        ft.show(selected);
+        ft.commitAllowingStateLoss();
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle(titleRes);
+        }
+        if (selected == mHomeFragment) {
+            mHomeFragment.refreshServerInfo();
+            mHomeFragment.updateState(proxyState);
+        } else if (selected == mServerFragment) {
+            mServerFragment.refresh();
+        }
+    }
+
+    public void openServersTab() {
+        switchTab(TAB_SERVERS);
+    }
+
+    public void openHomeTab() {
+        switchTab(TAB_HOME);
+    }
+
+    /**
+     * Applies a server selected from the Servers page: persists it and returns
+     * to the connect page.
+     */
+    public void onServerSelected(TrojanConfig config) {
+        if (config == null) {
+            return;
+        }
+        config.setCaCertPath(app.storage.path.caCert);
+        app.trojanConfig.fromJSON(config.toJSON());
+        Threads.instance().runOnWorkThread(new Task() {
+            @Override
+            public void onRun() {
+                TrojanConfig.write(app.trojanConfig, app.storage.path.trojanConfig);
+                try {
+                    app.clashConfig.save(app.storage.path.clashConfig);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                serverListDataManager.saveServerConfig(app.trojanConfig);
+            }
+        });
+        openHomeTab();
+        Toast.makeText(this, R.string.common_save_success, Toast.LENGTH_SHORT).show();
     }
 
     public void startVPN() {
@@ -274,6 +264,36 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
         } else {
             app.startProxyService();
         }
+    }
+
+    public void startProxy() {
+        if (!app.trojanConfig.isValidRunningConfig()) {
+            Toast.makeText(MainActivity.this,
+                    R.string.invalid_configuration,
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+        if (proxyState == ProxyService.STATE_NONE || proxyState == ProxyService.STOPPED) {
+            TrojanConfig.write(
+                    app.trojanConfig,
+                    app.storage.path.trojanConfig
+            );
+            startVPN();
+        }
+    }
+
+    public void stopProxy() {
+        if (proxyState == ProxyService.STARTED) {
+            app.stopProxyService();
+        }
+    }
+
+    public boolean isProxyRunning() {
+        return proxyState == ProxyService.STARTED;
+    }
+
+    public int getProxyState() {
+        return proxyState;
     }
 
     private void requestReadWriteExternalStoragePermission() {
@@ -300,7 +320,6 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
                     final int state = service.getState();
                     runOnUiThread(() -> updateViews(state));
                 } catch (RemoteException e) {
-                    //noinspection CallToPrintStackTrace
                     e.printStackTrace();
                 }
             }
@@ -309,8 +328,15 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
 
     @Override
     public void onServiceDisconnected() {
-        Log.i(TAG, "onServiceConnected");
+        Log.i(TAG, "onServiceDisconnected");
         trojanService = null;
+    }
+
+    private void updateViews(int state) {
+        proxyState = state;
+        if (mHomeFragment != null && mHomeFragment.isAdded()) {
+            mHomeFragment.updateState(state);
+        }
     }
 
     @Override
@@ -341,17 +367,13 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
     public void onBinderDied() {
         Log.i(TAG, "onBinderDied");
         connection.disconnect(this);
-        // connect the new binder
-        // todo is it necessary to re-connect?
         connection.connect(this, this);
     }
 
     /**
-     * Test connection by invoking {@link ITrojanService#testConnection(String)}. Since {@link ITrojanService}
-     * is from remote process, a {@link RemoteException} might be thrown. Test result will be delivered
-     * to {@link #onTestResult(String, boolean, long, String)} by {@link TrojanConnection}.
+     * Test connection by invoking {@link ITrojanService#testConnection(String)}.
      */
-    private void testConnection() {
+    public void testConnection() {
         ITrojanService service = trojanService;
         if (service == null) {
             showTestConnectionResult(CONNECTION_TEST_URL, false, 0L, "Trojan service is not available.");
@@ -360,97 +382,30 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
                 service.testConnection(CONNECTION_TEST_URL);
             } catch (RemoteException e) {
                 showTestConnectionResult(CONNECTION_TEST_URL, false, 0L, "Trojan service throws RemoteException.");
-                //noinspection CallToPrintStackTrace
                 e.printStackTrace();
             }
         }
     }
 
-    private void clearEditTextFocus() {
-        remoteAddressText.clearFocus();
-        remoteIPText.clearFocus();
-        remotePortText.clearFocus();
-        localOrClashPortText.clearFocus();
-        passwordText.clearFocus();
-        trojanURLText.clearFocus();
-    }
-
-    private void showSaveConfigResult() {
-        runOnUiThread(() -> Toast.makeText(getApplicationContext(),
-                R.string.main_save_success,
-                Toast.LENGTH_SHORT).show());
-    }
-
-    @SuppressLint("RestrictedApi")
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.menu_main, menu);
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu_main, menu);
-        if (menu instanceof MenuBuilder) {
-            MenuBuilder m = (MenuBuilder) menu;
-            m.setOptionalIconsVisible(true);
+        getMenuInflater().inflate(R.menu.menu_shell, menu);
+        MenuItem settings = menu.findItem(R.id.action_view_settings);
+        if (settings != null && settings.getIcon() != null) {
+            Drawable wrapper = DrawableCompat.wrap(settings.getIcon());
+            DrawableCompat.setTint(wrapper, Color.WHITE);
+            settings.setIcon(wrapper);
         }
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Bind menu items to their relative actions
-        Intent intent;
-        switch (item.getItemId()) {
-            case (R.id.action_view_settings):
-                intent = new Intent(this, SettingsActivity.class);
-                startActivity(intent);
-                return true;
-            case (R.id.action_view_available_servers):
-                intent = new Intent(this, ServersActivity.class);
-                startActivity(intent);
-                return true;
-            case (R.id.action_view_test_connection):
-                testConnection();
-                return true;
-            case (R.id.action_view_clash_editor):
-                intent = new Intent(this, ClashFileEditorActivity.class);
-                startActivity(intent);
-                return true;
-            case (R.id.action_view_server_list):
-                clearEditTextFocus();
-                serverListLauncher.launch(new Intent(this, ServerListActivity.class));
-                return true;
-            case (R.id.action_view_exempt_app):
-                exemptAppLauncher.launch(new Intent(this, ExemptAppActivity.class));
-                return true;
-            case (R.id.action_view_exempt_all_app):
-                runOnUiThread(() -> app.exemptAppDataManager.enableAll(false));
-                return true;
-            case (R.id.action_view_enable_all_app):
-                runOnUiThread(() -> app.exemptAppDataManager.enableAll(true));
-                return true;
-            default:
-                // Invoke the superclass to handle it.
-                return super.onOptionsItemSelected(item);
+        if (item.getItemId() == R.id.action_view_settings) {
+            startActivity(new Intent(this, SettingsActivity.class));
+            return true;
         }
-    }
-
-    @Override
-    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        TrojanConfig trojanConfig = app.trojanConfig;
-        remoteAddressText.setText(trojanConfig.getRemoteAddr());
-        remoteIPText.setText(trojanConfig.getRemoteIP());
-        remotePortText.setText(String.valueOf(trojanConfig.getRemotePort()));
-        if (app.trojanPreferences.getEnableClash()) {
-            localOrClashPortText.setText(String.valueOf(app.clashConfig.getPort()));
-        } else {
-            localOrClashPortText.setText(String.valueOf(app.trojanConfig.getLocalPort()));
-        }
-        passwordText.setText(trojanConfig.getPassword());
-//        ipv6Switch.setChecked(app.trojanPreferences.getEnableIPV6());
-        verifySwitch.setChecked(trojanConfig.getVerifyCert());
-        remoteAddressText.setSelection(remoteAddressText.length());
-//        remoteIPText.setSelection(remoteIPText.length());
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -467,7 +422,7 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
                 case ProxyService.STATE_NONE:
                 case ProxyService.STOPPED:
                 default:
-                    startButton.performClick();
+                    startProxy();
                     break;
             }
         }
@@ -477,27 +432,5 @@ public class MainActivity extends AppCompatActivity implements TrojanConnection.
     protected void onDestroy() {
         super.onDestroy();
         connection.disconnect(this);
-    }
-
-    public void initURIEditor() {
-
-        new URIEditText(trojanURLText, app);
-
-        TextViewListener trojanConfigChangedTextViewListener = new TextViewListener(trojanURLText, app) {
-            @Override
-            protected void onTextChanged(String before, String old, String aNew, String after) {
-                startUpdates();
-                String str = TrojanConfig.toURIString(app.trojanConfig);
-                if (str != null) {
-                    trojanURLText.setText(str);
-                }
-                endUpdates();
-            }
-        };
-
-        remoteAddressText.addTextChangedListener(trojanConfigChangedTextViewListener);
-        remoteIPText.addTextChangedListener(trojanConfigChangedTextViewListener);
-        remotePortText.addTextChangedListener(trojanConfigChangedTextViewListener);
-        passwordText.addTextChangedListener(trojanConfigChangedTextViewListener);
     }
 }

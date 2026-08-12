@@ -1,13 +1,10 @@
 package io.github.freewebmovement.igniter.activities.servers.fragment;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -20,10 +17,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.core.content.ContextCompat;
-import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -34,14 +27,14 @@ import java.util.List;
 import io.github.freewebmovement.igniter.R;
 import io.github.freewebmovement.igniter.common.app.BaseFragment;
 import io.github.freewebmovement.igniter.persistence.TrojanConfig;
+import io.github.freewebmovement.igniter.activities.servers.activity.AddServerActivity;
 import io.github.freewebmovement.igniter.activities.servers.activity.ServerListActivity;
 import io.github.freewebmovement.igniter.activities.servers.contract.ServerListContract;
-import io.github.freewebmovement.igniter.activities.ScanQRCodeActivity;
+import io.github.freewebmovement.igniter.activities.MainActivity;
 
 public class ServerListFragment extends BaseFragment implements ServerListContract.View {
     private static final int FILE_IMPORT_REQUEST_CODE = 120;
-    private static final int SCAN_QR_CODE_REQUEST_CODE = 110;
-    private static final int REQUEST_CAMERA_CODE = 114;
+    private static final int ADD_SERVER_REQUEST_CODE = 130;
     public static final String TAG = "ServerListFragment";
     public static final String KEY_TROJAN_CONFIG = ServerListActivity.KEY_TROJAN_CONFIG;
     private ServerListContract.Presenter mPresenter;
@@ -55,6 +48,12 @@ public class ServerListFragment extends BaseFragment implements ServerListContra
 
     public static ServerListFragment newInstance() {
         return new ServerListFragment();
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -78,17 +77,14 @@ public class ServerListFragment extends BaseFragment implements ServerListContra
     }
 
     private void initViews() {
-        FragmentActivity activity = getActivity();
-        if (activity instanceof AppCompatActivity) {
-            ((AppCompatActivity) activity).setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
-            setHasOptionsMenu(true);
-        }
         mServerListRv.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false));
         mServerListAdapter = new ServerListAdapter(getContext(), new ArrayList<>());
         mServerListRv.setAdapter(mServerListAdapter);
     }
 
     private void initListeners() {
+        findViewById(R.id.fab).setOnClickListener(v ->
+                startActivityForResult(new Intent(getContext(), AddServerActivity.class), ADD_SERVER_REQUEST_CODE));
         mServerListAdapter.setOnItemClickListener(new ServerListAdapter.OnItemClickListener() {
             @Override
             public void onItemSelected(TrojanConfig config, int pos) {
@@ -118,55 +114,29 @@ public class ServerListFragment extends BaseFragment implements ServerListContra
 
     @Override
     public void showAddTrojanConfigSuccess() {
-        mRootView.post(() -> Toast.makeText(getApplicationContext(), R.string.scan_qr_code_success, Toast.LENGTH_SHORT).show());
-    }
-
-    @Override
-    public void showQRCodeScanError(final String scanContent) {
-        mRootView.post(() -> Toast.makeText(getApplicationContext(), getString(R.string.scan_qr_code_failed, scanContent), Toast.LENGTH_SHORT).show());
-    }
-
-    @Override
-    public void gotoScanQRCode() {
-        if (PackageManager.PERMISSION_GRANTED == ContextCompat.checkSelfPermission(mContext, Manifest.permission.CAMERA)) {
-            gotoScanQRCodeInner();
-        } else {
-            requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_CODE);
-        }
-    }
-
-    private void gotoScanQRCodeInner() {
-        startActivityForResult(ScanQRCodeActivity.create(mContext), SCAN_QR_CODE_REQUEST_CODE);
+        mRootView.post(() -> Toast.makeText(getApplicationContext(), R.string.add_server_success, Toast.LENGTH_SHORT).show());
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (SCAN_QR_CODE_REQUEST_CODE == requestCode && resultCode == Activity.RESULT_OK && data != null) {
-            mPresenter.addServerConfig(data.getStringExtra(ScanQRCodeActivity.KEY_SCAN_CONTENT));
-        } else if (FILE_IMPORT_REQUEST_CODE == requestCode && resultCode == Activity.RESULT_OK && data != null) {
+        if (FILE_IMPORT_REQUEST_CODE == requestCode && resultCode == Activity.RESULT_OK && data != null) {
             Uri uri = data.getData();
             if (uri != null) {
                 mPresenter.parseConfigsInFileStream(getContext(), uri);
             }
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (REQUEST_CAMERA_CODE == requestCode) {
-            if (PackageManager.PERMISSION_GRANTED == grantResults[0]) {
-                gotoScanQRCodeInner();
-            } else {
-                Toast.makeText(getContext(), R.string.server_list_lack_of_camera_permission, Toast.LENGTH_SHORT).show();
-            }
+        } else if (ADD_SERVER_REQUEST_CODE == requestCode && resultCode == Activity.RESULT_OK) {
+            mPresenter.start();
         }
     }
 
     @Override
     public void selectServerConfig(TrojanConfig config) {
         FragmentActivity activity = getActivity();
+        if (activity instanceof MainActivity) {
+            ((MainActivity) activity).onServerSelected(config);
+            return;
+        }
         if (activity != null) {
             Intent intent = new Intent();
             intent.putExtra(KEY_TROJAN_CONFIG, config);
@@ -175,28 +145,22 @@ public class ServerListFragment extends BaseFragment implements ServerListContra
         }
     }
 
+    /** Reloads the server list; used when the tab is shown again. */
+    public void refresh() {
+        if (mPresenter != null) {
+            mPresenter.start();
+        }
+    }
+
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        menu.clear();
         inflater.inflate(R.menu.menu_server_list, menu);
-        MenuItem item = menu.getItem(0);
-        // Tint scan QRCode icon to white.
-        if (item.getIcon() != null) {
-            Drawable drawable = item.getIcon();
-            Drawable wrapper = DrawableCompat.wrap(drawable);
-            drawable.mutate();
-            DrawableCompat.setTint(wrapper, ContextCompat.getColor(mContext, android.R.color.white));
-            item.setIcon(drawable);
-        }
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_scan_qr_code:
-                mPresenter.gotoScanQRCode();
-                return true;
             case R.id.action_import_from_file:
                 mPresenter.displayImportFileDescription();
                 return true;

@@ -53,4 +53,31 @@
         <item name="android:paddingStart">15dp</item>
         <item name="android:paddingEnd">15dp</item>
     </style>
+
+    <style name="DomainRuleTab">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:background">@drawable/bg_domain_tab</item>
+        <item name="android:gravity">center</item>
+        <item name="android:paddingTop">8dp</item>
+        <item name="android:paddingBottom">8dp</item>
+        <item name="android:textColor">@color/domain_tab_text</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="DomainRulePolicyBtn">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:background">@drawable/bg_domain_tab</item>
+        <item name="android:gravity">center</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingTop">6dp</item>
+        <item name="android:paddingEnd">12dp</item>
+        <item name="android:paddingBottom">6dp</item>
+        <item name="android:textColor">@color/domain_tab_text</item>
+        <item name="android:textSize">13sp</item>
+    </style>
 </resources>

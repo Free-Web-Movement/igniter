@@ -40,4 +40,39 @@ public class AccessDatabase {
         }
         return configList;
     }
+
+    /** Replaces the whole server list with the given configs, atomically. */
+    public static void replaceServers(Context context, List<TrojanConfig> configs) {
+        AppDatabase appDatabase = AccessDatabase.getDatabase(context);
+        ServerDao serverDao = appDatabase.serverDao();
+        appDatabase.runInTransaction(() -> {
+            serverDao.deleteAll();
+            for (TrojanConfig config : configs) {
+                serverDao.insert(toServer(config));
+            }
+        });
+    }
+
+    /** Persists a server unless one with the same hostname/port already exists. */
+    public static void insertServerIfMissing(Context context, TrojanConfig config) {
+        if (config == null || config.getRemoteAddr() == null || config.getRemoteAddr().isEmpty()) {
+            return;
+        }
+        AppDatabase appDatabase = AccessDatabase.getDatabase(context);
+        ServerDao serverDao = appDatabase.serverDao();
+        if (serverDao.findByHostAndPort(config.getRemoteAddr(), config.getRemotePort()) != null) {
+            return;
+        }
+        serverDao.insert(toServer(config));
+    }
+
+    private static Server toServer(TrojanConfig config) {
+        Server server = new Server();
+        server.hostname = config.getRemoteAddr();
+        server.port = config.getRemotePort();
+        server.password = config.getPassword();
+        server.local_port = config.getLocalPort();
+        server.localhost = "127.0.0.1";
+        return server;
+    }
 }

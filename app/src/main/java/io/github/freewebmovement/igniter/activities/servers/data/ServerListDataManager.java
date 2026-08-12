@@ -1,7 +1,5 @@
 package io.github.freewebmovement.igniter.activities.servers.data;
 
-import android.util.Log;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,7 +14,24 @@ public class ServerListDataManager implements ServerListDataSource {
 
     @Override
     public List<TrojanConfig> loadServerConfigList() {
-        return new ArrayList<>(AccessDatabase.readServers(IgniterApplication.getApplication()));
+        List<TrojanConfig> list = new ArrayList<>(AccessDatabase.readServers(IgniterApplication.getApplication()));
+        TrojanConfig current = IgniterApplication.getApplication().trojanConfig;
+        if (current != null && current.getRemoteAddr() != null && !current.getRemoteAddr().isEmpty()
+                && !containsServer(list, current)) {
+            list.add(0, current);
+            AccessDatabase.insertServerIfMissing(IgniterApplication.getApplication(), current);
+        }
+        return list;
+    }
+
+    private boolean containsServer(List<TrojanConfig> list, TrojanConfig config) {
+        for (TrojanConfig c : list) {
+            if (c.getRemoteAddr() != null && c.getRemoteAddr().equals(config.getRemoteAddr())
+                    && c.getRemotePort() == config.getRemotePort()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -30,7 +45,6 @@ public class ServerListDataManager implements ServerListDataSource {
     public void saveServerConfig(TrojanConfig config) {
         boolean configExisted = false;
         List<TrojanConfig> trojanConfigs = loadServerConfigList();
-        Log.wtf("SERVER_LIST_DATA_MANAGER", "" + trojanConfigs.size());
         for (int i = trojanConfigs.size() - 1; i >= 0; i--) {
             String[] remoteAddress = new String[2];
             int[] remotePort = new int[2];
@@ -54,5 +68,6 @@ public class ServerListDataManager implements ServerListDataSource {
 
     @Override
     public void replaceServerConfigs(List<TrojanConfig> list) {
+        AccessDatabase.replaceServers(IgniterApplication.getApplication(), list);
     }
 }

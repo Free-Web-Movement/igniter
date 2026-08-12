@@ -54,6 +54,48 @@
     <string name="main_menu_action_exempt_all_app">Exempt All Apps</string>
     <string name="main_menu_action_enable_all_app">Enabled All Apps</string>
     <string name="main_menu_action_clash_editor_file_editor">Clash Config File Editor</string>
+    <string name="main_menu_action_domain_monitor">Domain Rules</string>
+    <string name="domain_monitor_apply_hint">Changes take effect after reconnecting the VPN.</string>
+    <string name="domain_monitor_search_hint">Search domain</string>
+    <string name="domain_monitor_add_title">Add Domain</string>
+    <string name="domain_monitor_add_hint">example.com</string>
+    <string name="domain_monitor_add_proxy">Add (Proxy)</string>
+    <string name="domain_monitor_add_direct">Add (Direct)</string>
+    <string name="domain_monitor_clear">Clear list</string>
+    <string name="domain_monitor_locked">%1$s · %2$d hits (locked)</string>
+    <string name="domain_monitor_auto">%1$s · %2$d hits (auto)</string>
+    <string name="domain_monitor_unknown">%1$d hits (auto)</string>
+    <string name="domain_monitor_btn_proxy">Proxy</string>
+    <string name="domain_monitor_btn_direct">Direct</string>
+    <string name="domain_monitor_btn_unlock">Unlock</string>
+    <string name="domain_monitor_tab_manual">手动</string>
+    <string name="domain_monitor_tab_auto">自动</string>
+    <string name="domain_monitor_tab_foreign">国外大网站</string>
+    <string name="domain_monitor_manual_locked">%1$s (locked)</string>
+    <string name="domain_monitor_foreign_default">%1$s (default)</string>
+    <string name="domain_monitor_foreign_locked">%1$s · user rule</string>
+    <string name="domain_monitor_empty_manual">No manual rules yet. Lock a domain in Auto or tap + to add one.</string>
+    <string name="domain_monitor_empty_auto">No traffic observed yet.</string>
+    <string name="domain_monitor_empty_foreign">No sites.</string>
+
+    <!-- Bottom navigation tabs -->
+    <string name="tab_home">连接</string>
+    <string name="tab_servers">服务器</string>
+    <string name="tab_apps">应用</string>
+    <string name="tab_rules">规则</string>
+
+    <!-- Home (connect) page -->
+    <string name="home_status_stopped">已停止</string>
+    <string name="home_status_starting">连接中…</string>
+    <string name="home_status_started">已连接</string>
+    <string name="home_status_stopping">停止中…</string>
+    <string name="home_current_server">当前服务器</string>
+    <string name="home_test_connection">测试连接</string>
+    <string name="home_btn_start">启动</string>
+    <string name="home_btn_stop">停止</string>
+    <string name="home_dns_protected">DNS 防污染已开启</string>
+    <string name="home_tap_server_to_switch">点击切换服务器</string>
+    <string name="home_server_unknown">未选择服务器</string>
 
 
     <string name="action_show_develop_info_logcat">Show develop info in logcat</string>
@@ -62,7 +104,7 @@
     <string name="server_list_file_chooser_msg">Select a TXT file</string>
     <string name="server_list_menu_import_from_file">Import from file</string>
     <string name="server_list_delete_btn">@string/common_delete</string>
-    <string name="server_list_lack_of_camera_permission">Lack of camera permission!</string>
+    <string name="server_list_current">当前</string>
     <string name="server_list_lack_of_read_permission">Lack of read permission!</string>
 
     <string name="main_save_config_btn">Save</string>
@@ -82,10 +124,7 @@
         Please grant read and write external storage permission in Igniter application settings first.
     </string>
 
-    <string name="scan_qr_code_success">Add server success</string>
-    <string name="scan_qr_code_failed">Cannot recognize trojanURL: %s</string>
-    <string name="scan_qr_code">Scan QR</string>
-    <string name="scan_qr_code_camera_error">Camera Error</string>
+    <string name="add_server_success">Add server success</string>
     <string name="exempt_app_search_title">Search Apps</string>
     <string name="menu_action_exempt_app_hide_system_apps">System Apps</string>
     <string name="exempt_app_exit">Exit</string>
@@ -93,6 +132,9 @@
     <string name="exempt_app_loading_tip">Loading…</string>
     <string name="exempt_app_exit_without_saving_confirm">Exit without saving exempt app list?</string>
     <string name="service_is_running">Igniter is running</string>
+    <string name="service_failed">Igniter failed to start</string>
+    <string name="error_establish_vpn">VPN interface creation failed</string>
+    <string name="error_vpn_permission_revoked">VPN permission was revoked, please start again</string>
     <string name="enable_boot_start">Enable Boot Start</string>
     <string name="error_remote_address">Remote Address is Missing or Wrong!</string>
     <string name="error_remote_port">Remote Port is Missing or Wrong!</string>

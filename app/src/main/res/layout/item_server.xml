@@ -20,6 +20,23 @@
         android:textSize="16sp"
         tools:text="www.google.com" />
 
+    <TextView
+        android:id="@+id/currentServerBadge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/bg_badge_current"
+        android:paddingStart="6dp"
+        android:paddingTop="2dp"
+        android:paddingEnd="6dp"
+        android:paddingBottom="2dp"
+        android:text="@string/server_list_current"
+        android:textColor="#1565C0"
+        android:textSize="11sp"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"

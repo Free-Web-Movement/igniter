@@ -11,7 +11,9 @@ import android.content.IntentFilter;
 import android.content.pm.ServiceInfo;
 import android.net.VpnService;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
@@ -48,9 +50,10 @@ public class ProxyService extends VpnService implements TestConnection.OnResultL
     }
 
     private static final String TUN2SOCKS5_SERVER_HOST = "127.0.0.1";
+    private final Handler mHandler = new Handler(Looper.getMainLooper());
     private @ProxyState
-    int state = STATE_NONE;
-    private ParcelFileDescriptor pfd;
+    volatile int state = STATE_NONE;
+    private volatile ParcelFileDescriptor pfd;
     private ExemptAppDataSource mExemptAppDataSource;
     /**
      * Receives stop event.ate
@@ -231,17 +234,9 @@ public class ProxyService extends VpnService implements TestConnection.OnResultL
     }
 
     public VpnService.Builder getVPNBuilder() {
-        VpnService.Builder b = new VpnService.Builder();
-
-        b.setSession("trojanVPNService")
-                .addAddress("10.8.0.2", 24) // Assign an IP address to the VPN interface
-                .addRoute("0.0.0.0", 0);   // Route all traffic through the VPN
-
-        b.addDnsServer("8.8.8.8");   // Google Public DNS
-        b.addDnsServer("8.8.4.4");   // Google Public DNS
-        b.addDnsServer("1.1.1.1");
-
-        return b;
+        // The VPN interface (addresses, routes, DNS, MTU) is fully configured in
+        // NetWorkConfig.establish() to keep a single source of truth.
+        return new VpnService.Builder();
     }
 
     @Override
@@ -252,7 +247,7 @@ public class ProxyService extends VpnService implements TestConnection.OnResultL
         }
         // In order to keep the service long-lived, starting the service by Context.startForegroundService()
         // might be the easiest way. According to the official indication, a service which is started
-        // by C     onText.startForegroundService() must call Service.startForeground() within 5 seconds.
+        // by Context.startForegroundService() must call Service.startForeground() within 5 seconds.
         // Otherwise the process will be shutdown and user will get an ANR notification.
         startForegroundNotification(getString(R.string.notification_channel_id));
         setState(STARTING);
@@ -260,38 +255,83 @@ public class ProxyService extends VpnService implements TestConnection.OnResultL
         Set<String> packageNames = getExemptAppPackageNames();
         packageNames.add(getPackageName());
 
-
-        pfd = NetWorkConfig.establish(
-                app,
-                getVPNBuilder(),
-                getString(R.string.app_name),
-                packageNames
-        );
-        Log.i("VPN", "pfd established");
-        if (pfd == null) {
-            stop();
-            return START_NOT_STICKY;
-        }
-        String statusStr = NetWorkConfig.startService(app, pfd.detachFd());
-        setState(STARTED);
-
-        Intent openMainActivityIntent = new Intent(this, MainActivity.class);
-        openMainActivityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        PendingIntent pendingOpenMainActivityIntent = PendingIntent.getActivity(this, 0, openMainActivityIntent, PendingIntent.FLAG_IMMUTABLE);
-        final String channelId = getString(R.string.notification_channel_id);
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setContentTitle(getString(R.string.service_is_running))
-                .setContentText(statusStr)
-                .setStyle(new NotificationCompat.BigTextStyle()
-                        .bigText(statusStr))
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                // Set the intent that will fire when the user taps the notification
-                .setContentIntent(pendingOpenMainActivityIntent)
-                .setAutoCancel(false)
-                .setOngoing(true);
-        startForeground(PROXY_SERVICE_STATUS_NOTIFY_MSG_ID, builder.build());
+        // VPN setup performs blocking I/O (port probing, native startup) and must
+        // not run on the main thread.
+        new Thread(() -> startVpn(packageNames), "igniter-vpn-start").start();
         return START_STICKY;
+    }
+
+    private void startVpn(Set<String> packageNames) {
+        final String statusStr;
+        try {
+            pfd = NetWorkConfig.establish(
+                    app,
+                    getVPNBuilder(),
+                    getString(R.string.app_name),
+                    packageNames
+            );
+            Log.i("VPN", "pfd established");
+            if (pfd == null) {
+                throw new IllegalStateException(getString(R.string.error_establish_vpn));
+            }
+            statusStr = NetWorkConfig.startService(app, pfd.detachFd());
+        } catch (SecurityException e) {
+            Log.e(TAG, "VPN permission revoked", e);
+            failStart(getString(R.string.error_vpn_permission_revoked));
+            return;
+        } catch (Exception e) {
+            Log.e(TAG, "failed to start proxy", e);
+            String message = e.getMessage();
+            failStart(message == null || message.isEmpty() ? e.toString() : message);
+            return;
+        }
+        mHandler.post(() -> {
+            setState(STARTED);
+            Intent openMainActivityIntent = new Intent(this, MainActivity.class);
+            openMainActivityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            PendingIntent pendingOpenMainActivityIntent = PendingIntent.getActivity(this, 0, openMainActivityIntent, PendingIntent.FLAG_IMMUTABLE);
+            final String channelId = getString(R.string.notification_channel_id);
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
+                    .setSmallIcon(R.drawable.ic_launcher_foreground)
+                    .setContentTitle(getString(R.string.service_is_running))
+                    .setContentText(statusStr)
+                    .setStyle(new NotificationCompat.BigTextStyle()
+                            .bigText(statusStr))
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    // Set the intent that will fire when the user taps the notification
+                    .setContentIntent(pendingOpenMainActivityIntent)
+                    .setAutoCancel(false)
+                    .setOngoing(true);
+            startForeground(PROXY_SERVICE_STATUS_NOTIFY_MSG_ID, builder.build());
+        });
+    }
+
+    /**
+     * Stops the VPN after a startup failure, showing the reason briefly so the
+     * user can tell why the connection did not come up.
+     */
+    private void failStart(String message) {
+        Log.e(TAG, "failStart: " + message);
+        try {
+            Notification notification = new NotificationCompat.Builder(this, getString(R.string.notification_channel_id))
+                    .setSmallIcon(R.drawable.ic_launcher_foreground)
+                    .setCategory(NotificationCompat.CATEGORY_SERVICE)
+                    .setContentTitle(getString(R.string.service_failed))
+                    .setContentText(message)
+                    .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .setAutoCancel(true)
+                    .build();
+            NotificationManager nm = getSystemService(NotificationManager.class);
+            nm.notify(PROXY_SERVICE_STATUS_NOTIFY_MSG_ID, notification);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        setState(STOPPED);
+        NetWorkConfig.stop(app);
+        pfd = null;
+        // Give the error notification a moment to be seen before the process is recycled.
+        new Handler(Looper.getMainLooper()).postDelayed(this::stop, 1500);
     }
 
     private void shutdown() {

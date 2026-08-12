@@ -37,16 +37,26 @@ public class Storage {
     }
 
     public static byte[] read(String filename) {
-        try {
-            File file = new File(filename);
-            if (!file.exists()) {
-                return null;
-            }
-            FileInputStream fis = new FileInputStream(file);
+        File file = new File(filename);
+        if (!file.exists()) {
+            return null;
+        }
+        try (FileInputStream fis = new FileInputStream(file)) {
             int length = (int) file.length();
             byte[] content = new byte[length];
-            int readBytes = fis.read(content);
-            assert readBytes == length;
+            int offset = 0;
+            while (offset < length) {
+                int read = fis.read(content, offset, length - offset);
+                if (read < 0) {
+                    break;
+                }
+                offset += read;
+            }
+            if (offset < length) {
+                byte[] truncated = new byte[offset];
+                System.arraycopy(content, 0, truncated, 0, offset);
+                return truncated;
+            }
             return content;
         } catch (Exception e) {
             e.printStackTrace();
@@ -123,10 +133,15 @@ public class Storage {
     public byte[] readRawBytes(int id) {
         try {
             Resources res = path.context.getResources();
-            InputStream inputStream = res.openRawResource(id);
-            byte[] b = new byte[inputStream.available()];
-            inputStream.read(b);
-            return b;
+            try (InputStream inputStream = res.openRawResource(id);
+                 java.io.ByteArrayOutputStream output = new java.io.ByteArrayOutputStream()) {
+                byte[] buffer = new byte[8192];
+                int len;
+                while ((len = inputStream.read(buffer)) != -1) {
+                    output.write(buffer, 0, len);
+                }
+                return output.toByteArray();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

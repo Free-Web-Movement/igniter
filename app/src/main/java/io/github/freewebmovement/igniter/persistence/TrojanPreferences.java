@@ -40,7 +40,7 @@ public class TrojanPreferences {
         sharedPreferences = context.getSharedPreferences(TROJAN_PREFERENCE_NAME, Context.MODE_PRIVATE);
         enableIPV6 = sharedPreferences.getBoolean(KEY_ENABLE_IPV6, false);
         everStarted = sharedPreferences.getBoolean(KEY_EVER_STARTED, false);
-        enableClash = sharedPreferences.getBoolean(KEY_ENABLE_CLASH, false);
+        enableClash = sharedPreferences.getBoolean(KEY_ENABLE_CLASH, true);
         enableLan = sharedPreferences.getBoolean(KEY_ENABLE_LAN, false);
         enableAutoStart = sharedPreferences.getBoolean(KEY_ENABLE_AUTO_START, false);
         enableBootStart = sharedPreferences.getBoolean(KEY_ENABLE_BOOT_START, false);

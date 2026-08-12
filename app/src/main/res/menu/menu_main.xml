@@ -26,6 +26,12 @@
         android:title="@string/main_menu_action_clash_editor_file_editor" />
 
     <item
+        android:id="@+id/action_view_domain_monitor"
+        android:icon="@drawable/ic_action_editor"
+        android:orderInCategory="100"
+        android:title="@string/main_menu_action_domain_monitor" />
+
+    <item
         android:id="@+id/action_view_exempt_app"
         android:icon="@drawable/ic_action_apps"
         android:orderInCategory="100"

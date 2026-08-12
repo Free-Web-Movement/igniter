@@ -6,22 +6,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".activities.exempt.fragment.ExemptAppFragment">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/exemptAppTopBar"
-        style="@style/CommonToolBar"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/top_bar_height"
-        tools:ignore="MissingConstraints" />
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/exemptAppRv"
-        app:layout_constraintTop_toBottomOf="@id/exemptAppTopBar"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_width="match_parent"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:reverseLayout="false"
-        android:layout_height="0dp" />
+        app:reverseLayout="false" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -13,12 +13,9 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.SwitchCompat;
-import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -31,6 +28,7 @@ import io.github.freewebmovement.igniter.IgniterApplication;
 import io.github.freewebmovement.igniter.R;
 import io.github.freewebmovement.igniter.common.app.BaseFragment;
 import io.github.freewebmovement.igniter.common.dialog.LoadingDialog;
+import io.github.freewebmovement.igniter.activities.MainActivity;
 import io.github.freewebmovement.igniter.activities.exempt.adapter.AppInfoAdapter;
 import io.github.freewebmovement.igniter.activities.exempt.contract.ExemptAppContract;
 import io.github.freewebmovement.igniter.persistence.data.AppInfo;
@@ -38,13 +36,18 @@ import io.github.freewebmovement.igniter.persistence.data.AppInfo;
 public class ExemptAppFragment extends BaseFragment implements ExemptAppContract.View {
     public static final String TAG = "ExemptAppFragment";
     private ExemptAppContract.Presenter mPresenter;
-    private Toolbar mTopBar;
     private RecyclerView mAppRv;
     private AppInfoAdapter mAppInfoAdapter;
     private LoadingDialog mLoadingDialog;
     IgniterApplication app;
     public ExemptAppFragment() {
         // Required empty public constructor
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
     }
 
     public static ExemptAppFragment newInstance() {
@@ -69,16 +72,10 @@ public class ExemptAppFragment extends BaseFragment implements ExemptAppContract
     }
 
     private void findViews() {
-        mTopBar = findViewById(R.id.exemptAppTopBar);
         mAppRv = findViewById(R.id.exemptAppRv);
     }
 
     private void initViews() {
-        FragmentActivity activity = getActivity();
-        if (activity instanceof AppCompatActivity) {
-            ((AppCompatActivity) activity).setSupportActionBar(mTopBar);
-            setHasOptionsMenu(true);
-        }
         mAppInfoAdapter = new AppInfoAdapter();
         mAppRv.setAdapter(mAppInfoAdapter);
         mAppRv.addItemDecoration(new DividerItemDecoration(mContext, LinearLayoutManager.VERTICAL));
@@ -91,7 +88,6 @@ public class ExemptAppFragment extends BaseFragment implements ExemptAppContract
     @SuppressLint("RestrictedApi")
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        menu.clear();
         inflater.inflate(R.menu.menu_exempt_app, menu);
         if(menu instanceof MenuBuilder){
             MenuBuilder m = (MenuBuilder) menu;
@@ -184,6 +180,10 @@ public class ExemptAppFragment extends BaseFragment implements ExemptAppContract
     @Override
     public void exit(boolean configurationChanged) {
         Activity activity = getActivity();
+        if (activity instanceof MainActivity) {
+            ((MainActivity) activity).openHomeTab();
+            return;
+        }
         if (activity != null) {
             activity.setResult(configurationChanged ? Activity.RESULT_OK : Activity.RESULT_CANCELED);
             activity.finish();

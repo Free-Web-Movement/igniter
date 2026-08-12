@@ -114,23 +114,6 @@ public class ServerListPresenter implements ServerListContract.Presenter {
     }
 
     @Override
-    public void addServerConfig(final String trojanUrl) {
-        Threads.instance().runOnWorkThread(new Task() {
-            @Override
-            public void onRun() {
-                TrojanConfig config = TrojanConfig.fromURIString(trojanUrl);
-                if (config != null) {
-                    mDataManager.saveServerConfig(config);
-                    loadConfigs();
-                    mView.showAddTrojanConfigSuccess();
-                } else {
-                    mView.showQRCodeScanError(trojanUrl);
-                }
-            }
-        });
-    }
-
-    @Override
     public void handleServerSelection(TrojanConfig config) {
         mView.selectServerConfig(config);
     }
@@ -154,11 +137,6 @@ public class ServerListPresenter implements ServerListContract.Presenter {
                 loadConfigs();
             }
         });
-    }
-
-    @Override
-    public void gotoScanQRCode() {
-        mView.gotoScanQRCode();
     }
 
     private void loadConfigs() {

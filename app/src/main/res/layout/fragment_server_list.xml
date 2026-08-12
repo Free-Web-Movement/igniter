@@ -6,20 +6,23 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".activities.servers.fragment.ServerListFragment">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        style="@style/CommonToolBar"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/top_bar_height"
-        tools:ignore="MissingConstraints"  />
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/serverListRv"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbar"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_width="0dp"
-        android:layout_height="0dp" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:contentDescription="@string/domain_monitor_add_title"
+        android:src="@drawable/ic_baseline_add_24"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:tint="@android:color/white" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -11,6 +11,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.github.freewebmovement.igniter.IgniterApplication;
 import io.github.freewebmovement.igniter.R;
 import io.github.freewebmovement.igniter.persistence.TrojanConfig;
 
@@ -68,11 +69,13 @@ public class ServerListAdapter extends RecyclerView.Adapter<ViewHolder> {
 class ViewHolder extends RecyclerView.ViewHolder {
     private TrojanConfig mConfig;
     private TextView mRemoteAddrTv;
+    private TextView mCurrentBadge;
     private ServerListAdapter.OnItemClickListener itemClickListener;
 
     public ViewHolder(@NonNull final View itemView) {
         super(itemView);
         mRemoteAddrTv = itemView.findViewById(R.id.serverAddrTv);
+        mCurrentBadge = itemView.findViewById(R.id.currentServerBadge);
         itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -94,6 +97,11 @@ class ViewHolder extends RecyclerView.ViewHolder {
     public void bindData(TrojanConfig config) {
         this.mConfig = config;
         mRemoteAddrTv.setText(config.getRemoteAddr());
+        TrojanConfig current = IgniterApplication.getApplication().trojanConfig;
+        boolean isCurrent = current != null
+                && config.getRemoteAddr().equals(current.getRemoteAddr())
+                && config.getRemotePort() == current.getRemotePort();
+        mCurrentBadge.setVisibility(isCurrent ? View.VISIBLE : View.GONE);
     }
 
     public void bindListener(ServerListAdapter.OnItemClickListener listener) {
