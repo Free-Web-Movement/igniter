@@ -46,14 +46,13 @@ class ProxyService : VpnService(), TestConnection.OnResultListener {
     private var pfd: ParcelFileDescriptor? = null
     private var mExemptAppDataSource: ExemptAppDataSource? = null
     /**
-     * Receives stop event.
+     * Receives stop/restart events.
      */
     private val mStopBroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            val stopAction = getString(R.string.stop_service)
-            val action = intent.action
-            if (stopAction == action) {
-                stop()
+            when (intent.action) {
+                getString(R.string.stop_service) -> stop()
+                getString(R.string.restart_service) -> restart()
             }
         }
     }
@@ -106,6 +105,7 @@ class ProxyService : VpnService(), TestConnection.OnResultListener {
         Log.i(TAG, "onCreate")
         val filter = IntentFilter()
         filter.addAction(getString(R.string.stop_service))
+        filter.addAction(getString(R.string.restart_service))
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             // only for gingerbread and newer versions
             registerReceiver(mStopBroadcastReceiver, filter, RECEIVER_EXPORTED)
@@ -355,6 +355,25 @@ class ProxyService : VpnService(), TestConnection.OnResultListener {
         shutdown()
         // this is essential for goMobile aar
         android.os.Process.killProcess(android.os.Process.myPid())
+    }
+
+    /**
+     * Restarts the proxy so the freshly saved exempt-app list takes effect on
+     * the VPN interface. The native (go) stack cannot be re-initialized within
+     * the same process, so the activity is relaunched (which auto-starts the
+     * proxy in the fresh process) before tearing down this process.
+     */
+    fun restart() {
+        Log.i(TAG, "restarting proxy to apply new exempt app configuration")
+        try {
+            val intent = Intent(this, MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            intent.putExtra(MainActivity.EXTRA_AUTO_START_PROXY, true)
+            startActivity(intent)
+        } catch (e: Exception) {
+            Log.e(TAG, "failed to relaunch activity on restart", e)
+        }
+        stop()
     }
 
     companion object {

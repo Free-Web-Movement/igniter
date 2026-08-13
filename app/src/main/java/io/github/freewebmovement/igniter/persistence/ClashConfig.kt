@@ -137,27 +137,25 @@ class ClashConfig(private val filename: String) {
     }
 
     /**
-     * The Clash routing mode: [ClashConstants.MODE_RULE], [ClashConstants.MODE_GLOBAL]
-     * or [ClashConstants.MODE_DIRECT]. Unknown or missing values fall back to
-     * [ClashConstants.MODE_RULE].
+     * The Clash routing mode. This project only uses rule-based routing (the
+     * domain rules in the `rules:` section), so the mode is always Rule and
+     * Global/Direct are never offered.
      */
-    fun getMode(): String {
-        val mode = data[ClashConstants.KEY_MODE] as? String ?: return ClashConstants.MODE_RULE
-        return if (mode in ClashConstants.MODES) mode else ClashConstants.MODE_RULE
-    }
+    fun getMode(): String = ClashConstants.MODE_RULE
 
     /**
-     * Persists a new routing mode (e.g. [ClashConstants.MODE_RULE]). Takes
-     * effect on the next connection; if the proxy is already running the new
-     * mode is picked up when the service is restarted.
+     * Rewrites the `mode:` field of the Clash config to Rule. Called before
+     * starting Clash so a stale Global/Direct value left by an old build can
+     * never bypass the domain rules.
      */
-    fun setMode(mode: String) {
-        val normalized = mode.takeIf { it in ClashConstants.MODES } ?: ClashConstants.MODE_RULE
-        data[ClashConstants.KEY_MODE] = normalized
-        try {
-            save(filename)
-        } catch (e: IOException) {
-            e.printStackTrace()
+    fun ensureRuleMode() {
+        if (data[ClashConstants.KEY_MODE] != ClashConstants.MODE_RULE) {
+            data[ClashConstants.KEY_MODE] = ClashConstants.MODE_RULE
+            try {
+                save(filename)
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
         }
     }
 

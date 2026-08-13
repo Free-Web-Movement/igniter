@@ -122,6 +122,7 @@ object NetWorkConfig {
         var trojanPort: Int = 0
         if (enableClash) {
             clashSocksPort = app.clashConfig.getPort()
+            app.clashConfig.ensureRuleMode()
             val configError = app.clashConfig.validateConfig()
             if (configError != null) {
                 throw IllegalStateException("invalid clash config: $configError")

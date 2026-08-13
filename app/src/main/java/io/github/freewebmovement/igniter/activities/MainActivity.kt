@@ -5,24 +5,34 @@ import android.app.Activity
 import android.content.Intent
 import android.net.VpnService
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.os.RemoteException
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
+import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.ViewModelProvider
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import io.github.freewebmovement.igniter.IgniterApplication
 import io.github.freewebmovement.igniter.R
 import io.github.freewebmovement.igniter.activities.exempt.fragment.ExemptAppFragment
 import io.github.freewebmovement.igniter.activities.exempt.presenter.ExemptAppPresenter
 import io.github.freewebmovement.igniter.common.dialog.AppSheet
+import io.github.freewebmovement.igniter.common.dialog.AppSheetHost
 import io.github.freewebmovement.igniter.common.os.Task
 import io.github.freewebmovement.igniter.common.os.Threads
 import io.github.freewebmovement.igniter.connection.TrojanConnection
@@ -30,12 +40,14 @@ import io.github.freewebmovement.igniter.persistence.TrojanConfig
 import io.github.freewebmovement.igniter.persistence.database.AccessDatabase
 import io.github.freewebmovement.igniter.proxy.aidl.ITrojanService
 import io.github.freewebmovement.igniter.services.ProxyService
+import io.github.freewebmovement.igniter.theme.IgniterTheme
+import io.github.freewebmovement.igniter.ui.MainShell
 import java.io.IOException
 
 /**
  * Tab shell hosting the four pages: servers, apps, rules and settings.
  */
-class MainActivity : AppCompatActivity(), TrojanConnection.Callback {
+class MainActivity : AppCompatActivity(), AppSheetHost, TrojanConnection.Callback {
     companion object {
         private const val TAG = "MainActivity"
         private const val READ_WRITE_EXT_STORAGE_PERMISSION_REQUEST = 514
@@ -50,6 +62,12 @@ class MainActivity : AppCompatActivity(), TrojanConnection.Callback {
         const val TAB_APPS = 1
         const val TAB_RULES = 2
         const val TAB_SETTINGS = 3
+
+        /**
+         * Intent extra set by [ProxyService.restart] before the process is torn
+         * down, so the relaunched activity automatically reconnects the proxy.
+         */
+        const val EXTRA_AUTO_START_PROXY = "auto_start_proxy"
     }
 
     private val app: IgniterApplication
@@ -71,44 +89,75 @@ class MainActivity : AppCompatActivity(), TrojanConnection.Callback {
     private var mAppsFragment: ExemptAppFragment? = null
     private var mRulesFragment: RulesFragment? = null
     private var mSettingsFragment: SettingsFragment? = null
-    private var mBottomNav: BottomNavigationView? = null
-    private var mCurrentTab = TAB_HOME
+    private var mCurrentTab by mutableStateOf(TAB_HOME)
+    private var fragmentsCreated = false
     @ProxyService.ProxyState
     private var proxyState: Int = ProxyService.STATE_NONE
     private val connection = TrojanConnection(false)
     private var trojanService: ITrojanService? = null
 
+    // AppSheet overlay state
+    private var sheetContent by mutableStateOf<(@Composable () -> Unit)?>(null)
+    private var sheetDismissOnOutsideTap by mutableStateOf(false)
+    private var sheetSeq = 0
+    private var activeSheetSeq = 0
+
+    override fun presentSheet(
+        content: @Composable () -> Unit,
+        dismissOnOutsideTap: Boolean
+    ): () -> Unit {
+        val seq = ++sheetSeq
+        activeSheetSeq = seq
+        sheetContent = content
+        sheetDismissOnOutsideTap = dismissOnOutsideTap
+        return {
+            if (activeSheetSeq == seq) {
+                sheetContent = null
+                sheetDismissOnOutsideTap = false
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
-        supportActionBar?.let {
-            it.setDisplayShowHomeEnabled(true)
-            it.setIcon(R.mipmap.ic_launcher)
-            it.title = getString(R.string.app_name)
-        }
-
-        mBottomNav = findViewById(R.id.bottomNav)
-        mBottomNav!!.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.tab_apps -> switchTab(TAB_APPS)
-                R.id.tab_rules -> switchTab(TAB_RULES)
-                R.id.tab_settings -> switchTab(TAB_SETTINGS)
-                else -> switchTab(TAB_HOME)
-            }
-            true
-        }
-
-        createFragments()
-
         connection.connect(this, this)
+        setContent {
+            IgniterTheme {
+                MainShell(
+                    currentTab = mCurrentTab,
+                    onTabSelected = { switchTab(it) },
+                    sheetContent = sheetContent,
+                    sheetDismissOnOutsideTap = sheetDismissOnOutsideTap,
+                    onDismissSheet = { AppSheet.dismissActive() },
+                    fragmentContent = {
+                        AndroidView(
+                            factory = { ctx ->
+                                FragmentContainerView(ctx).apply {
+                                    id = R.id.fragmentContainer
+                                }
+                            },
+                            update = { container ->
+                                if (!fragmentsCreated) {
+                                    fragmentsCreated = true
+                                    createFragments()
+                                }
+                            },
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                )
+            }
+        }
+
         if (!app.storage.isExternalWritable() &&
             ActivityCompat.shouldShowRequestPermissionRationale(
                 this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
         ) {
             requestReadWriteExternalStoragePermission()
+        }
+
+        if (intent?.getBooleanExtra(EXTRA_AUTO_START_PROXY, false) == true) {
+            startProxy()
         }
     }
 
@@ -157,28 +206,22 @@ class MainActivity : AppCompatActivity(), TrojanConnection.Callback {
         mRulesFragment?.let { ft.hide(it) }
         mSettingsFragment?.let { ft.hide(it) }
         val selected: Fragment
-        val titleRes: Int
         when (tab) {
             TAB_APPS -> {
                 selected = mAppsFragment!!
-                titleRes = R.string.tab_apps
             }
             TAB_RULES -> {
                 selected = mRulesFragment!!
-                titleRes = R.string.tab_rules
             }
             TAB_SETTINGS -> {
                 selected = mSettingsFragment!!
-                titleRes = R.string.tab_settings
             }
             else -> {
                 selected = mHomeFragment!!
-                titleRes = R.string.app_name
             }
         }
         ft.show(selected)
         ft.commitAllowingStateLoss()
-        supportActionBar?.title = getString(titleRes)
         if (selected === mHomeFragment) {
             homeViewModel.refreshServer()
             homeViewModel.refreshRoute()
@@ -241,9 +284,25 @@ class MainActivity : AppCompatActivity(), TrojanConnection.Callback {
     }
 
     fun stopProxy() {
-        if (proxyState == ProxyService.STARTED) {
+        if (proxyState == ProxyService.STARTING || proxyState == ProxyService.STARTED) {
             app.stopProxyService()
         }
+    }
+
+    /**
+     * Restarts a running proxy so saved exempt-app changes take effect on the
+     * VPN interface. The native go stack cannot restart in-process, so the
+     * whole app process is relaunched; the relaunch auto-connects again.
+     */
+    fun restartProxy() {
+        if (proxyState != ProxyService.STARTING && proxyState != ProxyService.STARTED) {
+            return
+        }
+        Toast.makeText(this, R.string.main_proxy_restarting_tip, Toast.LENGTH_LONG).show()
+        // Let the toast show before the process is killed.
+        Handler(Looper.getMainLooper()).postDelayed({
+            app.restartProxyService()
+        }, 1500)
     }
 
     fun isProxyRunning(): Boolean {

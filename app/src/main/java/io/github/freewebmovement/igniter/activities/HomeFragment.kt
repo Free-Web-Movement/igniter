@@ -4,9 +4,6 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -29,12 +26,12 @@ import io.github.freewebmovement.igniter.persistence.database.Server
 import io.github.freewebmovement.igniter.services.ProxyService
 import io.github.freewebmovement.igniter.services.ServerPingService
 import io.github.freewebmovement.igniter.theme.IgniterTheme
-import io.github.freewebmovement.igniter.ui.home.HomeScreen
+import io.github.freewebmovement.igniter.ui.home.HomeTopBar
 
 /**
  * Proxy servers page: current state, a big start/stop toggle, a connection test,
  * the proxy route summary and the server list with add/select/delete/import.
- * UI is Jetpack Compose via [HomeScreen].
+ * UI is Jetpack Compose via [HomeTopBar].
  */
 class HomeFragment : Fragment() {
 
@@ -75,18 +72,13 @@ class HomeFragment : Fragment() {
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 IgniterTheme {
-                    HomeScreen(
+                    HomeTopBar(
                         proxyState = mProxyState,
                         serverSummary = mServerSummary,
                         routeSummary = mRouteSummary,
@@ -95,20 +87,19 @@ class HomeFragment : Fragment() {
                         pingData = mPingData,
                         currentHost = mCurrentHost,
                         currentPort = mCurrentPort,
+                        onTestConnection = { (activity as? MainActivity)?.testConnection() },
+                        onImportFromFile = { fileImportLauncher.launch("text/plain") },
                         onConnectClick = {
-                            val activity = activity as? MainActivity ?: return@HomeScreen
-                            if (activity.isProxyRunning()) {
-                                activity.stopProxy()
+                            val act = activity as? MainActivity ?: return@HomeTopBar
+                            val state = act.getProxyState()
+                            if (state == ProxyService.STARTED || state == ProxyService.STARTING) {
+                                act.stopProxy()
                             } else {
-                                activity.startProxy()
+                                act.startProxy()
                             }
                         },
-                        onTestClick = {
-                            (activity as? MainActivity)?.testConnection()
-                        },
-                        onDomainRouteClick = {
-                            (activity as? MainActivity)?.openRulesTab()
-                        },
+                        onTestClick = { (activity as? MainActivity)?.testConnection() },
+                        onDomainRouteClick = { (activity as? MainActivity)?.openRulesTab() },
                         onAddServerClick = {
                             addServerLauncher.launch(
                                 Intent(requireContext(), AddServerActivity::class.java))
@@ -117,13 +108,11 @@ class HomeFragment : Fragment() {
                             (activity as? MainActivity)?.onServerSelected(toTrojanConfig(server))
                         },
                         onServerPlay = { server ->
-                            val activity = activity as? MainActivity ?: return@HomeScreen
-                            activity.onServerSelected(toTrojanConfig(server))
-                            activity.startProxy()
+                            val act = activity as? MainActivity ?: return@HomeTopBar
+                            act.onServerSelected(toTrojanConfig(server))
+                            act.startProxy()
                         },
-                        onServerStop = {
-                            (activity as? MainActivity)?.stopProxy()
-                        },
+                        onServerStop = { _ -> (activity as? MainActivity)?.stopProxy() },
                         onServerEdit = { server ->
                             val intent = Intent(requireContext(), AddServerActivity::class.java)
                             intent.putExtra(AddServerActivity.EXTRA_SERVER_ID, server.id)
@@ -174,27 +163,6 @@ class HomeFragment : Fragment() {
         config.setPassword(server.password)
         config.setLocalPort(server.local_port)
         return config
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.menu_home, menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val id = item.itemId
-        val activity = activity as? MainActivity
-        if (activity == null) {
-            return false
-        }
-        if (id == R.id.action_view_test_connection) {
-            activity.testConnection()
-            return true
-        }
-        if (id == R.id.action_import_from_file) {
-            fileImportLauncher.launch("text/plain")
-            return true
-        }
-        return super.onOptionsItemSelected(item)
     }
 
     override fun onResume() {

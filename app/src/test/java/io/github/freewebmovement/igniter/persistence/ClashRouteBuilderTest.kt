@@ -60,4 +60,18 @@ class ClashRouteBuilderTest {
         val input = "mode: Global\nother: 1\n"
         assertEquals(input, builder.build(input, mapOf("example.com" to "Proxy")))
     }
+
+    @Test
+    fun build_secondInjectionKeepsRulesOnItsOwnLine() {
+        // A comment directly precedes `rules:`. The first injection drops the
+        // blank line that separated them; a second injection must not merge the
+        // `rules:` header into the comment (which would absorb the whole rules
+        // block into the previous YAML key and make Clash abort startup).
+        val input = "# from .../clash.yaml\n\nrules:\n  - GEOIP,CN,DIRECT\n"
+        val once = builder.build(input, mapOf("a.com" to "Proxy"))
+        val twice = builder.build(once, mapOf("b.com" to "Proxy"))
+        assertFalse("rules header merged into comment", twice.contains("clash.yamlrules:"))
+        assertEquals(1, twice.split("\n").count { it.trim() == "rules:" })
+        assertTrue(twice.contains("  - DOMAIN-SUFFIX,b.com,Proxy  # user rule"))
+    }
 }

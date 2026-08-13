@@ -6,6 +6,8 @@ import io.github.freewebmovement.igniter.common.mvp.BasePresenter
 import io.github.freewebmovement.igniter.common.mvp.BaseView
 import io.github.freewebmovement.igniter.persistence.data.AppInfo
 
+enum class AppTab { NORMAL, SYSTEM, INTERNATIONAL }
+
 interface ExemptAppContract {
     interface Presenter : BasePresenter {
         fun updateAppInfo(appInfo: AppInfo, position: Int, exempt: Boolean)
@@ -19,7 +21,7 @@ interface ExemptAppContract {
 
         fun filterAppsByName(name: String)
 
-        fun switchTab(showSystemApps: Boolean)
+        fun switchTab(tab: AppTab)
 
         fun selectAll()
 
@@ -33,10 +35,16 @@ interface ExemptAppContract {
         fun showLoading()
 
         @UiThread
+        fun showSaving()
+
+        @UiThread
         fun dismissLoading()
 
         @UiThread
         fun showSaveSuccess()
+
+        @UiThread
+        fun restartProxyIfRunning()
 
         @UiThread
         fun showExitConfirm()

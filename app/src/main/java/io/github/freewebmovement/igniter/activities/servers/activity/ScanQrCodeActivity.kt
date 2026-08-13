@@ -5,20 +5,22 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import io.github.freewebmovement.igniter.R
-import io.github.freewebmovement.igniter.databinding.ActivityScanQrBinding
+import io.github.freewebmovement.igniter.theme.IgniterTheme
+import io.github.freewebmovement.igniter.ui.scanqr.ScanQrScreen
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -27,8 +29,7 @@ import java.util.concurrent.Executors
  */
 class ScanQrCodeActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityScanQrBinding
-    private var cameraProvider: ProcessCameraProvider? = null
+    private var previewView: PreviewView? = null
     private val cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
 
     private val requestPermission = registerForActivityResult(
@@ -44,8 +45,11 @@ class ScanQrCodeActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityScanQrBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContent {
+            IgniterTheme {
+                ScanQrScreen(onPreviewReady = { previewView = it })
+            }
+        }
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
             == PackageManager.PERMISSION_GRANTED
@@ -70,9 +74,9 @@ class ScanQrCodeActivity : AppCompatActivity() {
                 finish()
                 return@addListener
             }
-            cameraProvider = provider
+            val view = previewView ?: return@addListener
             val preview = Preview.Builder().build().also {
-                it.setSurfaceProvider(binding.qrPreviewView.surfaceProvider)
+                it.setSurfaceProvider(view.surfaceProvider)
             }
             val analysis = ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)

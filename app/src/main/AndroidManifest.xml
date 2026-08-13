@@ -35,7 +35,8 @@
         tools:targetApi="s">
         <activity
             android:name=".activities.servers.activity.AddServerActivity"
-            android:exported="false">
+            android:exported="false"
+            android:theme="@style/AppThemeNoTitle">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
@@ -50,7 +51,8 @@
         </activity>
         <activity
             android:name=".activities.ClashFileEditorActivity"
-            android:exported="false">
+            android:exported="false"
+            android:theme="@style/AppThemeNoTitle">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />

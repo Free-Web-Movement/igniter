@@ -51,6 +51,12 @@ class IgniterApplication : Application() {
         sendBroadcast(intent)
     }
 
+    fun restartProxyService() {
+        val intent = Intent(getString(R.string.restart_service))
+        intent.setPackage(packageName)
+        sendBroadcast(intent)
+    }
+
     fun startLauncherActivity() {
         val intent = Intent(this, MainActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP

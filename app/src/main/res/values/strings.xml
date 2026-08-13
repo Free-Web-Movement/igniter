@@ -31,6 +31,7 @@
     <string name="enable_auto_start">Enable Auto Start</string>
     <string name="bc_service_state">io.github.freewebmovement.igniter.BC_SERVICE_STATE</string>
     <string name="stop_service">io.github.freewebmovement.igniter.STOP_SERVICE</string>
+    <string name="restart_service">io.github.freewebmovement.igniter.RESTART_SERVICE</string>
     <string name="bind_service">io.github.freewebmovement.igniter.BIND_SERVICE</string>
     <string name="connected_to__in__ms">Connected to %1$s in %2$sms.</string>
     <string name="failed_to_connect_to__">Failed to connect to %1$s: %2$s</string>
@@ -43,7 +44,7 @@
     <string name="notification_channel_description">Igniter notifications channel</string>
     <string name="notification_starting_service">Starting service</string>
     <string name="main_restart_proxy_service_tip">Restart proxy yourself to apply new exempt apps configuration.</string>
-
+    <string name="main_proxy_restarting_tip">代理配置已更新，正在重启代理…</string>
     <string name="tile_on">Igniter ON</string>
     <string name="tile_starting">Igniter STARTING</string>
     <string name="tile_stopping">Igniter STOPPING</string>
@@ -93,6 +94,7 @@
     <string name="exempt_app_page_desc">选择需要走代理的应用，其余应用直连</string>
     <string name="proxy_tab_normal">普通应用</string>
     <string name="proxy_tab_system">系统应用</string>
+    <string name="proxy_tab_international">默认国际应用</string>
     <string name="proxy_select_all">全部选择</string>
     <string name="proxy_deselect_all">全不选</string>
     <string name="proxy_search_hint">搜索应用</string>
@@ -172,6 +174,7 @@
     <string name="exempt_app_exit">Exit</string>
     <string name="exempt_app_exit_confirm">Are you sure to exit without save?</string>
     <string name="exempt_app_loading_tip">Loading…</string>
+    <string name="exempt_app_saving_tip">保存中…</string>
     <string name="exempt_app_exit_without_saving_confirm">Exit without saving exempt app list?</string>
     <string name="service_is_running">Igniter is running</string>
     <string name="service_failed">Igniter failed to start</string>

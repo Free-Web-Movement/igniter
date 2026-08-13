@@ -1,194 +1,169 @@
 package io.github.freewebmovement.igniter.common.dialog
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
-import android.animation.ObjectAnimator
 import android.app.Activity
-import android.view.Gravity
-import android.view.LayoutInflater
+import android.content.Context
 import android.view.View
-import android.view.ViewGroup
-import android.view.animation.LinearInterpolator
-import android.widget.FrameLayout
-import android.widget.LinearLayout
-import android.widget.ProgressBar
-import android.widget.TextView
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.Fragment
 import io.github.freewebmovement.igniter.R
 
 /**
- * In-layout dialog / menu / loading host.
+ * Hosts Compose-rendered AppSheet overlays (dialog / menu / loading).
  *
- * Everything is rendered inside the activity's content area, above the bottom
- * navigation bar, so no app window ever covers the bottom tab.
+ * The activity renders the overlay inside its own Compose content, above the
+ * bottom navigation bar, so no app window ever covers the bottom tab.
  */
-class AppSheet private constructor(private val layer: FrameLayout) {
+interface AppSheetHost {
+    /**
+     * Presents [content] as an in-layout overlay. Returns a callback that
+     * removes the overlay.
+     */
+    fun presentSheet(
+        content: @Composable () -> Unit,
+        dismissOnOutsideTap: Boolean
+    ): () -> Unit
+}
 
-    private val cardView: View =
-        LayoutInflater.from(layer.context).inflate(R.layout.sheet_dialog, layer, false)
-    private val titleTv: TextView = cardView.findViewById(R.id.sheetTitle)
-    private val messageTv: TextView = cardView.findViewById(R.id.sheetMessage)
-    private val contentFrame: FrameLayout = cardView.findViewById(R.id.sheetContent)
-    private val neutralBtn: TextView = cardView.findViewById(R.id.sheetNeutral)
-    private val negativeBtn: TextView = cardView.findViewById(R.id.sheetNegative)
-    private val positiveBtn: TextView = cardView.findViewById(R.id.sheetPositive)
+data class SheetButton(val text: String?, val onClick: (() -> Unit)?)
 
+/**
+ * In-layout dialog / menu / loading host backed by Jetpack Compose.
+ *
+ * The builder API mirrors the legacy XML overlay so existing call sites keep
+ * working unchanged.
+ */
+class AppSheet private constructor(
+    private val context: Context,
+    private val host: AppSheetHost
+) {
+    private var title: String? = null
+    private var message: String? = null
+    private var content: (@Composable () -> Unit)? = null
+    private var neutral: SheetButton? = null
+    private var negative: SheetButton? = null
+    private var positive: SheetButton? = null
     private var showing = false
-    private var loadingView: View? = null
-    private var loadingAnimator: ObjectAnimator? = null
+    private var remove: (() -> Unit)? = null
+    private var loadingDone = true
+    private var dismissPending = false
 
     fun setTitle(text: String?): AppSheet {
-        titleTv.text = text ?: ""
-        titleTv.visibility = if (text.isNullOrEmpty()) View.GONE else View.VISIBLE
+        title = text
         return this
     }
 
-    fun setTitle(resId: Int): AppSheet = setTitle(layer.context.getString(resId))
+    fun setTitle(resId: Int): AppSheet = setTitle(if (resId == 0) null else context.getString(resId))
 
     fun setMessage(text: String?): AppSheet {
-        messageTv.text = text ?: ""
-        messageTv.visibility = if (text.isNullOrEmpty()) View.GONE else View.VISIBLE
+        message = text
         return this
     }
 
-    fun setMessage(resId: Int): AppSheet = setMessage(layer.context.getString(resId))
+    fun setMessage(resId: Int): AppSheet = setMessage(if (resId == 0) null else context.getString(resId))
 
-    fun setContent(view: View?): AppSheet {
-        contentFrame.removeAllViews()
-        if (view != null) {
-            contentFrame.addView(view)
+    fun setContent(view: View): AppSheet {
+        content = {
+            AndroidView(factory = { view }, modifier = Modifier.fillMaxWidth())
         }
-        contentFrame.visibility = if (view == null) View.GONE else View.VISIBLE
         return this
     }
 
-    fun setNeutralButton(text: String?, onClick: ((View) -> Unit)? = null): AppSheet {
-        configButton(neutralBtn, text, onClick)
+    fun setContent(composable: @Composable () -> Unit): AppSheet {
+        content = composable
         return this
     }
 
-    fun setNeutralButton(resId: Int, onClick: ((View) -> Unit)? = null): AppSheet =
-        setNeutralButton(if (resId == 0) null else layer.context.getString(resId), onClick)
-
-    fun setNegativeButton(text: String?, onClick: ((View) -> Unit)? = null): AppSheet {
-        configButton(negativeBtn, text, onClick)
+    fun setNeutralButton(text: String?, onClick: (() -> Unit)? = null): AppSheet {
+        neutral = SheetButton(text, onClick)
         return this
     }
 
-    fun setNegativeButton(resId: Int, onClick: ((View) -> Unit)? = null): AppSheet =
-        setNegativeButton(if (resId == 0) null else layer.context.getString(resId), onClick)
+    fun setNeutralButton(resId: Int, onClick: (() -> Unit)? = null): AppSheet =
+        setNeutralButton(if (resId == 0) null else context.getString(resId), onClick)
 
-    fun setPositiveButton(text: String?, onClick: ((View) -> Unit)? = null): AppSheet {
-        configButton(positiveBtn, text, onClick)
+    fun setNegativeButton(text: String?, onClick: (() -> Unit)? = null): AppSheet {
+        negative = SheetButton(text, onClick)
         return this
     }
 
-    fun setPositiveButton(resId: Int, onClick: ((View) -> Unit)? = null): AppSheet =
-        setPositiveButton(if (resId == 0) null else layer.context.getString(resId), onClick)
+    fun setNegativeButton(resId: Int, onClick: (() -> Unit)? = null): AppSheet =
+        setNegativeButton(if (resId == 0) null else context.getString(resId), onClick)
 
-    private fun configButton(button: TextView, text: String?, onClick: ((View) -> Unit)?) {
-        if (text.isNullOrEmpty()) {
-            button.visibility = View.GONE
-            return
-        }
-        button.text = text
-        button.visibility = View.VISIBLE
-        button.setOnClickListener {
-            onClick?.invoke(it)
-            dismiss()
-        }
+    fun setPositiveButton(text: String?, onClick: (() -> Unit)? = null): AppSheet {
+        positive = SheetButton(text, onClick)
+        return this
     }
+
+    fun setPositiveButton(resId: Int, onClick: (() -> Unit)? = null): AppSheet =
+        setPositiveButton(if (resId == 0) null else context.getString(resId), onClick)
 
     fun show() {
-        showView(cardView)
+        showing = true
+        loadingDone = true
+        dismissPending = false
+        val sheet = this
+        remove = host.presentSheet({
+            AppSheetDialog(
+                title = title,
+                message = message,
+                content = content,
+                neutral = neutral,
+                negative = negative,
+                positive = positive,
+                onButtonClick = { sheet.dismiss() }
+            )
+        }, dismissOnOutsideTap = true)
+        active = this
     }
 
     fun showMenu(items: List<Pair<String, () -> Unit>>) {
-        val menuView = LayoutInflater.from(layer.context)
-            .inflate(R.layout.sheet_menu, layer, false)
-        val list = menuView.findViewById<LinearLayout>(R.id.sheetMenuList)
-        for ((label, action) in items) {
-            val row = LayoutInflater.from(layer.context)
-                .inflate(R.layout.item_sheet_menu, list, false) as TextView
-            row.text = label
-            row.setOnClickListener {
-                dismiss()
-                action()
-            }
-            list.addView(row)
-        }
-        showView(menuView)
+        showing = true
+        loadingDone = true
+        dismissPending = false
+        val sheet = this
+        remove = host.presentSheet({
+            AppSheetMenu(items = items, onItemClick = { sheet.dismiss() })
+        }, dismissOnOutsideTap = true)
+        active = this
     }
 
     fun showLoading(msg: String) {
-        loadingAnimator?.cancel()
-        val loading = LayoutInflater.from(layer.context)
-            .inflate(R.layout.dialog_loading, layer, false)
-        loading.findViewById<TextView>(R.id.dialogLoadingMsgTv).text = msg
-        loadingView = loading
-        loadingAnimator = ObjectAnimator.ofInt(
-            loading.findViewById<ProgressBar>(R.id.dialogLoadingPb),
-            "progress",
-            0,
-            100
-        ).apply {
-            duration = 800
-            interpolator = LinearInterpolator()
-            start()
-        }
-        layer.removeAllViews()
-        layer.addView(
-            loading,
-            FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                Gravity.CENTER
-            )
-        )
-        showLayer(false)
-    }
-
-    private fun showView(view: View) {
-        layer.removeAllViews()
-        layer.addView(view)
-        showLayer(true)
-    }
-
-    private fun showLayer(dismissOnOutsideTap: Boolean) {
-        layer.visibility = View.VISIBLE
         showing = true
+        loadingDone = false
+        dismissPending = false
+        val sheet = this
+        remove = host.presentSheet({
+            AppSheetLoading(
+                message = msg,
+                onAnimationDone = {
+                    sheet.loadingDone = true
+                    if (sheet.dismissPending) {
+                        sheet.doDismiss()
+                    }
+                }
+            )
+        }, dismissOnOutsideTap = false)
         active = this
-        if (dismissOnOutsideTap) {
-            layer.setOnClickListener { dismiss() }
-        } else {
-            layer.setOnClickListener(null)
-        }
     }
 
     fun dismiss() {
-        val animator = loadingAnimator
-        val view = loadingView
-        if (animator != null && animator.isRunning && view != null && view.isAttachedToWindow) {
-            animator.removeAllListeners()
-            animator.addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) {
-                    if (layer.getChildAt(0) === view) doDismiss()
-                }
-            })
+        if (!loadingDone) {
+            dismissPending = true
             return
         }
         doDismiss()
     }
 
     private fun doDismiss() {
-        loadingAnimator = null
-        loadingView = null
+        remove?.invoke()
+        remove = null
         showing = false
         if (active === this) {
             active = null
         }
-        layer.removeAllViews()
-        layer.visibility = View.GONE
     }
 
     companion object {
@@ -196,9 +171,9 @@ class AppSheet private constructor(private val layer: FrameLayout) {
 
         @JvmStatic
         fun builder(activity: Activity): AppSheet {
-            val layer = activity.findViewById<FrameLayout>(R.id.appDialogLayer)
-                ?: throw IllegalStateException("appDialogLayer is missing in the activity layout")
-            return AppSheet(layer)
+            val host = activity as? AppSheetHost
+                ?: throw IllegalStateException("Activity must implement AppSheetHost")
+            return AppSheet(activity, host)
         }
 
         @JvmStatic

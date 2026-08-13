@@ -76,6 +76,7 @@ fun HomeScreen(
     pingData: Map<String, ServerPingManager.PingInfo>,
     currentHost: String,
     currentPort: Int,
+    modifier: Modifier = Modifier,
     onConnectClick: () -> Unit,
     onTestClick: () -> Unit,
     onDomainRouteClick: () -> Unit,
@@ -92,7 +93,7 @@ fun HomeScreen(
     var deleteServer by remember { mutableStateOf<Server?>(null) }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .verticalScroll(rememberScrollState())
             .padding(16.dp)
@@ -115,7 +116,7 @@ fun HomeScreen(
 
         Button(
             onClick = onConnectClick,
-            enabled = proxyState != ProxyService.STARTING && proxyState != ProxyService.STOPPING,
+            enabled = proxyState != ProxyService.STOPPING,
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF008577)),
             modifier = Modifier
                 .fillMaxWidth()
@@ -124,7 +125,8 @@ fun HomeScreen(
         ) {
             Text(
                 text = when (proxyState) {
-                    ProxyService.STARTED -> stringResource(R.string.home_btn_stop)
+                    ProxyService.STARTING, ProxyService.STARTED, ProxyService.STOPPING ->
+                        stringResource(R.string.home_btn_stop)
                     else -> stringResource(R.string.home_btn_start)
                 },
                 fontSize = 20.sp

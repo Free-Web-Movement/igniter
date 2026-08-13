@@ -43,7 +43,14 @@ class ClashRouteBuilder {
         var inserted = false
         val last = keep.lastIndex
         for ((index, line) in keep.withIndex()) {
-            if (!inserted && line.trim().startsWith("rules:")) {
+            if (!inserted && line.startsWith("rules:")) {
+                // Keep the header on its own line. Without this newline a second
+                // injection would merge `rules:` into the preceding comment line,
+                // turning the whole rules block into a misplaced list and making
+                // Clash abort startup (native os.Exit).
+                if (index > 0) {
+                    sb.append('\n')
+                }
                 sb.append(line)
                 for (ruleLine in toClashRuleLines(rules)) {
                     sb.append('\n').append(ruleLine)

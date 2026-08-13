@@ -2,9 +2,11 @@ package io.github.freewebmovement.igniter.activities.exempt.presenter
 
 import android.annotation.SuppressLint
 import android.text.TextUtils
+import io.github.freewebmovement.igniter.activities.exempt.contract.AppTab
 import io.github.freewebmovement.igniter.activities.exempt.contract.ExemptAppContract
 import io.github.freewebmovement.igniter.common.os.Task
 import io.github.freewebmovement.igniter.common.os.Threads
+import io.github.freewebmovement.igniter.constants.DefaultInternationalApps
 import io.github.freewebmovement.igniter.persistence.data.AppInfo
 import io.github.freewebmovement.igniter.persistence.data.ExemptAppDataSource
 
@@ -16,7 +18,7 @@ class ExemptAppPresenter(
     private var mConfigurationChanged = false
     private var mAllAppInfoList: List<AppInfo> = emptyList()
     private var mProxyAppPackageNameSet: MutableSet<String> = mutableSetOf()
-    private var mShowSystemApps = false
+    private var mTab = AppTab.NORMAL
     private var mFilterName = ""
 
     init {
@@ -32,6 +34,7 @@ class ExemptAppPresenter(
             mProxyAppPackageNameSet.remove(packageName)
         }
         appInfo.enabled = enable
+        applyFilter()
     }
 
     override fun filterAppsByName(name: String) {
@@ -39,8 +42,8 @@ class ExemptAppPresenter(
         applyFilter()
     }
 
-    override fun switchTab(showSystemApps: Boolean) {
-        mShowSystemApps = showSystemApps
+    override fun switchTab(tab: AppTab) {
+        mTab = tab
         applyFilter()
     }
 
@@ -70,7 +73,7 @@ class ExemptAppPresenter(
             return
         }
         mConfigurationChanged = true
-        mView.showLoading()
+        mView.showSaving()
         Threads.runOnWorkThread(object : Task() {
             override fun onRun() {
                 mDataSource.saveExemptAppInfoSet(mProxyAppPackageNameSet)
@@ -78,6 +81,9 @@ class ExemptAppPresenter(
                 Threads.runOnUiThread {
                     mView.dismissLoading()
                     mView.showSaveSuccess()
+                    // Restarting a running proxy applies the new exempt-app list
+                    // to the VPN interface immediately.
+                    mView.restartProxyIfRunning()
                 }
             }
         })
@@ -130,7 +136,12 @@ class ExemptAppPresenter(
 
     private fun currentFilteredList(): List<AppInfo> {
         return mAllAppInfoList.filter { appInfo ->
-            (appInfo.isSystemApp == mShowSystemApps) &&
+            val inTab = when (mTab) {
+                AppTab.NORMAL -> !appInfo.isSystemApp
+                AppTab.SYSTEM -> appInfo.isSystemApp
+                AppTab.INTERNATIONAL -> DefaultInternationalApps.packageNames.contains(appInfo.packageName)
+            }
+            inTab &&
                 (TextUtils.isEmpty(mFilterName) || appInfo.appName?.contains(mFilterName, ignoreCase = true) == true)
         }
     }
