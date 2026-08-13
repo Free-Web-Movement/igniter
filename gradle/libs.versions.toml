@@ -1,5 +1,7 @@
 [versions]
 activityKtx = "1.8.0"
+kotlin = "2.1.0"
+composeBom = "2024.12.01"
 appcompat = "1.6.1"
 constraintlayout = "2.1.4"
 converterGson = "3.0.0"
@@ -8,7 +10,7 @@ coreKtx = "1.12.0"
 espressoCore = "3.5.1"
 fragmentKtx = "1.7.1"
 gson = "2.10.1"
-gradle = "8.13.0"
+gradle = "8.13.2"
 junit = "4.13.2"
 junitJupiterApi = "6.0.0"
 junitJupiterEngine = "6.0.0"
@@ -33,7 +35,15 @@ workRuntimeKtx = "2.9.0"
 runner = "1.0.2"
 
 [libraries]
+activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityKtx" }
 activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "activityKtx" }
+compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
+compose-ui = { module = "androidx.compose.ui:ui" }
+compose-ui-graphics = { module = "androidx.compose.ui:ui-graphics" }
+compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
+compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
+compose-material3 = { module = "androidx.compose.material3:material3" }
+lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
 appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayout" }
@@ -72,4 +82,5 @@ snakeyaml = { module = "org.yaml:snakeyaml", version.ref = "snakeyaml" }
 work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntimeKtx" }
 
 [plugins]
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 

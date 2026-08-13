@@ -1,12 +1,17 @@
 package io.github.freewebmovement.igniter.common.dialog
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.ObjectAnimator
 import android.app.Activity
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.LinearInterpolator
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import io.github.freewebmovement.igniter.R
@@ -29,6 +34,8 @@ class AppSheet private constructor(private val layer: FrameLayout) {
     private val positiveBtn: TextView = cardView.findViewById(R.id.sheetPositive)
 
     private var showing = false
+    private var loadingView: View? = null
+    private var loadingAnimator: ObjectAnimator? = null
 
     fun setTitle(text: String?): AppSheet {
         titleTv.text = text ?: ""
@@ -114,9 +121,21 @@ class AppSheet private constructor(private val layer: FrameLayout) {
     }
 
     fun showLoading(msg: String) {
+        loadingAnimator?.cancel()
         val loading = LayoutInflater.from(layer.context)
             .inflate(R.layout.dialog_loading, layer, false)
         loading.findViewById<TextView>(R.id.dialogLoadingMsgTv).text = msg
+        loadingView = loading
+        loadingAnimator = ObjectAnimator.ofInt(
+            loading.findViewById<ProgressBar>(R.id.dialogLoadingPb),
+            "progress",
+            0,
+            100
+        ).apply {
+            duration = 800
+            interpolator = LinearInterpolator()
+            start()
+        }
         layer.removeAllViews()
         layer.addView(
             loading,
@@ -147,6 +166,23 @@ class AppSheet private constructor(private val layer: FrameLayout) {
     }
 
     fun dismiss() {
+        val animator = loadingAnimator
+        val view = loadingView
+        if (animator != null && animator.isRunning && view != null && view.isAttachedToWindow) {
+            animator.removeAllListeners()
+            animator.addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    if (layer.getChildAt(0) === view) doDismiss()
+                }
+            })
+            return
+        }
+        doDismiss()
+    }
+
+    private fun doDismiss() {
+        loadingAnimator = null
+        loadingView = null
         showing = false
         if (active === this) {
             active = null
