@@ -6,6 +6,7 @@ buildscript {
         kotlin_version = '2.1.0'
     }
     repositories {
+        maven { url 'https://mirrors.cloud.tencent.com/nexus/repository/maven-public/' }
         google()
         mavenCentral()
     }
@@ -20,6 +21,7 @@ buildscript {
 
 allprojects {
     repositories {
+        maven { url 'https://mirrors.cloud.tencent.com/nexus/repository/maven-public/' }
         google()
         mavenCentral()
     }
