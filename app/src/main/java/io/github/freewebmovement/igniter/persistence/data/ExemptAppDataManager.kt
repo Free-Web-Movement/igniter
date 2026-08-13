@@ -14,9 +14,6 @@ class ExemptAppDataManager(private val app: IgniterApplication) : ExemptAppDataS
     private val mPackageManager: PackageManager = app.packageManager
 
     override fun saveExemptAppInfoSet(exemptAppPackageNames: Set<String>) {
-        if (exemptAppPackageNames.isEmpty()) {
-            return
-        }
         val exemptApps = StringBuilder()
         for (name in exemptAppPackageNames) {
             exemptApps.append(name).append("\n")
@@ -41,12 +38,10 @@ class ExemptAppDataManager(private val app: IgniterApplication) : ExemptAppDataS
         }
         val ret = HashSet<String>()
         if (exemptAppPackageNames.isEmpty()) {
-            //exempt all packages by default!
-            saveExemptAppInfoSet(installedAppPackageNames)
-            return installedAppPackageNames
+            return ret
         }
         for (packageName in exemptAppPackageNames) {
-            if (installedAppPackageNames.contains(packageName)) {
+            if (packageName.isNotEmpty() && installedAppPackageNames.contains(packageName)) {
                 ret.add(packageName)
             }
         }
@@ -63,36 +58,26 @@ class ExemptAppDataManager(private val app: IgniterApplication) : ExemptAppDataS
         return mPackageManager.getInstalledApplications(flags)
     }
 
-    fun enableAll(isEnable: Boolean) {
-        if (isEnable) {
-            Storage.write(app.storage.path.exemptedAppList!!, byteArrayOf())
-        } else {
-            val applicationInfoList = queryCurrentInstalledApps()
-            val installedAppPackageNames = HashSet<String>()
-            for (applicationInfo in applicationInfoList) {
-                installedAppPackageNames.add(applicationInfo.packageName)
-            }
-            saveExemptAppInfoSet(installedAppPackageNames)
-        }
-    }
-
     override fun getAllAppInfoList(): List<AppInfo> {
         val applicationInfoList = queryCurrentInstalledApps()
-        val showSystemApps = IgniterApplication.getApplication().trojanPreferences.getShowSystemApps()
 
         val appInfoList = ArrayList<AppInfo>()
         for (applicationInfo in applicationInfoList) {
-            if (!showSystemApps) {
-                if (app.systemAppsConfig.isSystemApps(applicationInfo.packageName)) {
-                    continue
-                }
-            }
             val appInfo = AppInfo()
             appInfo.appName = mPackageManager.getApplicationLabel(applicationInfo).toString()
             appInfo.packageName = applicationInfo.packageName
             appInfo.icon = mPackageManager.getApplicationIcon(applicationInfo)
+            appInfo.isSystemApp = app.systemAppsConfig.isSystemApps(applicationInfo.packageName)
             appInfoList.add(appInfo)
         }
         return appInfoList
+    }
+
+    override fun getAllInstalledPackageNames(): Set<String> {
+        val packageNames = HashSet<String>()
+        for (applicationInfo in queryCurrentInstalledApps()) {
+            packageNames.add(applicationInfo.packageName)
+        }
+        return packageNames
     }
 }

@@ -1,31 +1,35 @@
 package io.github.freewebmovement.igniter.persistence.database
 
-import android.content.Context
 import androidx.room.Room
+import io.github.freewebmovement.igniter.IgniterApplication
 import io.github.freewebmovement.igniter.persistence.TrojanConfig
 
 object AccessDatabase {
     const val databaseName = "trojan.db"
-    var db: AppDatabase? = null
+    private lateinit var db: AppDatabase
 
     @JvmStatic
-    fun getDatabase(context: Context): AppDatabase {
-        if (db == null) {
-            db = Room.databaseBuilder(context, AppDatabase::class.java, databaseName).build()
+    fun getDatabase(): AppDatabase {
+        if (!::db.isInitialized) {
+            db = Room.databaseBuilder(
+                IgniterApplication.getApplication().applicationContext,
+                AppDatabase::class.java,
+                databaseName
+            ).build()
         }
-        return db!!
+        return db
     }
 
     @JvmStatic
-    fun deleteServer(context: Context, remoteAddress: String, port: Int) {
-        val appDatabase = getDatabase(context)
+    fun deleteServer(remoteAddress: String, port: Int) {
+        val appDatabase = getDatabase()
         val serverDao = appDatabase.serverDao()
         serverDao.deleteByUniquePair(remoteAddress, port)
     }
 
     @JvmStatic
-    fun readServers(context: Context): List<TrojanConfig> {
-        val appDatabase = getDatabase(context)
+    fun readServers(): List<TrojanConfig> {
+        val appDatabase = getDatabase()
         val serverDao = appDatabase.serverDao()
         val servers = serverDao.all()
         val configList = ArrayList<TrojanConfig>(servers.size)
@@ -42,8 +46,8 @@ object AccessDatabase {
 
     /** Replaces the whole server list with the given configs, atomically. */
     @JvmStatic
-    fun replaceServers(context: Context, configs: List<TrojanConfig>) {
-        val appDatabase = getDatabase(context)
+    fun replaceServers(configs: List<TrojanConfig>) {
+        val appDatabase = getDatabase()
         val serverDao = appDatabase.serverDao()
         appDatabase.runInTransaction {
             serverDao.deleteAll()
@@ -55,11 +59,11 @@ object AccessDatabase {
 
     /** Persists a server unless one with the same hostname/port already exists. */
     @JvmStatic
-    fun insertServerIfMissing(context: Context, config: TrojanConfig?) {
+    fun insertServerIfMissing(config: TrojanConfig?) {
         if (config == null || config.getRemoteAddr().isEmpty()) {
             return
         }
-        val appDatabase = getDatabase(context)
+        val appDatabase = getDatabase()
         val serverDao = appDatabase.serverDao()
         if (serverDao.findByHostAndPort(config.getRemoteAddr(), config.getRemotePort()) != null) {
             return

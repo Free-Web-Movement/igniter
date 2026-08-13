@@ -3,20 +3,13 @@ package io.github.freewebmovement.igniter.activities.exempt.fragment
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.Nullable
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.view.menu.MenuBuilder
-import androidx.appcompat.widget.SearchView
-import androidx.appcompat.widget.SwitchCompat
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import io.github.freewebmovement.igniter.IgniterApplication
 import io.github.freewebmovement.igniter.R
@@ -24,44 +17,56 @@ import io.github.freewebmovement.igniter.activities.MainActivity
 import io.github.freewebmovement.igniter.activities.exempt.adapter.AppInfoAdapter
 import io.github.freewebmovement.igniter.activities.exempt.contract.ExemptAppContract
 import io.github.freewebmovement.igniter.common.app.BaseFragment
-import io.github.freewebmovement.igniter.common.dialog.LoadingDialog
+import io.github.freewebmovement.igniter.common.dialog.AppSheet
+import io.github.freewebmovement.igniter.databinding.FragmentExemptAppBinding
 import io.github.freewebmovement.igniter.persistence.data.AppInfo
 
 class ExemptAppFragment : BaseFragment(), ExemptAppContract.View {
     private var mPresenter: ExemptAppContract.Presenter? = null
-    private lateinit var mAppRv: RecyclerView
+    private var _binding: FragmentExemptAppBinding? = null
+    private val binding get() = _binding!!
     private lateinit var mAppInfoAdapter: AppInfoAdapter
-    private var mLoadingDialog: LoadingDialog? = null
-    private lateinit var app: IgniterApplication
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
-    }
+    private val app: IgniterApplication
+        get() = IgniterApplication.getApplication()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_exempt_app, container, false)
+        _binding = FragmentExemptAppBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        app = IgniterApplication.getApplication()
         super.onViewCreated(view, savedInstanceState)
-        findViews()
         initViews()
         initListeners()
+        initTabs()
         mPresenter!!.start()
     }
 
-    private fun findViews() {
-        mAppRv = findViewById(R.id.exemptAppRv)
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     private fun initViews() {
         mAppInfoAdapter = AppInfoAdapter()
-        mAppRv.adapter = mAppInfoAdapter
-        mAppRv.addItemDecoration(DividerItemDecoration(mContext!!, LinearLayoutManager.VERTICAL))
+        binding.exemptAppRv.adapter = mAppInfoAdapter
+        binding.exemptAppRv.addItemDecoration(DividerItemDecoration(requireContext(), LinearLayoutManager.VERTICAL))
+    }
+
+    private fun initTabs() {
+        binding.proxyTabNormal.isSelected = true
+        binding.proxyTabSystem.isSelected = false
+        binding.proxyTabNormal.setOnClickListener {
+            binding.proxyTabNormal.isSelected = true
+            binding.proxyTabSystem.isSelected = false
+            mPresenter!!.switchTab(false)
+        }
+        binding.proxyTabSystem.setOnClickListener {
+            binding.proxyTabNormal.isSelected = false
+            binding.proxyTabSystem.isSelected = true
+            mPresenter!!.switchTab(true)
+        }
     }
 
     private fun initListeners() {
@@ -70,70 +75,32 @@ class ExemptAppFragment : BaseFragment(), ExemptAppContract.View {
                 mPresenter!!.updateAppInfo(appInfo, position, enabled)
             }
         })
-    }
 
-    @SuppressLint("RestrictedApi")
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.menu_exempt_app, menu)
-        if (menu is MenuBuilder) {
-            menu.setOptionalIconsVisible(true)
-        }
-
-        initHideSystemSwitch(menu)
-
-        val item = menu.findItem(R.id.action_search_app)
-        val searchView = item?.actionView as? SearchView
-        if (searchView != null) {
-            searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-                override fun onQueryTextSubmit(s: String): Boolean {
-                    return false
-                }
-
-                override fun onQueryTextChange(s: String): Boolean {
-                    mPresenter!!.filterAppsByName(s)
-                    return true
-                }
-            })
-        }
-    }
-
-    fun initHideSystemSwitch(menu: Menu) {
-        val item = menu.findItem(R.id.hide_system_apps)
-        if (item != null) {
-            val switchCompat = item.actionView as SwitchCompat
-            switchCompat.isChecked = app.trojanPreferences.getShowSystemApps()
-            switchCompat.setOnCheckedChangeListener { _, isChecked ->
-                app.trojanPreferences.setShowSystemApps(isChecked)
-                mPresenter!!.start()
+        binding.searchExemptAppEt.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                mPresenter!!.filterAppsByName(s?.toString().orEmpty())
             }
-        }
-    }
+        })
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return if (item.itemId == R.id.action_save_exempt_apps) {
-            mPresenter!!.saveExemptAppInfoList()
-            true
-        } else {
-            false
-        }
+        binding.btnSelectAll.setOnClickListener { mPresenter!!.selectAll() }
+        binding.btnDeselectAll.setOnClickListener { mPresenter!!.deselectAll() }
+        binding.btnSaveProxyApps.setOnClickListener { mPresenter!!.saveExemptAppInfoList() }
     }
 
     override fun showSaveSuccess() {
-        Snackbar.make(mRootView!!, R.string.common_save_success, Snackbar.LENGTH_SHORT)
-            .setAction(R.string.exempt_app_exit) { mPresenter!!.exit() }
-            .show()
+        Snackbar.make(binding.root, R.string.common_save_success, Snackbar.LENGTH_SHORT).show()
     }
 
     override fun showExitConfirm() {
-        AlertDialog.Builder(mContext!!)
+        AppSheet.builder(this)
             .setTitle(R.string.common_alert)
             .setMessage(R.string.exempt_app_exit_without_saving_confirm)
-            .setNegativeButton(R.string.common_cancel) { dialog, _ -> dialog.dismiss() }
-            .setPositiveButton(R.string.common_confirm) { dialog, _ ->
-                dialog.dismiss()
+            .setNegativeButton(R.string.common_cancel, null)
+            .setPositiveButton(R.string.common_confirm) {
                 mPresenter!!.exit()
             }
-            .create()
             .show()
     }
 
@@ -142,17 +109,11 @@ class ExemptAppFragment : BaseFragment(), ExemptAppContract.View {
     }
 
     override fun showLoading() {
-        if (mLoadingDialog == null) {
-            mLoadingDialog = LoadingDialog(requireContext())
-            mLoadingDialog!!.setMsg(getString(R.string.exempt_app_loading_tip))
-        }
-        mLoadingDialog!!.show()
+        AppSheet.builder(this).showLoading(getString(R.string.exempt_app_loading_tip))
     }
 
     override fun dismissLoading() {
-        if (mLoadingDialog != null && mLoadingDialog!!.isShowing) {
-            mLoadingDialog!!.dismiss()
-        }
+        AppSheet.dismissActive()
     }
 
     override fun exit(configurationChanged: Boolean) {

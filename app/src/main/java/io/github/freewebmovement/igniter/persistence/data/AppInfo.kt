@@ -7,6 +7,7 @@ class AppInfo : Cloneable {
     var icon: Drawable? = null
     var packageName: String? = null
     var enabled: Boolean = false
+    var isSystemApp: Boolean = false
 
     @Throws(CloneNotSupportedException::class)
     override fun clone(): Any {
@@ -15,6 +16,7 @@ class AppInfo : Cloneable {
         appInfo.icon = icon
         appInfo.packageName = packageName
         appInfo.enabled = enabled
+        appInfo.isSystemApp = isSystemApp
         return appInfo
     }
 }

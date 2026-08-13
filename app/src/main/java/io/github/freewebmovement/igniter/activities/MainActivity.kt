@@ -3,43 +3,37 @@ package io.github.freewebmovement.igniter.activities
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.drawable.Drawable
 import android.net.VpnService
 import android.os.Bundle
 import android.os.RemoteException
 import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
-import androidx.core.graphics.drawable.DrawableCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import io.github.freewebmovement.igniter.IgniterApplication
 import io.github.freewebmovement.igniter.R
 import io.github.freewebmovement.igniter.activities.exempt.fragment.ExemptAppFragment
 import io.github.freewebmovement.igniter.activities.exempt.presenter.ExemptAppPresenter
-import io.github.freewebmovement.igniter.activities.servers.data.ServerListDataManager
-import io.github.freewebmovement.igniter.activities.servers.fragment.ServerListFragment
-import io.github.freewebmovement.igniter.activities.servers.presenter.ServerListPresenter
+import io.github.freewebmovement.igniter.common.dialog.AppSheet
 import io.github.freewebmovement.igniter.common.os.Task
 import io.github.freewebmovement.igniter.common.os.Threads
 import io.github.freewebmovement.igniter.connection.TrojanConnection
 import io.github.freewebmovement.igniter.persistence.TrojanConfig
+import io.github.freewebmovement.igniter.persistence.database.AccessDatabase
 import io.github.freewebmovement.igniter.proxy.aidl.ITrojanService
 import io.github.freewebmovement.igniter.services.ProxyService
 import java.io.IOException
 
 /**
- * Tab shell hosting the four pages: connect, servers, apps and rules.
+ * Tab shell hosting the four pages: servers, apps, rules and settings.
  */
 class MainActivity : AppCompatActivity(), TrojanConnection.Callback {
     companion object {
@@ -48,17 +42,21 @@ class MainActivity : AppCompatActivity(), TrojanConnection.Callback {
         private const val CONNECTION_TEST_URL = "https://www.google.com"
 
         private const val TAG_HOME = "tab_home"
-        private const val TAG_SERVERS = "tab_servers"
         private const val TAG_APPS = "tab_apps"
         private const val TAG_RULES = "tab_rules"
+        private const val TAG_SETTINGS = "tab_settings"
 
         const val TAB_HOME = 0
-        const val TAB_SERVERS = 1
-        const val TAB_APPS = 2
-        const val TAB_RULES = 3
+        const val TAB_APPS = 1
+        const val TAB_RULES = 2
+        const val TAB_SETTINGS = 3
     }
 
-    lateinit var app: IgniterApplication
+    private val app: IgniterApplication
+        get() = IgniterApplication.getApplication()
+    private val homeViewModel: HomeViewModel by lazy {
+        ViewModelProvider(this)[HomeViewModel::class.java]
+    }
 
     // Launchers
     private val vpnLauncher: ActivityResultLauncher<Intent> = registerForActivityResult(
@@ -70,21 +68,19 @@ class MainActivity : AppCompatActivity(), TrojanConnection.Callback {
     }
 
     private var mHomeFragment: HomeFragment? = null
-    private var mServerFragment: ServerListFragment? = null
     private var mAppsFragment: ExemptAppFragment? = null
     private var mRulesFragment: RulesFragment? = null
+    private var mSettingsFragment: SettingsFragment? = null
     private var mBottomNav: BottomNavigationView? = null
     private var mCurrentTab = TAB_HOME
     @ProxyService.ProxyState
     private var proxyState: Int = ProxyService.STATE_NONE
     private val connection = TrojanConnection(false)
     private var trojanService: ITrojanService? = null
-    private lateinit var serverListDataManager: ServerListDataManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        app = IgniterApplication.getApplication()
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
@@ -94,14 +90,12 @@ class MainActivity : AppCompatActivity(), TrojanConnection.Callback {
             it.title = getString(R.string.app_name)
         }
 
-        serverListDataManager = ServerListDataManager()
-
         mBottomNav = findViewById(R.id.bottomNav)
         mBottomNav!!.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.tab_servers -> switchTab(TAB_SERVERS)
                 R.id.tab_apps -> switchTab(TAB_APPS)
                 R.id.tab_rules -> switchTab(TAB_RULES)
+                R.id.tab_settings -> switchTab(TAB_SETTINGS)
                 else -> switchTab(TAB_HOME)
             }
             true
@@ -121,26 +115,22 @@ class MainActivity : AppCompatActivity(), TrojanConnection.Callback {
     private fun createFragments() {
         val fm: FragmentManager = supportFragmentManager
         val home = fm.findFragmentByTag(TAG_HOME) as? HomeFragment ?: HomeFragment.newInstance()
-        val servers = fm.findFragmentByTag(TAG_SERVERS) as? ServerListFragment
-            ?: ServerListFragment.newInstance()
         val apps = fm.findFragmentByTag(TAG_APPS) as? ExemptAppFragment
             ?: ExemptAppFragment.newInstance()
         val rules = fm.findFragmentByTag(TAG_RULES) as? RulesFragment
             ?: RulesFragment.newInstance()
+        val settings = fm.findFragmentByTag(TAG_SETTINGS) as? SettingsFragment
+            ?: SettingsFragment()
         mHomeFragment = home
-        mServerFragment = servers
         mAppsFragment = apps
         mRulesFragment = rules
+        mSettingsFragment = settings
 
-        ServerListPresenter(servers, ServerListDataManager())
         ExemptAppPresenter(apps, app.exemptAppDataManager)
 
         val ft: FragmentTransaction = fm.beginTransaction()
         if (!home.isAdded) {
             ft.add(R.id.fragmentContainer, home, TAG_HOME)
-        }
-        if (!servers.isAdded) {
-            ft.add(R.id.fragmentContainer, servers, TAG_SERVERS)
         }
         if (!apps.isAdded) {
             ft.add(R.id.fragmentContainer, apps, TAG_APPS)
@@ -148,9 +138,12 @@ class MainActivity : AppCompatActivity(), TrojanConnection.Callback {
         if (!rules.isAdded) {
             ft.add(R.id.fragmentContainer, rules, TAG_RULES)
         }
-        ft.hide(servers)
+        if (!settings.isAdded) {
+            ft.add(R.id.fragmentContainer, settings, TAG_SETTINGS)
+        }
         ft.hide(apps)
         ft.hide(rules)
+        ft.hide(settings)
         ft.show(home)
         ft.commitAllowingStateLoss()
     }
@@ -160,16 +153,12 @@ class MainActivity : AppCompatActivity(), TrojanConnection.Callback {
         val fm = supportFragmentManager
         val ft = fm.beginTransaction()
         mHomeFragment?.let { ft.hide(it) }
-        mServerFragment?.let { ft.hide(it) }
         mAppsFragment?.let { ft.hide(it) }
         mRulesFragment?.let { ft.hide(it) }
+        mSettingsFragment?.let { ft.hide(it) }
         val selected: Fragment
         val titleRes: Int
         when (tab) {
-            TAB_SERVERS -> {
-                selected = mServerFragment!!
-                titleRes = R.string.tab_servers
-            }
             TAB_APPS -> {
                 selected = mAppsFragment!!
                 titleRes = R.string.tab_apps
@@ -177,6 +166,10 @@ class MainActivity : AppCompatActivity(), TrojanConnection.Callback {
             TAB_RULES -> {
                 selected = mRulesFragment!!
                 titleRes = R.string.tab_rules
+            }
+            TAB_SETTINGS -> {
+                selected = mSettingsFragment!!
+                titleRes = R.string.tab_settings
             }
             else -> {
                 selected = mHomeFragment!!
@@ -187,23 +180,21 @@ class MainActivity : AppCompatActivity(), TrojanConnection.Callback {
         ft.commitAllowingStateLoss()
         supportActionBar?.title = getString(titleRes)
         if (selected === mHomeFragment) {
-            mHomeFragment?.refreshServerInfo()
-            mHomeFragment?.updateState(proxyState)
-        } else if (selected === mServerFragment) {
-            mServerFragment?.refresh()
+            homeViewModel.refreshServer()
+            homeViewModel.refreshRoute()
         }
-    }
-
-    fun openServersTab() {
-        switchTab(TAB_SERVERS)
     }
 
     fun openHomeTab() {
         switchTab(TAB_HOME)
     }
 
+    fun openRulesTab() {
+        switchTab(TAB_RULES)
+    }
+
     /**
-     * Applies a server selected from the Servers page: persists it and returns
+     * Applies a server selected from the servers page: persists it and returns
      * to the connect page.
      */
     fun onServerSelected(config: TrojanConfig?) {
@@ -220,10 +211,11 @@ class MainActivity : AppCompatActivity(), TrojanConnection.Callback {
                 } catch (e: IOException) {
                     e.printStackTrace()
                 }
-                serverListDataManager.saveServerConfig(app.trojanConfig)
+                AccessDatabase.insertServerIfMissing(app.trojanConfig)
             }
         })
-        openHomeTab()
+        homeViewModel.refreshServer()
+        homeViewModel.refreshRoute()
         Toast.makeText(this, R.string.common_save_success, Toast.LENGTH_SHORT).show()
     }
 
@@ -263,10 +255,10 @@ class MainActivity : AppCompatActivity(), TrojanConnection.Callback {
     }
 
     private fun requestReadWriteExternalStoragePermission() {
-        AlertDialog.Builder(this).setTitle(R.string.common_alert)
+        AppSheet.builder(this)
+            .setTitle(R.string.common_alert)
             .setMessage(R.string.main_write_external_storage_permission_requirement)
-            .setPositiveButton(R.string.common_confirm) { dialog, _ ->
-                dialog.dismiss()
+            .setPositiveButton(R.string.common_confirm) {
                 ActivityCompat.requestPermissions(
                     this,
                     arrayOf(
@@ -276,8 +268,16 @@ class MainActivity : AppCompatActivity(), TrojanConnection.Callback {
                     READ_WRITE_EXT_STORAGE_PERMISSION_REQUEST
                 )
             }
-            .setNegativeButton(R.string.common_cancel) { dialog, _ -> dialog.dismiss() }
+            .setNegativeButton(R.string.common_cancel, null)
             .show()
+    }
+
+    override fun onBackPressed() {
+        if (AppSheet.isShowing()) {
+            AppSheet.dismissActive()
+            return
+        }
+        super.onBackPressed()
     }
 
     override fun onServiceConnected(service: ITrojanService) {
@@ -302,7 +302,7 @@ class MainActivity : AppCompatActivity(), TrojanConnection.Callback {
 
     private fun updateViews(state: Int) {
         proxyState = state
-        mHomeFragment?.takeIf { it.isAdded }?.updateState(state)
+        homeViewModel.setProxyState(state)
     }
 
     override fun onStateChanged(state: Int, msg: String?) {
@@ -352,25 +352,6 @@ class MainActivity : AppCompatActivity(), TrojanConnection.Callback {
                 e.printStackTrace()
             }
         }
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_shell, menu)
-        val settings = menu.findItem(R.id.action_view_settings)
-        if (settings != null && settings.icon != null) {
-            val wrapper = DrawableCompat.wrap(settings.icon!!)
-            DrawableCompat.setTint(wrapper, Color.WHITE)
-            settings.icon = wrapper
-        }
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.action_view_settings) {
-            startActivity(Intent(this, SettingsActivity::class.java))
-            return true
-        }
-        return super.onOptionsItemSelected(item)
     }
 
     override fun onResume() {

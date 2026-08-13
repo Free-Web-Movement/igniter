@@ -74,6 +74,7 @@ android {
     namespace 'io.github.freewebmovement.igniter'
     buildFeatures {
         aidl true
+        viewBinding true
     }
     kotlinOptions {
         jvmTarget = '1.8'
@@ -82,24 +83,33 @@ android {
 
 dependencies {
     implementation libs.core.ktx
+    implementation libs.activity.ktx
     implementation libs.room.runtime
+    implementation libs.room.ktx
     kapt libs.room.compiler
+
+    implementation libs.fragment.ktx
+    implementation libs.lifecycle.viewmodel.ktx
+    implementation libs.lifecycle.livedata.ktx
+    implementation libs.coroutines.android
 
     implementation libs.material
     implementation libs.appcompat
     implementation libs.recyclerview
     implementation libs.constraintlayout
 
+    implementation libs.camera.camera2
+    implementation libs.camera.lifecycle
+    implementation libs.camera.view
+    implementation libs.mlkit.barcode.scanning
+    implementation libs.zxing.core
+
     // Never updated this to higher version before new branches
     implementation libs.core
 
-    // Retrofit
-    implementation libs.retrofit
-    // Retrofit with Moshi Converter
-    implementation libs.converter.scalars
-    implementation libs.converter.gson
-
     implementation libs.snakeyaml
+    implementation libs.gson
+    implementation libs.okhttp
     implementation libs.test.core
     implementation libs.work.runtime.ktx
 

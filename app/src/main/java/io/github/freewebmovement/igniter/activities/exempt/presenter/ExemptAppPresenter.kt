@@ -15,7 +15,9 @@ class ExemptAppPresenter(
     private var mDirty = false
     private var mConfigurationChanged = false
     private var mAllAppInfoList: List<AppInfo> = emptyList()
-    private var mExemptAppPackageNameSet: MutableSet<String> = mutableSetOf()
+    private var mProxyAppPackageNameSet: MutableSet<String> = mutableSetOf()
+    private var mShowSystemApps = false
+    private var mFilterName = ""
 
     init {
         mView.setPresenter(this)
@@ -23,33 +25,43 @@ class ExemptAppPresenter(
 
     override fun updateAppInfo(appInfo: AppInfo, position: Int, enable: Boolean) {
         mDirty = true
-        val packageName = appInfo.packageName!!
-        if (mExemptAppPackageNameSet.contains(packageName)) {
-            if (enable) {
-                mExemptAppPackageNameSet.remove(packageName)
-            }
-        } else if (!enable) {
-            mExemptAppPackageNameSet.add(packageName)
+        val packageName = appInfo.packageName ?: return
+        if (enable) {
+            mProxyAppPackageNameSet.add(packageName)
+        } else {
+            mProxyAppPackageNameSet.remove(packageName)
         }
         appInfo.enabled = enable
     }
 
     override fun filterAppsByName(name: String) {
-        if (TextUtils.isEmpty(name)) {
-            mView.showAppList(mAllAppInfoList)
-            return
+        mFilterName = name
+        applyFilter()
+    }
+
+    override fun switchTab(showSystemApps: Boolean) {
+        mShowSystemApps = showSystemApps
+        applyFilter()
+    }
+
+    override fun selectAll() {
+        mDirty = true
+        for (appInfo in currentFilteredList()) {
+            appInfo.packageName ?: continue
+            mProxyAppPackageNameSet.add(appInfo.packageName!!)
+            appInfo.enabled = true
         }
-        Threads.runOnWorkThread(object : Task() {
-            override fun onRun() {
-                val tmpInfoList = ArrayList<AppInfo>()
-                for (appInfo in mAllAppInfoList) {
-                    if (appInfo.appName?.contains(name) == true) {
-                        tmpInfoList.add(appInfo)
-                    }
-                }
-                Threads.runOnUiThread { mView.showAppList(tmpInfoList) }
-            }
-        })
+        applyFilter()
+    }
+
+    override fun deselectAll() {
+        mDirty = true
+        for (appInfo in currentFilteredList()) {
+            appInfo.packageName ?: continue
+            mProxyAppPackageNameSet.remove(appInfo.packageName!!)
+            appInfo.enabled = false
+        }
+        applyFilter()
     }
 
     override fun saveExemptAppInfoList() {
@@ -61,7 +73,7 @@ class ExemptAppPresenter(
         mView.showLoading()
         Threads.runOnWorkThread(object : Task() {
             override fun onRun() {
-                mDataSource.saveExemptAppInfoSet(mExemptAppPackageNameSet)
+                mDataSource.saveExemptAppInfoSet(mProxyAppPackageNameSet)
                 mDirty = false
                 Threads.runOnUiThread {
                     mView.dismissLoading()
@@ -94,26 +106,38 @@ class ExemptAppPresenter(
     @SuppressLint("NewApi")
     private fun showData() {
         val allAppInfoList = mDataSource.getAllAppInfoList()
-        mExemptAppPackageNameSet = mDataSource.loadExemptAppPackageNameSet().toMutableSet()
-        val exemptApps = ArrayList<AppInfo>()
-        val enabledApps = ArrayList<AppInfo>()
+        mProxyAppPackageNameSet = mDataSource.loadExemptAppPackageNameSet().toMutableSet()
+        val proxyApps = ArrayList<AppInfo>()
+        val directApps = ArrayList<AppInfo>()
         for (appInfo in allAppInfoList) {
-            if (mExemptAppPackageNameSet.contains(appInfo.packageName!!)) {
-                exemptApps.add(appInfo)
+            appInfo.enabled = mProxyAppPackageNameSet.contains(appInfo.packageName)
+            if (appInfo.enabled) {
+                proxyApps.add(appInfo)
             } else {
-                enabledApps.add(appInfo)
-                appInfo.enabled = true
+                directApps.add(appInfo)
             }
         }
-        // cluster exempted apps.
-        exemptApps.sortBy { it.appName }
-        enabledApps.sortBy { it.appName }
+        proxyApps.sortBy { it.appName }
+        directApps.sortBy { it.appName }
 
-        enabledApps.addAll(exemptApps)
-        mAllAppInfoList = enabledApps
+        proxyApps.addAll(directApps)
+        mAllAppInfoList = proxyApps
         Threads.runOnUiThread {
-            mView.showAppList(mAllAppInfoList)
+            mView.showAppList(currentFilteredList())
             mView.dismissLoading()
+        }
+    }
+
+    private fun currentFilteredList(): List<AppInfo> {
+        return mAllAppInfoList.filter { appInfo ->
+            (appInfo.isSystemApp == mShowSystemApps) &&
+                (TextUtils.isEmpty(mFilterName) || appInfo.appName?.contains(mFilterName, ignoreCase = true) == true)
+        }
+    }
+
+    private fun applyFilter() {
+        Threads.runOnUiThread {
+            mView.showAppList(currentFilteredList())
         }
     }
 }

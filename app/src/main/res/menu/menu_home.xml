@@ -7,4 +7,8 @@
         android:icon="@drawable/ic_action_connection"
         android:title="@string/main_menu_action_test_connection"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/action_import_from_file"
+        android:title="@string/server_list_menu_import_from_file"
+        app:showAsAction="never" />
 </menu>

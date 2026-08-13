@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SYSTEM_EXEMPTED" />
@@ -32,9 +34,6 @@
         tools:ignore="DataExtractionRules"
         tools:targetApi="s">
         <activity
-            android:name=".activities.ServersActivity"
-            android:exported="false" />
-        <activity
             android:name=".activities.servers.activity.AddServerActivity"
             android:exported="false">
             <meta-data
@@ -42,8 +41,13 @@
                 android:value="" />
         </activity>
         <activity
-            android:name=".activities.SettingsActivity"
-            android:exported="false" />
+            android:name=".activities.servers.activity.ScanQrCodeActivity"
+            android:exported="false"
+            android:theme="@style/AppThemeNoTitle">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
         <activity
             android:name=".activities.ClashFileEditorActivity"
             android:exported="false">
@@ -56,9 +60,6 @@
             android:exported="false" />
         <activity
             android:name=".activities.exempt.activity.ExemptAppActivity"
-            android:theme="@style/AppThemeNoTitle" />
-        <activity
-            android:name=".activities.servers.activity.ServerListActivity"
             android:theme="@style/AppThemeNoTitle" />
         <activity
             android:name=".activities.MainActivity"
@@ -96,6 +97,9 @@
                 <action android:name="io.github.freewebmovement.igniter.BIND_SERVICE" />
             </intent-filter>
         </service>
+        <service
+            android:name=".services.ServerPingService"
+            android:exported="false" />
         <service
             android:name=".services.IgniterTileService"
             android:directBootAware="true"

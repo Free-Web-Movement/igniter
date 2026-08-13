@@ -12,15 +12,15 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.EditText
-import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import io.github.freewebmovement.igniter.IgniterApplication
 import io.github.freewebmovement.igniter.R
+import io.github.freewebmovement.igniter.common.dialog.AppSheet
+import io.github.freewebmovement.igniter.databinding.FragmentRulesBinding
+import io.github.freewebmovement.igniter.databinding.ItemDomainRuleBinding
 import io.github.freewebmovement.igniter.persistence.DomainRulesManager
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -47,9 +47,13 @@ class RulesFragment : Fragment() {
         var count = 0
     }
 
+    private var _binding: FragmentRulesBinding? = null
+    private val binding get() = _binding!!
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_rules, container, false)
+        _binding = FragmentRulesBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -57,17 +61,11 @@ class RulesFragment : Fragment() {
         mRules = DomainRulesManager(IgniterApplication.getApplication())
         setHasOptionsMenu(true)
 
-        val rv = view.findViewById<RecyclerView>(R.id.domainRuleRv)
-        mRv = rv
-        rv.layoutManager = LinearLayoutManager(context)
+        binding.domainRuleRv.layoutManager = LinearLayoutManager(context)
         mAdapter = Adapter()
-        rv.adapter = mAdapter
+        binding.domainRuleRv.adapter = mAdapter
 
-        val emptyHint = view.findViewById<TextView>(R.id.emptyHint)
-        mEmptyHint = emptyHint
-        val search = view.findViewById<EditText>(R.id.searchInput)
-        mSearch = search
-        search.addTextChangedListener(object : TextWatcher {
+        binding.searchInput.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: Editable?) {
@@ -76,26 +74,27 @@ class RulesFragment : Fragment() {
             }
         })
 
-        val tabManual = view.findViewById<TextView>(R.id.tabManual)
-        val tabAuto = view.findViewById<TextView>(R.id.tabAuto)
-        val tabForeign = view.findViewById<TextView>(R.id.tabForeign)
-        mTabManual = tabManual
-        mTabAuto = tabAuto
-        mTabForeign = tabForeign
-        tabManual.setOnClickListener { switchTab(TAB_MANUAL) }
-        tabAuto.setOnClickListener { switchTab(TAB_AUTO) }
-        tabForeign.setOnClickListener { switchTab(TAB_FOREIGN) }
+        binding.tabManual.setOnClickListener { switchTab(TAB_MANUAL) }
+        binding.tabAuto.setOnClickListener { switchTab(TAB_AUTO) }
+        binding.tabForeign.setOnClickListener { switchTab(TAB_FOREIGN) }
         switchTab(TAB_MANUAL)
 
         mPollThread = Thread({ pollLoop() }, "igniter-domain-monitor")
         mPollThread!!.start()
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        mRunning = false
+        mPollThread?.interrupt()
+        _binding = null
+    }
+
     private fun switchTab(tab: Int) {
         mTab = tab
-        mTabManual.isSelected = tab == TAB_MANUAL
-        mTabAuto.isSelected = tab == TAB_AUTO
-        mTabForeign.isSelected = tab == TAB_FOREIGN
+        binding.tabManual.isSelected = tab == TAB_MANUAL
+        binding.tabAuto.isSelected = tab == TAB_AUTO
+        binding.tabForeign.isSelected = tab == TAB_FOREIGN
         rebuildList()
     }
     private fun pollLoop() {
@@ -249,10 +248,10 @@ class RulesFragment : Fragment() {
             })
             empty = mList.isEmpty()
         }
-        if (mEmptyHint.visibility == View.VISIBLE || empty) {
-            mEmptyHint.visibility = if (empty) View.VISIBLE else View.GONE
+        if (binding.emptyHint.visibility == View.VISIBLE || empty) {
+            binding.emptyHint.visibility = if (empty) View.VISIBLE else View.GONE
             if (empty) {
-                mEmptyHint.setText(
+                binding.emptyHint.setText(
                     when (mTab) {
                         TAB_MANUAL -> R.string.domain_monitor_empty_manual
                         TAB_FOREIGN -> R.string.domain_monitor_empty_foreign
@@ -266,14 +265,14 @@ class RulesFragment : Fragment() {
     private fun showAddDialog() {
         val input = EditText(requireContext())
         input.hint = getString(R.string.domain_monitor_add_hint)
-        AlertDialog.Builder(requireContext())
+        AppSheet.builder(this)
             .setTitle(R.string.domain_monitor_add_title)
-            .setView(input)
+            .setContent(input)
             .setNegativeButton(android.R.string.cancel, null)
-            .setNeutralButton(R.string.domain_monitor_add_direct) { _, _ ->
+            .setNeutralButton(R.string.domain_monitor_add_direct) {
                 addDomain(input.text.toString(), DomainRulesManager.POLICY_DIRECT)
             }
-            .setPositiveButton(R.string.domain_monitor_add_proxy) { _, _ ->
+            .setPositiveButton(R.string.domain_monitor_add_proxy) {
                 addDomain(input.text.toString(), DomainRulesManager.POLICY_PROXY)
             }
             .show()
@@ -311,64 +310,57 @@ class RulesFragment : Fragment() {
         }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        mRunning = false
-        mPollThread?.interrupt()
-    }
-
     private inner class Adapter : RecyclerView.Adapter<Adapter.VH>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
-            val v = LayoutInflater.from(parent.context)
-                .inflate(R.layout.item_domain_rule, parent, false)
-            return VH(v)
+            val b = ItemDomainRuleBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            return VH(b)
         }
 
         override fun onBindViewHolder(h: VH, position: Int) {
             val e = mList[position]
             val domain = e.domain
-            h.domain.text = domain
+            h.b.domainText.text = domain
 
             val locked = mRules.getPolicy(domain)
             val policy = locked ?: e.clashPolicy
             if (mTab == TAB_MANUAL) {
-                h.status.text = getString(R.string.domain_monitor_manual_locked,
+                h.b.statusText.text = getString(R.string.domain_monitor_manual_locked,
                     (locked ?: policy).toString())
-                h.status.setTextColor(if ((locked ?: policy).toString().contains("DIRECT"))
+                h.b.statusText.setTextColor(if ((locked ?: policy).toString().contains("DIRECT"))
                     COLOR_DIRECT else COLOR_PROXY)
             } else if (mTab == TAB_FOREIGN) {
                 if (locked != null) {
-                    h.status.text = getString(R.string.domain_monitor_foreign_locked, locked)
-                    h.status.setTextColor(if (locked.contains("DIRECT"))
+                    h.b.statusText.text = getString(R.string.domain_monitor_foreign_locked, locked)
+                    h.b.statusText.setTextColor(if (locked.contains("DIRECT"))
                         COLOR_DIRECT else COLOR_PROXY)
                 } else {
-                    h.status.text = getString(R.string.domain_monitor_foreign_default,
+                    h.b.statusText.text = getString(R.string.domain_monitor_foreign_default,
                         DomainRulesManager.POLICY_PROXY)
-                    h.status.setTextColor(COLOR_DEFAULT)
+                    h.b.statusText.setTextColor(COLOR_DEFAULT)
                 }
             } else if (locked != null) {
-                h.status.text = getString(R.string.domain_monitor_locked, locked, e.count)
-                h.status.setTextColor(if (locked.contains("DIRECT"))
+                h.b.statusText.text = getString(R.string.domain_monitor_locked, locked, e.count)
+                h.b.statusText.setTextColor(if (locked.contains("DIRECT"))
                     COLOR_DIRECT else COLOR_PROXY)
             } else if (policy != null) {
-                h.status.text = getString(R.string.domain_monitor_auto, policy, e.count)
-                h.status.setTextColor(if (policy.contains("DIRECT"))
+                h.b.statusText.text = getString(R.string.domain_monitor_auto, policy, e.count)
+                h.b.statusText.setTextColor(if (policy.contains("DIRECT"))
                     COLOR_DIRECT else COLOR_PROXY)
             } else {
-                h.status.text = getString(R.string.domain_monitor_unknown, e.count)
-                h.status.setTextColor(COLOR_DEFAULT)
+                h.b.statusText.text = getString(R.string.domain_monitor_unknown, e.count)
+                h.b.statusText.setTextColor(COLOR_DEFAULT)
             }
-            h.btnProxy.setOnClickListener {
+            h.b.btnProxy.setOnClickListener {
                 mRules.setRule(domain, DomainRulesManager.POLICY_PROXY)
                 rebuildList()
             }
-            h.btnDirect.setOnClickListener {
+            h.b.btnDirect.setOnClickListener {
                 mRules.setRule(domain, DomainRulesManager.POLICY_DIRECT)
                 rebuildList()
             }
             val showUnlock = mTab == TAB_MANUAL || locked != null
-            h.btnUnlock.visibility = if (showUnlock) View.VISIBLE else View.GONE
-            h.btnUnlock.setOnClickListener {
+            h.b.btnUnlock.visibility = if (showUnlock) View.VISIBLE else View.GONE
+            h.b.btnUnlock.setOnClickListener {
                 mRules.removeRule(domain)
                 rebuildList()
             }
@@ -377,20 +369,14 @@ class RulesFragment : Fragment() {
             if (mTab == TAB_FOREIGN && locked == null) {
                 activePolicy = DomainRulesManager.POLICY_PROXY
             }
-            h.btnProxy.isSelected = DomainRulesManager.POLICY_PROXY == activePolicy
-            h.btnDirect.isSelected = DomainRulesManager.POLICY_DIRECT == activePolicy
-            h.btnUnlock.isSelected = false
+            h.b.btnProxy.isSelected = DomainRulesManager.POLICY_PROXY == activePolicy
+            h.b.btnDirect.isSelected = DomainRulesManager.POLICY_DIRECT == activePolicy
+            h.b.btnUnlock.isSelected = false
         }
 
         override fun getItemCount(): Int = mList.size
 
-        inner class VH(v: View) : RecyclerView.ViewHolder(v) {
-            var domain: TextView = v.findViewById(R.id.domainText)
-            var status: TextView = v.findViewById(R.id.statusText)
-            var btnProxy: Button = v.findViewById(R.id.btnProxy)
-            var btnDirect: Button = v.findViewById(R.id.btnDirect)
-            var btnUnlock: Button = v.findViewById(R.id.btnUnlock)
-        }
+        inner class VH(val b: ItemDomainRuleBinding) : RecyclerView.ViewHolder(b.root)
     }
 
     companion object {
@@ -432,12 +418,6 @@ class RulesFragment : Fragment() {
     private val mSeenSet = HashSet<String>()
 
     private lateinit var mRules: DomainRulesManager
-    private lateinit var mRv: RecyclerView
-    private lateinit var mSearch: EditText
-    private lateinit var mEmptyHint: TextView
-    private lateinit var mTabManual: TextView
-    private lateinit var mTabAuto: TextView
-    private lateinit var mTabForeign: TextView
     private lateinit var mAdapter: Adapter
     private var mFilter = ""
     private var mTab = TAB_MANUAL

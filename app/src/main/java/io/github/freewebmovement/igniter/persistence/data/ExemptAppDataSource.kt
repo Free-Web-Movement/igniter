@@ -25,4 +25,12 @@ interface ExemptAppDataSource {
      */
     @WorkerThread
     fun getAllAppInfoList(): List<AppInfo>
+
+    /**
+     * Load all currently installed applications' package names.
+     *
+     * @return all installed package names
+     */
+    @WorkerThread
+    fun getAllInstalledPackageNames(): Set<String>
 }

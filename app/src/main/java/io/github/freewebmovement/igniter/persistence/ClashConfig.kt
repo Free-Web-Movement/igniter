@@ -136,6 +136,31 @@ class ClashConfig(private val filename: String) {
         return data[ClashConstants.KEY_SOCKS_PORT] as Int
     }
 
+    /**
+     * The Clash routing mode: [ClashConstants.MODE_RULE], [ClashConstants.MODE_GLOBAL]
+     * or [ClashConstants.MODE_DIRECT]. Unknown or missing values fall back to
+     * [ClashConstants.MODE_RULE].
+     */
+    fun getMode(): String {
+        val mode = data[ClashConstants.KEY_MODE] as? String ?: return ClashConstants.MODE_RULE
+        return if (mode in ClashConstants.MODES) mode else ClashConstants.MODE_RULE
+    }
+
+    /**
+     * Persists a new routing mode (e.g. [ClashConstants.MODE_RULE]). Takes
+     * effect on the next connection; if the proxy is already running the new
+     * mode is picked up when the service is restarted.
+     */
+    fun setMode(mode: String) {
+        val normalized = mode.takeIf { it in ClashConstants.MODES } ?: ClashConstants.MODE_RULE
+        data[ClashConstants.KEY_MODE] = normalized
+        try {
+            save(filename)
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
+
     fun getTrojanPort(): Int {
         @Suppress("UNCHECKED_CAST")
         val proxies = data[ClashConstants.KEY_PROXIES] as MutableList<MutableMap<String, Any?>>?

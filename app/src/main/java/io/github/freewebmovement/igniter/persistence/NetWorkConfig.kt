@@ -194,37 +194,9 @@ object NetWorkConfig {
     @JvmStatic
     fun injectUserDomainRules(app: IgniterApplication) {
         try {
-            val manager = DomainRulesManager(app)
-            val rules = manager.getEffectiveRules()
-            val path = app.storage.path.clashConfig!!
-            val content = String(Storage.read(path)!!)
-            if (content == null) {
-                return
-            }
-            val keep = ArrayList<String>()
-            for (line in content.split("\n", limit = -1)) {
-                if (!line.trim().endsWith("# user rule")) {
-                    keep.add(line)
-                }
-            }
-            val sb = StringBuilder(content.length + rules.size * 48)
-            var inserted = false
-            for (line in keep) {
-                if (!inserted && line.trim().startsWith("rules:")) {
-                    sb.append(line).append('\n')
-                    for ((key, value) in rules) {
-                        sb.append("  - DOMAIN-SUFFIX,")
-                            .append(key)
-                            .append(',')
-                            .append(value)
-                            .append("  # user rule\n")
-                    }
-                    inserted = true
-                } else {
-                    sb.append(line).append('\n')
-                }
-            }
-            Storage.write(path, sb.toString().toByteArray())
+            val builder = ClashRouteBuilder()
+            val rules = builder.effectiveRules(DomainRulesManager(app))
+            builder.inject(app.storage.path.clashConfig!!, rules)
         } catch (e: Exception) {
             e.printStackTrace()
         }

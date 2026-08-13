@@ -36,7 +36,8 @@ class ProxyService : VpnService(), TestConnection.OnResultListener {
     annotation class ProxyState
 
     private val mHandler = Handler(Looper.getMainLooper())
-    private lateinit var app: IgniterApplication
+    private val app: IgniterApplication
+        get() = IgniterApplication.getApplication()
 
     @Volatile
     private var state: Int = STATE_NONE
@@ -111,7 +112,6 @@ class ProxyService : VpnService(), TestConnection.OnResultListener {
         } else {
             registerReceiver(mStopBroadcastReceiver, filter)
         }
-        app = IgniterApplication.getApplication()
     }
 
     override fun onDestroy() {
@@ -165,7 +165,7 @@ class ProxyService : VpnService(), TestConnection.OnResultListener {
         return super.onBind(intent)
     }
 
-    private fun getExemptAppPackageNames(): Set<String> {
+    private fun getProxyAppPackageNames(): Set<String> {
         if (mExemptAppDataSource == null) {
             mExemptAppDataSource = ExemptAppDataManager(app)
         }
@@ -230,12 +230,19 @@ class ProxyService : VpnService(), TestConnection.OnResultListener {
         startForegroundNotification(getString(R.string.notification_channel_id))
         setState(STARTING)
 
-        val packageNames = getExemptAppPackageNames().toMutableSet()
-        packageNames.add(getPackageName())
+        val proxyPackageNames = getProxyAppPackageNames()
+        val directPackageNames = mutableSetOf<String>()
+        for (packageName in mExemptAppDataSource?.getAllInstalledPackageNames() ?: emptySet()) {
+            if (packageName !in proxyPackageNames) {
+                directPackageNames.add(packageName)
+            }
+        }
+        // Igniter itself always bypasses the VPN tunnel to avoid loops.
+        directPackageNames.add(getPackageName())
 
         // VPN setup performs blocking I/O (port probing, native startup) and must
         // not run on the main thread.
-        Thread({ startVpn(packageNames) }, "igniter-vpn-start").start()
+        Thread({ startVpn(directPackageNames) }, "igniter-vpn-start").start()
         return START_STICKY
     }
 

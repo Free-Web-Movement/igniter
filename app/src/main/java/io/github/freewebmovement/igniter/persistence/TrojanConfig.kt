@@ -131,10 +131,13 @@ class TrojanConfig : Parcelable {
             val host = trojanUri.host
             val port = trojanUri.port
             val userInfo = trojanUri.userInfo
+            if (host.isNullOrEmpty() || userInfo.isNullOrEmpty()) {
+                return null
+            }
 
             val retConfig = TrojanConfig()
             retConfig.setRemoteAddr(host)
-            retConfig.setRemotePort(port)
+            retConfig.setRemotePort(if (port > 0) port else 0)
             retConfig.setPassword(userInfo)
             return retConfig
         }

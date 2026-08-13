@@ -127,15 +127,6 @@ class DomainRulesManager(context: Context) {
         return getRules()[domain.trim().lowercase()]
     }
 
-    /** Clash rule lines to inject, e.g. `"  - DOMAIN-SUFFIX,example.com,Proxy"`. */
-    fun toClashRuleLines(): List<String> {
-        val lines = ArrayList<String>()
-        for ((key, value) in getRules()) {
-            lines.add("  - DOMAIN-SUFFIX,$key,$value  # user rule")
-        }
-        return lines
-    }
-
     private fun save(rules: Map<String, String>) {
         val sb = StringBuilder()
         for ((key, value) in rules) {

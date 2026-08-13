@@ -19,6 +19,12 @@ interface ExemptAppContract {
 
         fun filterAppsByName(name: String)
 
+        fun switchTab(showSystemApps: Boolean)
+
+        fun selectAll()
+
+        fun deselectAll()
+
         fun exit()
     }
 

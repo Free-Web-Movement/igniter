@@ -11,13 +11,13 @@ import io.github.freewebmovement.igniter.persistence.Storage
 import java.nio.charset.StandardCharsets
 
 class ClashFileEditorActivity : AppCompatActivity() {
-    lateinit var app: IgniterApplication
+    private val app: IgniterApplication
+        get() = IgniterApplication.getApplication()
     lateinit var clashConfigEditor: EditText
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_clash_file_editor)
-        app = IgniterApplication.getApplication()
         clashConfigEditor = findViewById(R.id.edit_text_clash_file)
         onLoad(null)
     }

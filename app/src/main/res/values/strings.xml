@@ -24,6 +24,10 @@
     <string name="label_clash">Bypass China with <a href="https://github.com/Dreamacro/clash">Clash</a></string>
     <string name="enable_ipv6">Enable IPv6</string>
     <string name="enable_lan">Enable LAN</string>
+    <string name="clash_mode">Clash Mode</string>
+    <string name="clash_mode_rule">Rule</string>
+    <string name="clash_mode_global">Global</string>
+    <string name="clash_mode_direct">Direct</string>
     <string name="enable_auto_start">Enable Auto Start</string>
     <string name="bc_service_state">io.github.freewebmovement.igniter.BC_SERVICE_STATE</string>
     <string name="stop_service">io.github.freewebmovement.igniter.STOP_SERVICE</string>
@@ -79,10 +83,22 @@
     <string name="domain_monitor_empty_foreign">No sites.</string>
 
     <!-- Bottom navigation tabs -->
-    <string name="tab_home">连接</string>
-    <string name="tab_servers">服务器</string>
-    <string name="tab_apps">应用</string>
-    <string name="tab_rules">规则</string>
+    <string name="tab_home">服务器</string>
+    <string name="tab_apps">代理应用</string>
+    <string name="tab_rules">分流规则</string>
+    <string name="tab_settings">设置</string>
+
+    <!-- Page descriptions -->
+    <string name="home_page_desc">选择一台服务器，点 ▶ 直接连接，或点 ⏹ 停止</string>
+    <string name="exempt_app_page_desc">选择需要走代理的应用，其余应用直连</string>
+    <string name="proxy_tab_normal">普通应用</string>
+    <string name="proxy_tab_system">系统应用</string>
+    <string name="proxy_select_all">全部选择</string>
+    <string name="proxy_deselect_all">全不选</string>
+    <string name="proxy_search_hint">搜索应用</string>
+    <string name="proxy_save">保存</string>
+    <string name="rules_page_desc">按域名设置走代理还是直连</string>
+    <string name="settings_page_desc">代理、开机启动等基础设置</string>
 
     <!-- Home (connect) page -->
     <string name="home_status_stopped">已停止</string>
@@ -94,8 +110,16 @@
     <string name="home_btn_start">启动</string>
     <string name="home_btn_stop">停止</string>
     <string name="home_dns_protected">DNS 防污染已开启</string>
-    <string name="home_tap_server_to_switch">点击切换服务器</string>
     <string name="home_server_unknown">未选择服务器</string>
+    <string name="home_no_server_info">当前没有服务器信息</string>
+    <string name="home_server_section">服务器</string>
+    <string name="home_add_server">添加服务器</string>
+    <string name="home_route_title">代理链路</string>
+    <string name="home_route_clash">tun2socks → Clash(%1$s) → trojan(127.0.0.1:%2$d) → %3$s</string>
+    <string name="home_route_direct">tun2socks → trojan(127.0.0.1:%1$d) → %2$s</string>
+    <string name="home_domain_route_title">域名分流</string>
+    <string name="home_domain_route_count">%1$d 条手动规则</string>
+    <string name="home_manage_domain_route">管理</string>
 
 
     <string name="action_show_develop_info_logcat">Show develop info in logcat</string>
@@ -105,6 +129,24 @@
     <string name="server_list_menu_import_from_file">Import from file</string>
     <string name="server_list_delete_btn">@string/common_delete</string>
     <string name="server_list_current">当前</string>
+    <string name="server_list_play">Play</string>
+    <string name="server_list_stop">Stop</string>
+    <string name="server_list_more">More</string>
+    <string name="server_list_edit">编辑</string>
+    <string name="server_list_qr">二维码</string>
+    <string name="server_ping_format">%1$dms / %2$dms</string>
+    <string name="server_ping_unreachable">—</string>
+    <string name="quick_add_server_uri_hint">粘贴 trojan:// 链接，自动填写</string>
+    <string name="scan_qr_code">扫码添加</string>
+    <string name="qr_scan_hint">将服务器二维码对准取景框扫描</string>
+    <string name="qr_scan_permission_denied">需要相机权限才能扫码</string>
+    <string name="qr_scan_camera_error">无法启动相机</string>
+    <string name="qr_generate_button">生成二维码</string>
+    <string name="qr_generate_incomplete">请先填写服务器地址、端口和密码</string>
+    <string name="qr_generate_failed">二维码生成失败</string>
+    <string name="qr_dialog_title">服务器二维码</string>
+    <string name="qr_share_action">分享</string>
+    <string name="qr_share_uri">分享服务器链接</string>
     <string name="server_list_lack_of_read_permission">Lack of read permission!</string>
 
     <string name="main_save_config_btn">Save</string>
