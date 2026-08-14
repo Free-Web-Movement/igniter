@@ -4,6 +4,8 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.net.VpnService
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -35,6 +37,7 @@ import io.github.freewebmovement.igniter.common.dialog.AppSheet
 import io.github.freewebmovement.igniter.common.dialog.AppSheetHost
 import io.github.freewebmovement.igniter.common.os.Task
 import io.github.freewebmovement.igniter.common.os.Threads
+import io.github.freewebmovement.igniter.common.util.BatteryOptimization
 import io.github.freewebmovement.igniter.connection.TrojanConnection
 import io.github.freewebmovement.igniter.persistence.TrojanConfig
 import io.github.freewebmovement.igniter.persistence.database.AccessDatabase
@@ -68,6 +71,12 @@ class MainActivity : AppCompatActivity(), AppSheetHost, TrojanConnection.Callbac
          * down, so the relaunched activity automatically reconnects the proxy.
          */
         const val EXTRA_AUTO_START_PROXY = "auto_start_proxy"
+
+        /**
+         * Intent extra set by the new-URL prompt notification to open the
+         * 分流规则 page when tapped.
+         */
+        const val EXTRA_OPEN_RULES_TAB = "open_rules_tab"
     }
 
     private val app: IgniterApplication
@@ -80,7 +89,7 @@ class MainActivity : AppCompatActivity(), AppSheetHost, TrojanConnection.Callbac
     private val vpnLauncher: ActivityResultLauncher<Intent> = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (result.resultCode != Activity.RESULT_OK) {
+        if (result.resultCode == Activity.RESULT_OK) {
             app.startProxyService()
         }
     }
@@ -120,7 +129,6 @@ class MainActivity : AppCompatActivity(), AppSheetHost, TrojanConnection.Callbac
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        connection.connect(this, this)
         setContent {
             IgniterTheme {
                 MainShell(
@@ -158,6 +166,30 @@ class MainActivity : AppCompatActivity(), AppSheetHost, TrojanConnection.Callbac
 
         if (intent?.getBooleanExtra(EXTRA_AUTO_START_PROXY, false) == true) {
             startProxy()
+        }
+        if (intent?.getBooleanExtra(EXTRA_OPEN_RULES_TAB, false) == true) {
+            openRulesTab()
+        }
+
+        requestNotificationPermission()
+    }
+
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 2001)
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        if (intent.getBooleanExtra(EXTRA_AUTO_START_PROXY, false)) {
+            startProxy()
+        }
+        if (intent.getBooleanExtra(EXTRA_OPEN_RULES_TAB, false)) {
+            openRulesTab()
         }
     }
 
@@ -249,17 +281,15 @@ class MainActivity : AppCompatActivity(), AppSheetHost, TrojanConnection.Callbac
         Threads.instance().runOnWorkThread(object : Task() {
             override fun onRun() {
                 TrojanConfig.write(app.trojanConfig, app.storage.path.trojanConfig!!)
-                try {
-                    app.clashConfig.save(app.storage.path.clashConfig!!)
-                } catch (e: IOException) {
-                    e.printStackTrace()
-                }
+                // Note: do NOT re-dump the Clash config here. SnakeYAML would
+                // rewrite the hand-written block-style `rules:` section into a
+                // flow-style list, which ClashRouteBuilder handles but which also
+                // strips every comment in the file.
                 AccessDatabase.insertServerIfMissing(app.trojanConfig)
             }
         })
         homeViewModel.refreshServer()
         homeViewModel.refreshRoute()
-        Toast.makeText(this, R.string.common_save_success, Toast.LENGTH_SHORT).show()
     }
 
     fun startVPN() {
@@ -280,6 +310,25 @@ class MainActivity : AppCompatActivity(), AppSheetHost, TrojanConnection.Callbac
         if (proxyState == ProxyService.STATE_NONE || proxyState == ProxyService.STOPPED) {
             TrojanConfig.write(app.trojanConfig, app.storage.path.trojanConfig!!)
             startVPN()
+            requestBatteryWhitelistIfNeeded()
+            // Re-bind so the newly started service is observed. The connection
+            // is dropped when the tunnel stops, so it must be re-established
+            // here on every start.
+            if (!connection.isConnected()) {
+                connection.connect(this, this)
+            }
+        }
+    }
+
+    /**
+     * Prompts the user to add Igniter to the battery optimization whitelist so
+     * aggressive battery managers don't kill the :proxy process while the
+     * tunnel is running in the background. The system dialog only appears when
+     * the whitelist has not been granted yet.
+     */
+    private fun requestBatteryWhitelistIfNeeded() {
+        if (!BatteryOptimization.isIgnoringBatteryOptimizations(this)) {
+            BatteryOptimization.requestIgnoreOptimizations(this)
         }
     }
 
@@ -367,6 +416,14 @@ class MainActivity : AppCompatActivity(), AppSheetHost, TrojanConnection.Callbac
     override fun onStateChanged(state: Int, msg: String?) {
         Log.i(TAG, "onStateChanged# state: $state msg: $msg")
         updateViews(state)
+        if (state == ProxyService.STOPPED) {
+            // Drop the binding when the tunnel stops: the :proxy process is
+            // about to be recycled, and keeping the connection would make the
+            // system restart it as an idle zombie merely to serve the binding.
+            if (connection.isConnected()) {
+                connection.disconnect(this)
+            }
+        }
     }
 
     override fun onTestResult(testUrl: String?, connected: Boolean, delay: Long, error: String) {
@@ -415,6 +472,23 @@ class MainActivity : AppCompatActivity(), AppSheetHost, TrojanConnection.Callbac
 
     override fun onResume() {
         super.onResume()
+        // Keep the binding alive only while the tunnel should be running.
+        // Binding to a stopped service would make the system resurrect the
+        // killed :proxy process as an idle zombie merely to serve the binding.
+        app.trojanPreferences.reload()
+        val vpnActive = app.trojanPreferences.isVpnActive()
+        if (vpnActive) {
+            if (!connection.isConnected()) {
+                connection.connect(this, this)
+            }
+        } else {
+            if (connection.isConnected()) {
+                connection.disconnect(this)
+            }
+            if (proxyState == ProxyService.STARTED || proxyState == ProxyService.STARTING) {
+                updateViews(ProxyService.STOPPED)
+            }
+        }
         val isAutoStart = app.trojanPreferences.isEnableAutoStart()
         if (isAutoStart) {
             Log.v("PROXY_STATE", "ProxyState = $proxyState")

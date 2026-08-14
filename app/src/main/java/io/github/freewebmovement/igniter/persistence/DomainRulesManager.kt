@@ -3,6 +3,8 @@ package io.github.freewebmovement.igniter.persistence
 import android.content.Context
 import android.content.SharedPreferences
 import android.text.TextUtils
+import io.github.freewebmovement.igniter.IgniterApplication
+import java.util.Locale
 
 /**
  * Stores the user's per-domain overrides ("URL selection mode").
@@ -11,7 +13,7 @@ import android.text.TextUtils
  * [POLICY_PROXY] or [POLICY_DIRECT]. These override whatever
  * the automatic Clash rules would decide for that domain.
  */
-class DomainRulesManager(context: Context) {
+class DomainRulesManager(private val context: Context) {
     companion object {
         const val POLICY_PROXY = "Proxy"
         const val POLICY_DIRECT = "DIRECT"
@@ -40,6 +42,9 @@ class DomainRulesManager(context: Context) {
             "x.com",
             "tiktok.com",
             "tiktokcdn.com",
+            "tiktoktv.com",
+            "tiktokv.com",
+            "byteoversea.com",
             "wikipedia.org",
             "github.com",
             "githubusercontent.com",
@@ -69,7 +74,17 @@ class DomainRulesManager(context: Context) {
         )
     }
 
-    private val prefs: SharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+    // MODE_MULTI_PROCESS: the rule list is written from the main process
+    // (rules page, new-URL choice page) and read from the ":proxy" process
+    // (Socks5Gate). The flag forces a reload when the file changes so both
+    // processes stay in sync. It is deprecated since API 30 but remains the
+    // correct tool for this cross-process scenario.
+    @Suppress("DEPRECATION")
+    private val prefs: SharedPreferences = context.getSharedPreferences(
+        PREF_NAME, Context.MODE_PRIVATE or Context.MODE_MULTI_PROCESS)
+
+    private val app: IgniterApplication?
+        get() = context.applicationContext as? IgniterApplication
 
     /** @return the curated list of major foreign websites. */
     fun getMajorForeignSites(): List<String> {
@@ -78,7 +93,9 @@ class DomainRulesManager(context: Context) {
 
     /**
      * @return rules to inject into Clash: the curated foreign sites defaulting
-     *         to Proxy, overridden by any manual rule the user has set.
+     *         to Proxy, overridden by any manual rule the user has set. The
+     *         proxy server itself is never included: routing it through Clash
+     *         would double-proxy or loop the server connection.
      */
     @Synchronized
     fun getEffectiveRules(): MutableMap<String, String> {
@@ -87,7 +104,26 @@ class DomainRulesManager(context: Context) {
             out[site] = POLICY_PROXY
         }
         out.putAll(getRules())
+        val serverHost = serverHost()
+        if (serverHost != null) {
+            out.remove(serverHost)
+        }
         return out
+    }
+
+    /** @return the current proxy server hostname, lowercased, or null. */
+    private fun serverHost(): String? {
+        return try {
+            val trojanConfig = app?.trojanConfig ?: return null
+            val host = trojanConfig.getRemoteAddr().trim()
+            if (host.isEmpty() || host == "0.0.0.0") {
+                null
+            } else {
+                host.lowercase(Locale.US).trimEnd('.')
+            }
+        } catch (e: Exception) {
+            null
+        }
     }
 
     /** @return an ordered map of domain(lowercase) -> policy. */

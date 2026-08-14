@@ -17,7 +17,9 @@ class ExemptAppPresenter(
     private var mDirty = false
     private var mConfigurationChanged = false
     private var mAllAppInfoList: List<AppInfo> = emptyList()
-    private var mProxyAppPackageNameSet: MutableSet<String> = mutableSetOf()
+    // Apps the user manually set to bypass the tunnel (不代理). Every other app
+    // is proxied by default, so the checkbox in the UI means "proxy this app".
+    private var mBypassAppPackageNameSet: MutableSet<String> = mutableSetOf()
     private var mTab = AppTab.NORMAL
     private var mFilterName = ""
 
@@ -29,9 +31,9 @@ class ExemptAppPresenter(
         mDirty = true
         val packageName = appInfo.packageName ?: return
         if (enable) {
-            mProxyAppPackageNameSet.add(packageName)
+            mBypassAppPackageNameSet.remove(packageName)
         } else {
-            mProxyAppPackageNameSet.remove(packageName)
+            mBypassAppPackageNameSet.add(packageName)
         }
         appInfo.enabled = enable
         applyFilter()
@@ -51,7 +53,7 @@ class ExemptAppPresenter(
         mDirty = true
         for (appInfo in currentFilteredList()) {
             appInfo.packageName ?: continue
-            mProxyAppPackageNameSet.add(appInfo.packageName!!)
+            mBypassAppPackageNameSet.remove(appInfo.packageName!!)
             appInfo.enabled = true
         }
         applyFilter()
@@ -61,7 +63,7 @@ class ExemptAppPresenter(
         mDirty = true
         for (appInfo in currentFilteredList()) {
             appInfo.packageName ?: continue
-            mProxyAppPackageNameSet.remove(appInfo.packageName!!)
+            mBypassAppPackageNameSet.add(appInfo.packageName!!)
             appInfo.enabled = false
         }
         applyFilter()
@@ -76,7 +78,7 @@ class ExemptAppPresenter(
         mView.showSaving()
         Threads.runOnWorkThread(object : Task() {
             override fun onRun() {
-                mDataSource.saveExemptAppInfoSet(mProxyAppPackageNameSet)
+                mDataSource.saveExemptAppInfoSet(mBypassAppPackageNameSet)
                 mDirty = false
                 Threads.runOnUiThread {
                     mView.dismissLoading()
@@ -112,11 +114,11 @@ class ExemptAppPresenter(
     @SuppressLint("NewApi")
     private fun showData() {
         val allAppInfoList = mDataSource.getAllAppInfoList()
-        mProxyAppPackageNameSet = mDataSource.loadExemptAppPackageNameSet().toMutableSet()
+        mBypassAppPackageNameSet = mDataSource.loadExemptAppPackageNameSet().toMutableSet()
         val proxyApps = ArrayList<AppInfo>()
         val directApps = ArrayList<AppInfo>()
         for (appInfo in allAppInfoList) {
-            appInfo.enabled = mProxyAppPackageNameSet.contains(appInfo.packageName)
+            appInfo.enabled = !mBypassAppPackageNameSet.contains(appInfo.packageName)
             if (appInfo.enabled) {
                 proxyApps.add(appInfo)
             } else {

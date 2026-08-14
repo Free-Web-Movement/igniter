@@ -1,5 +1,6 @@
 package io.github.freewebmovement.igniter.ui.settings
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -19,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
@@ -27,6 +29,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.content.Intent
+import android.net.Uri
 import io.github.freewebmovement.igniter.R
 
 private val Teal = Color(0xFF008577)
@@ -47,19 +51,28 @@ private val ClashLinkPattern = Regex("<a href=\"([^\"]+)\">([^<]+)</a>")
 @Composable
 private fun clashLabelText(): androidx.compose.ui.text.AnnotatedString {
     val html = stringResource(R.string.label_clash)
-    return remember(html) {
+    val context = LocalContext.current
+    return remember(html, context) {
         val match = ClashLinkPattern.find(html) ?: return@remember buildAnnotatedString {
             append(html)
         }
+        val url = match.groupValues[1]
         buildAnnotatedString {
             append(html.substring(0, match.range.first))
             val linkIndex = pushLink(
                 LinkAnnotation.Clickable(
-                    tag = match.groupValues[1],
+                    tag = url,
                     styles = androidx.compose.ui.text.TextLinkStyles(
                         SpanStyle(color = Teal, textDecoration = TextDecoration.Underline)
                     ),
-                    linkInteractionListener = null
+                    linkInteractionListener = {
+                        runCatching {
+                            context.startActivity(
+                                Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            )
+                        }
+                    }
                 )
             )
             append(match.groupValues[2])
@@ -78,11 +91,14 @@ fun SettingsScreen(
     lanEnabled: Boolean,
     autoStartEnabled: Boolean,
     bootStartEnabled: Boolean,
+    batteryWhitelisted: Boolean,
     onIpv6Change: (Boolean) -> Unit,
     onClashChange: (Boolean) -> Unit,
     onLanChange: (Boolean) -> Unit,
     onAutoStartChange: (Boolean) -> Unit,
-    onBootStartChange: (Boolean) -> Unit
+    onBootStartChange: (Boolean) -> Unit,
+    onBatteryTap: () -> Unit,
+    onBackgroundLimitsTap: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -125,7 +141,11 @@ fun SettingsScreen(
                     fontSize = 18.sp,
                     modifier = Modifier.weight(1f)
                 )
-                Switch(checked = clashEnabled, onCheckedChange = onClashChange)
+                Switch(
+                    checked = clashEnabled,
+                    onCheckedChange = onClashChange,
+                    colors = settingSwitchColors()
+                )
             }
             HorizontalDivider(color = Color(0xFFE0E0E0))
             SettingSwitch(
@@ -144,6 +164,50 @@ fun SettingsScreen(
                 text = stringResource(R.string.enable_boot_start),
                 checked = bootStartEnabled,
                 onCheckedChange = onBootStartChange
+            )
+            HorizontalDivider(color = Color(0xFFE0E0E0))
+            SettingActionRow(
+                title = stringResource(R.string.battery_optimization),
+                subtitle = stringResource(
+                    if (batteryWhitelisted) R.string.battery_status_whitelisted
+                    else R.string.battery_status_not_whitelisted
+                ),
+                onClick = onBatteryTap
+            )
+            HorizontalDivider(color = Color(0xFFE0E0E0))
+            SettingActionRow(
+                title = stringResource(R.string.background_usage_limits),
+                subtitle = stringResource(R.string.background_usage_limits_desc),
+                onClick = onBackgroundLimitsTap
+            )
+            HorizontalDivider(color = Color(0xFFE0E0E0))
+        }
+    }
+}
+
+@Composable
+private fun SettingActionRow(
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(start = 20.dp, top = 8.dp, end = 20.dp, bottom = 8.dp)
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Normal
+            )
+            Text(
+                text = subtitle,
+                fontSize = 12.sp,
+                color = Color(0xFF757575)
             )
         }
     }

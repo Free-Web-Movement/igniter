@@ -177,6 +177,15 @@ fun RulesScreen(
                         onTabSelected(2)
                     }
                 )
+                RuleTab(
+                    text = stringResource(R.string.domain_monitor_tab_unreachable),
+                    selected = tab == 3,
+                    modifier = Modifier.weight(1f),
+                    onClick = {
+                        tab = 3
+                        onTabSelected(3)
+                    }
+                )
             }
             TextField(
                 value = search,

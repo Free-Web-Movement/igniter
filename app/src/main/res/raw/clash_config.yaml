@@ -12,11 +12,12 @@ dns:
   # tun2socks fakes DNS for apps (fake-ip, see NetWorkConfig). Clash's own DNS
   # is enabled so that DIRECT/GEOIP rule targets are resolved against real CN
   # nameservers dialed directly, instead of the fake-ip DNS - which would loop
-  # DIRECT connections back into the tunnel. Domains routed through the proxy
-  # are still resolved at the remote trojan server, never by this config.
+  # DIRECT connections back into the tunnel. fake-ip mode passes proxied domains
+  # through to the proxy without resolving them locally (resolved at the remote
+  # trojan server), so routing does not depend on local DNS reachability.
   enable: true
   listen: 127.0.0.1:1053
-  enhanced-mode: redir-host
+  enhanced-mode: fake-ip
   nameserver:
     - 223.5.5.5
     - 119.29.29.29

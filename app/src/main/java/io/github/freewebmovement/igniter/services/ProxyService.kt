@@ -28,6 +28,7 @@ import io.github.freewebmovement.igniter.persistence.data.ExemptAppDataManager
 import io.github.freewebmovement.igniter.persistence.data.ExemptAppDataSource
 import io.github.freewebmovement.igniter.proxy.aidl.ITrojanService
 import io.github.freewebmovement.igniter.proxy.aidl.ITrojanServiceCallback
+import io.github.freewebmovement.igniter.receivers.WatchdogManager
 
 class ProxyService : VpnService(), TestConnection.OnResultListener {
 
@@ -119,6 +120,8 @@ class ProxyService : VpnService(), TestConnection.OnResultListener {
         Log.i(TAG, "onDestroy")
         mCallbackList.kill()
         setState(STOPPED)
+        app.trojanPreferences.setVpnActive(false)
+        WatchdogManager.cancel(this)
         unregisterReceiver(mStopBroadcastReceiver)
         pfd = null
     }
@@ -165,11 +168,15 @@ class ProxyService : VpnService(), TestConnection.OnResultListener {
         return super.onBind(intent)
     }
 
-    private fun getProxyAppPackageNames(): Set<String> {
+    /**
+     * Apps the user manually set to bypass the tunnel (不代理). They are added
+     * to the VPN's disallowed-app list so their traffic never enters the
+     * tunnel and is never auto-tested by the Socks5Gate.
+     */
+    private fun getBypassAppPackageNames(): Set<String> {
         if (mExemptAppDataSource == null) {
             mExemptAppDataSource = ExemptAppDataManager(app)
         }
-        // ensures that new exempted app list can be applied on proxy after modification.
         return mExemptAppDataSource!!.loadExemptAppPackageNameSet()
     }
 
@@ -230,15 +237,13 @@ class ProxyService : VpnService(), TestConnection.OnResultListener {
         startForegroundNotification(getString(R.string.notification_channel_id))
         setState(STARTING)
 
-        val proxyPackageNames = getProxyAppPackageNames()
-        val directPackageNames = mutableSetOf<String>()
-        for (packageName in mExemptAppDataSource?.getAllInstalledPackageNames() ?: emptySet()) {
-            if (packageName !in proxyPackageNames) {
-                directPackageNames.add(packageName)
-            }
-        }
-        // Igniter itself always bypasses the VPN tunnel to avoid loops.
-        directPackageNames.add(getPackageName())
+        // All apps go through the tunnel by default; the Socks5Gate
+        // auto-detect decides per domain whether to connect directly or via
+        // Clash. Only Igniter itself (to avoid loops: it must reach Clash and
+        // the physical DNS directly) and the apps the user manually set to
+        // 不代理 bypass the VPN.
+        val directPackageNames = mutableSetOf(getPackageName())
+        directPackageNames.addAll(getBypassAppPackageNames())
 
         // VPN setup performs blocking I/O (port probing, native startup) and must
         // not run on the main thread.
@@ -272,6 +277,8 @@ class ProxyService : VpnService(), TestConnection.OnResultListener {
         }
         mHandler.post {
             setState(STARTED)
+            app.trojanPreferences.setVpnActive(true)
+            WatchdogManager.schedule(this)
             val openMainActivityIntent = Intent(this, MainActivity::class.java)
             openMainActivityIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             val pendingOpenMainActivityIntent = PendingIntent.getActivity(this, 0, openMainActivityIntent, PendingIntent.FLAG_IMMUTABLE)
@@ -315,6 +322,8 @@ class ProxyService : VpnService(), TestConnection.OnResultListener {
         setState(STOPPED)
         NetWorkConfig.stop(app)
         pfd = null
+        app.trojanPreferences.setVpnActive(false)
+        WatchdogManager.cancel(this)
         // Give the error notification a moment to be seen before the process is recycled.
         Handler(Looper.getMainLooper()).postDelayed({ stop() }, 1500)
     }
@@ -322,6 +331,8 @@ class ProxyService : VpnService(), TestConnection.OnResultListener {
     private fun shutdown() {
         Log.i(TAG, "shutdown")
         setState(STOPPING)
+        app.trojanPreferences.setVpnActive(false)
+        WatchdogManager.cancel(this)
 
         NetWorkConfig.stop(app)
         stopSelf()
@@ -386,6 +397,6 @@ class ProxyService : VpnService(), TestConnection.OnResultListener {
         const val STOPPED = 3
         const val PROXY_SERVICE_STATUS_NOTIFY_MSG_ID = 114514
 
-        private const val TUN2SOCKS5_SERVER_HOST = "127.0.0.1"
+        private         const val TUN2SOCKS5_SERVER_HOST = "127.0.0.1"
     }
 }

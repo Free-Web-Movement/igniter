@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="clash_editor_load">加载</string>
+    <string name="clash_editor_reset">重置</string>
+    <string name="clash_editor_save">保存</string>
+
+</resources>

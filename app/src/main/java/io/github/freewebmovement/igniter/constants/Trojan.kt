@@ -35,5 +35,10 @@ object Trojan {
     const val KEY_ENABLE_BOOT_START = "enable_boot_start"
     const val KEY_SELECTED_INDEX = "selected_index"
 
+    // Set true by ProxyService while the tunnel is established, false when it
+    // stops. The watchdog (main process) reads it to know whether a killed
+    // :proxy process must be restarted.
+    const val KEY_VPN_ACTIVE = "vpn_active"
+
     const val KEY_SHOW_SYSTEM_APPS = "show_system_apps"
 }

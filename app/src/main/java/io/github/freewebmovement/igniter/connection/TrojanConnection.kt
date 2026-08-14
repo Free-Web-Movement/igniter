@@ -114,6 +114,10 @@ class TrojanConnection(private val mListenToDeath: Boolean) : ServiceConnection,
         return mTrojanService
     }
 
+    fun isConnected(): Boolean {
+        return mAlreadyConnected
+    }
+
     /**
      * Obtain the binder [ITrojanService] returned by [ProxyService.onBind] and
      * register callback [mTrojanServiceCallback] with the binder.

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="network_ports">Trojan socks5 代理端口：%d。\n隧道端口：%d。</string>
+    <string name="clash_port">\nClash 端口：%d。</string>
+</resources>

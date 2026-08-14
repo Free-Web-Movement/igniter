@@ -1,0 +1,210 @@
+<resources>
+    <string name="app_name">Igniter</string>
+
+    <string name="common_delete">删除</string>
+    <string name="common_alert">提示</string>
+    <string name="common_confirm">确定</string>
+    <string name="common_cancel">取消</string>
+    <string name="common_save_success">保存成功</string>
+
+    <string name="remote_address">服务器地址</string>
+    <string name="remote_ip">服务器 IP</string>
+    <string name="avoid_dns_pollution">防 DNS 污染</string>
+    <string name="remote_port">服务器端口</string>
+    <string name="local_or_clash_port">本地/Clash 端口</string>
+    <string name="default_port">443</string>
+    <string name="default_local_or_clash_port">1080</string>
+    <string name="password">密码</string>
+    <string name="trojan_uri">Trojan 链接</string>
+    <string name="button_service__start">启动</string>
+    <string name="button_service__starting">正在启动</string>
+    <string name="button_service__stop">停止</string>
+    <string name="button_service__stopping">正在停止</string>
+    <string name="verify_certificate">校验证书</string>
+    <string name="label_clash">使用 <a href="https://github.com/Dreamacro/clash">Clash</a> 绕过中国大陆网络</string>
+    <string name="enable_ipv6">启用 IPv6</string>
+    <string name="enable_lan">允许局域网连接</string>
+    <string name="clash_mode">Clash 模式</string>
+    <string name="clash_mode_rule">规则</string>
+    <string name="clash_mode_global">全局</string>
+    <string name="clash_mode_direct">直连</string>
+    <string name="enable_auto_start">打开应用自动启动</string>
+    <string name="bc_service_state">io.github.freewebmovement.igniter.BC_SERVICE_STATE</string>
+    <string name="stop_service">io.github.freewebmovement.igniter.STOP_SERVICE</string>
+    <string name="restart_service">io.github.freewebmovement.igniter.RESTART_SERVICE</string>
+    <string name="bind_service">io.github.freewebmovement.igniter.BIND_SERVICE</string>
+    <string name="connected_to__in__ms">已连接 %1$s，耗时 %2$s 毫秒。</string>
+    <string name="failed_to_connect_to__">无法连接到 %1$s：%2$s</string>
+    <string name="invalid_configuration">配置无效</string>
+    <string name="notification_channel_id">igniter_notify_chan</string>
+    <string name="notification_title">Igniter</string>
+
+
+    <string name="notification_channel_name">Igniter 通知</string>
+    <string name="notification_channel_description">Igniter 代理状态通知</string>
+    <string name="notification_starting_service">正在启动服务</string>
+    <string name="main_restart_proxy_service_tip">请自行重启代理以应用新的豁免应用配置。</string>
+    <string name="main_proxy_restarting_tip">代理配置已更新，正在重启代理…</string>
+    <string name="tile_on">Igniter 已开启</string>
+    <string name="tile_starting">Igniter 启动中</string>
+    <string name="tile_stopping">Igniter 停止中</string>
+    <string name="tile_off">Igniter 已关闭</string>
+
+    <!-- Main Menu -->
+    <string name="main_menu_action_settings">设置</string>
+    <string name="main_menu_action_available_server">可用服务器</string>
+    <string name="main_menu_action_server_list">服务器列表</string>
+    <string name="main_menu_action_test_connection">测试连接</string>
+    <string name="main_menu_action_exempt_app">已启用应用</string>
+    <string name="main_menu_action_exempt_all_app">豁免全部应用</string>
+    <string name="main_menu_action_enable_all_app">启用全部应用</string>
+    <string name="main_menu_action_clash_editor_file_editor">Clash 配置文件编辑</string>
+    <string name="main_menu_action_domain_monitor">域名规则</string>
+    <string name="domain_monitor_apply_hint">重新连接 VPN 后生效。</string>
+    <string name="domain_monitor_search_hint">搜索域名</string>
+    <string name="domain_monitor_add_title">添加域名</string>
+    <string name="domain_monitor_add_hint">example.com 或 https://example.com/path</string>
+    <string name="domain_monitor_add_proxy">添加（走代理）</string>
+    <string name="domain_monitor_add_direct">添加（直连）</string>
+    <string name="domain_monitor_clear">清空列表</string>
+    <string name="domain_monitor_locked">%1$s · %2$d 次命中（已锁定）</string>
+    <string name="domain_monitor_auto">%1$s · %2$d 次命中（自动）</string>
+    <string name="domain_monitor_unknown">%1$d 次命中（自动）</string>
+    <string name="domain_monitor_btn_proxy">代理</string>
+    <string name="domain_monitor_btn_direct">直连</string>
+    <string name="domain_monitor_btn_unlock">解锁</string>
+    <string name="domain_monitor_tab_manual">手动</string>
+    <string name="domain_monitor_tab_auto">自动</string>
+    <string name="domain_monitor_tab_foreign">国外大网站</string>
+    <string name="domain_monitor_tab_unreachable">无法到达</string>
+    <string name="domain_monitor_manual_locked">%1$s（已锁定）</string>
+    <string name="domain_monitor_foreign_default">%1$s（默认）</string>
+    <string name="domain_monitor_foreign_locked">%1$s · 用户规则</string>
+    <string name="domain_monitor_empty_manual">暂无手动规则。在“自动”中锁定域名，或点 + 添加。</string>
+    <string name="domain_monitor_empty_auto">暂无流量记录。</string>
+    <string name="domain_monitor_empty_foreign">暂无站点。</string>
+    <string name="domain_monitor_empty_unreachable">暂无无法到达的域名。</string>
+    <string name="domain_monitor_dns_polluted">%1$d 次命中（DNS 污染）</string>
+    <string name="domain_monitor_unreachable">无法到达（直连与代理均失败）</string>
+    <string name="domain_prompt_title">新网址提示</string>
+    <string name="domain_prompt_text">发现新网址 %1$s，选择代理，还是直连</string>
+    <string name="domain_prompt_proxy">走代理</string>
+    <string name="domain_prompt_direct">直连</string>
+    <string name="domain_pending_count">%1$d 个新网址等待选择</string>
+    <string name="domain_prompt_screen_title">新网址选择</string>
+    <string name="domain_prompt_screen_hint">为每个新网址选择连接方式，选择后立即生效。</string>
+    <string name="domain_prompt_screen_empty">暂无待选择的新网址。</string>
+
+    <!-- Bottom navigation tabs -->
+    <string name="tab_home">服务器</string>
+    <string name="tab_apps">代理应用</string>
+    <string name="tab_rules">分流规则</string>
+    <string name="tab_settings">设置</string>
+
+    <!-- Page descriptions -->
+    <string name="home_page_desc">选择一台服务器，点 ▶ 直接连接，或点 ⏹ 停止</string>
+    <string name="exempt_app_page_desc">默认所有应用都走代理；取消勾选的应用将绕过隧道直接连接</string>
+    <string name="proxy_tab_normal">普通应用</string>
+    <string name="proxy_tab_system">系统应用</string>
+    <string name="proxy_tab_international">默认国际应用</string>
+    <string name="proxy_select_all">全部选择</string>
+    <string name="proxy_deselect_all">全不选</string>
+    <string name="proxy_search_hint">搜索应用</string>
+    <string name="proxy_save">保存</string>
+    <string name="rules_page_desc">按域名设置走代理还是直连</string>
+    <string name="settings_page_desc">代理、开机启动等基础设置</string>
+    <string name="battery_optimization">后台保活</string>
+    <string name="battery_status_whitelisted">已允许，点击管理</string>
+    <string name="battery_status_not_whitelisted">未允许，点击开启</string>
+    <string name="background_usage_limits">后台使用限制</string>
+    <string name="background_usage_limits_desc">将本应用加入“永不休眠”，防止后台被回收</string>
+
+    <!-- Home (connect) page -->
+    <string name="home_status_stopped">已停止</string>
+    <string name="home_status_starting">连接中…</string>
+    <string name="home_status_started">已连接</string>
+    <string name="home_status_stopping">停止中…</string>
+    <string name="home_current_server">当前服务器</string>
+    <string name="home_test_connection">测试连接</string>
+    <string name="home_btn_start">启动</string>
+    <string name="home_btn_stop">停止</string>
+    <string name="home_dns_protected">DNS 防污染已开启</string>
+    <string name="home_server_unknown">未选择服务器</string>
+    <string name="home_no_server_info">当前没有服务器信息</string>
+    <string name="home_server_section">服务器</string>
+    <string name="home_add_server">添加服务器</string>
+    <string name="home_route_title">代理链路</string>
+    <string name="home_route_clash">tun2socks → Clash(%1$s) → trojan(127.0.0.1:%2$d) → %3$s</string>
+    <string name="home_route_direct">tun2socks → trojan(127.0.0.1:%1$d) → %2$s</string>
+    <string name="home_domain_route_title">域名分流</string>
+    <string name="home_domain_route_count">%1$d 条手动规则</string>
+    <string name="home_manage_domain_route">管理</string>
+
+
+    <string name="action_show_develop_info_logcat">在 logcat 中显示开发信息</string>
+
+    <string name="server_list_import_file_desc">从文件导入配置（*.txt）</string>
+    <string name="server_list_file_chooser_msg">选择 TXT 文件</string>
+    <string name="server_list_menu_import_from_file">从文件导入</string>
+    <string name="server_list_delete_btn">@string/common_delete</string>
+    <string name="server_list_current">当前</string>
+    <string name="server_list_play">连接</string>
+    <string name="server_list_stop">停止</string>
+    <string name="server_list_more">更多</string>
+    <string name="server_list_edit">编辑</string>
+    <string name="server_list_qr">二维码</string>
+    <string name="server_ping_format">%1$dms / %2$dms</string>
+    <string name="server_ping_unreachable">—</string>
+    <string name="quick_add_server_uri_hint">粘贴 trojan:// 链接，自动填写</string>
+    <string name="scan_qr_code">扫码添加</string>
+    <string name="qr_scan_hint">将服务器二维码对准取景框扫描</string>
+    <string name="qr_scan_permission_denied">需要相机权限才能扫码</string>
+    <string name="qr_scan_camera_error">无法启动相机</string>
+    <string name="qr_generate_button">生成二维码</string>
+    <string name="qr_generate_incomplete">请先填写服务器地址、端口和密码</string>
+    <string name="qr_generate_failed">二维码生成失败</string>
+    <string name="qr_dialog_title">服务器二维码</string>
+    <string name="qr_share_action">分享</string>
+    <string name="qr_share_uri">分享服务器链接</string>
+    <string name="server_list_lack_of_read_permission">缺少读取权限！</string>
+
+    <string name="main_save_config_btn">保存</string>
+    <string name="main_save_success">@string/common_save_success</string>
+    <string name="main_save_failed">保存失败</string>
+
+    <string name="save">保存</string>
+    <string name="play">连接</string>
+    <string name="stop">停止</string>
+
+    <string name="main_write_external_storage_permission_requirement">
+        Igniter 需要读取和写入外部存储，用于读写豁免应用列表（即使卸载 Igniter 后也可恢复）。拒绝该权限将禁用豁免应用功能。
+    </string>
+    <string name="main_exempt_feature_permission_requirement">
+        请先在 Igniter 应用设置中授予读写外部存储权限。
+    </string>
+
+    <string name="add_server_success">添加服务器成功</string>
+    <string name="exempt_app_search_title">搜索应用</string>
+    <string name="menu_action_exempt_app_hide_system_apps">系统应用</string>
+    <string name="exempt_app_exit">退出</string>
+    <string name="exempt_app_exit_confirm">确定不保存就退出吗？</string>
+    <string name="exempt_app_loading_tip">加载中…</string>
+    <string name="exempt_app_saving_tip">保存中…</string>
+    <string name="exempt_app_exit_without_saving_confirm">不保存豁免应用列表就退出吗？</string>
+    <string name="service_is_running">Igniter 正在运行</string>
+    <string name="service_failed">Igniter 启动失败</string>
+    <string name="error_establish_vpn">创建 VPN 接口失败</string>
+    <string name="error_vpn_permission_revoked">VPN 权限已被撤销，请重新启动</string>
+    <string name="enable_boot_start">开机自动启动</string>
+    <string name="error_remote_address">服务器地址缺失或错误！</string>
+    <string name="error_remote_port">服务器端口缺失或错误！</string>
+    <string name="error_remote_password">密码缺失或有误！</string>
+    <string name="error_local_port">本地端口错误！</string>
+    <string name="local_port">本地端口</string>
+    <string name="remote_password">服务器密码</string>
+    <string name="error_dabase_unique_constraint_failed">唯一约束失败！</string>
+    <string name="warning_delete_server">确定要删除该服务器吗？</string>
+    <string name="warngin_delete_server_confirm">确定删除服务器？</string>
+
+
+</resources>

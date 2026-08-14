@@ -38,12 +38,16 @@ class AddServerActivity : AppCompatActivity() {
             val uri = result.data?.getStringExtra(ScanQrCodeActivity.EXTRA_QR_RESULT)
             if (!uri.isNullOrEmpty()) {
                 mUri = uri
+                parseQuickAdd(uri)
             }
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (mLocalPort.isEmpty()) {
+            mLocalPort = getString(R.string.default_local_or_clash_port)
+        }
         setContent {
             IgniterTheme {
                 AddServerScreen(
@@ -142,7 +146,11 @@ class AddServerActivity : AppCompatActivity() {
                 }
                 mHost = server.hostname
                 mPort = server.port.toString()
-                mLocalPort = server.local_port.toString()
+                mLocalPort = if (server.local_port > 0) {
+                    server.local_port.toString()
+                } else {
+                    getString(R.string.default_local_or_clash_port)
+                }
                 mPassword = server.password
             }
         }.start()

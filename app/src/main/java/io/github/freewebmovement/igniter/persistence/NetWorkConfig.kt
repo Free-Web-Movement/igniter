@@ -12,6 +12,7 @@ import clash.Clash
 import io.github.freewebmovement.igniter.IgniterApplication
 import io.github.freewebmovement.igniter.JNIHelper
 import io.github.freewebmovement.igniter.R
+import io.github.freewebmovement.igniter.connection.Socks5Gate
 import io.github.freewebmovement.igniter.constants.Net
 import io.github.freewebmovement.igniter.constants.Trojan
 import tun2socks.Tun2socks
@@ -28,6 +29,14 @@ object NetWorkConfig {
 
     private var tun2socksStarted = false
     private var clashStarted = false
+
+    /**
+     * SOCKS5 gateway inserted between tun2socks and Clash. Decides the
+     * route for domain-based connections and parks brand-new domains until
+     * the user picks a policy. Lives in the ":proxy" process.
+     */
+    @Volatile
+    private var gate: Socks5Gate? = null
 
     @JvmStatic
     fun isPortTaken(ip: String, port: Int, timeout: Int): Boolean {
@@ -114,6 +123,7 @@ object NetWorkConfig {
 
     @JvmStatic
     fun startService(app: IgniterApplication, fd: Int): String {
+        app.trojanPreferences.reload()
         val enableClash = app.trojanPreferences.getEnableClash()
         val enableIPV6 = app.trojanPreferences.getEnableIPV6()
         val enableLan = app.trojanPreferences.isEnableLan()
@@ -159,7 +169,9 @@ object NetWorkConfig {
                 throw IllegalStateException("clash failed to start on $clashSocksPort")
             }
             clashStarted = true
-            tun2socksPort = clashSocksPort
+            val g = Socks5Gate(app, clashSocksPort, enableIPV6)
+            tun2socksPort = g.start()
+            gate = g
         } else {
             tun2socksPort = trojanPort
         }
@@ -178,10 +190,13 @@ object NetWorkConfig {
      * native trojan client (which reads the file at startup) binds the new port.
      */
     private fun applyTrojanPort(app: IgniterApplication, port: Int): Int {
-        if (app.trojanConfig.getLocalPort() != port) {
-            app.trojanConfig.setLocalPort(port)
-            TrojanConfig.update(app.storage.path.trojanConfig!!, Trojan.KEY_LOCAL_PORT, port)
-        }
+        // Always persist the computed port: the in-memory TrojanConfig in the
+        // ":proxy" process can be stale (e.g. initialized from the default
+        // config before a server was configured), so relying on it to decide
+        // whether to write the file leaves config.json pointing at the old
+        // port while trojan binds the new one.
+        app.trojanConfig.setLocalPort(port)
+        TrojanConfig.update(app.storage.path.trojanConfig!!, Trojan.KEY_LOCAL_PORT, port)
         return port
     }
 
@@ -210,6 +225,7 @@ object NetWorkConfig {
         sessionName: String,
         packages: Set<String>
     ): ParcelFileDescriptor {
+        app.trojanPreferences.reload()
         val enableClash = app.trojanPreferences.getEnableClash()
         val enableIPV6 = app.trojanPreferences.getEnableIPV6()
         for (packageName in packages) {
@@ -284,6 +300,8 @@ object NetWorkConfig {
     @JvmStatic
     fun stop(app: IgniterApplication) {
         JNIHelper.terminate()
+        gate?.stop()
+        gate = null
         if (clashStarted) {
             Clash.stop()
             clashStarted = false

@@ -11,12 +11,14 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import io.github.freewebmovement.igniter.IgniterApplication
+import io.github.freewebmovement.igniter.common.util.BatteryOptimization
 import io.github.freewebmovement.igniter.persistence.NetWorkConfig
 import io.github.freewebmovement.igniter.theme.IgniterTheme
 import io.github.freewebmovement.igniter.ui.settings.SettingsScreen
 
 /**
- * Settings page: IPv6, Clash, LAN, auto start and boot start.
+ * Settings page: IPv6, Clash, LAN, auto start, boot start and background
+ * keep-alive (battery whitelist).
  */
 class SettingsFragment : Fragment() {
 
@@ -28,6 +30,7 @@ class SettingsFragment : Fragment() {
     private var mLan by mutableStateOf(false)
     private var mAutoStart by mutableStateOf(false)
     private var mBootStart by mutableStateOf(false)
+    private var mBatteryWhitelisted by mutableStateOf(false)
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
@@ -37,6 +40,7 @@ class SettingsFragment : Fragment() {
         mLan = preferences.isEnableLan()
         mAutoStart = preferences.isEnableAutoStart()
         mBootStart = preferences.isEnableBootStart()
+        mBatteryWhitelisted = BatteryOptimization.isIgnoringBatteryOptimizations(requireContext())
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
@@ -47,6 +51,7 @@ class SettingsFragment : Fragment() {
                         lanEnabled = mLan,
                         autoStartEnabled = mAutoStart,
                         bootStartEnabled = mBootStart,
+                        batteryWhitelisted = mBatteryWhitelisted,
                         onIpv6Change = {
                             mIpv6 = it
                             app.trojanPreferences.setEnableIPV6(it)
@@ -72,10 +77,34 @@ class SettingsFragment : Fragment() {
                         onBootStartChange = {
                             mBootStart = it
                             app.trojanPreferences.setEnableBootStart(it)
+                        },
+                        onBatteryTap = {
+                            if (BatteryOptimization.isIgnoringBatteryOptimizations(requireContext())) {
+                                BatteryOptimization.openBatteryOptimizationSettings(requireContext())
+                            } else {
+                                BatteryOptimization.requestIgnoreOptimizations(requireContext())
+                            }
+                        },
+                        onBackgroundLimitsTap = {
+                            if (!BatteryOptimization.openOemBackgroundLimits(requireContext())) {
+                                BatteryOptimization.openBatteryOptimizationSettings(requireContext())
+                            }
                         }
                     )
                 }
             }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        mBatteryWhitelisted = BatteryOptimization.isIgnoringBatteryOptimizations(requireContext())
+    }
+
+    override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
+        if (!hidden) {
+            mBatteryWhitelisted = BatteryOptimization.isIgnoringBatteryOptimizations(requireContext())
         }
     }
 }

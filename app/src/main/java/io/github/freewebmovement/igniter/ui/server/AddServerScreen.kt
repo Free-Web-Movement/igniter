@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -120,32 +121,17 @@ fun AddServerScreen(
                     .fillMaxWidth()
                     .padding(start = 16.dp, top = 12.dp, end = 16.dp)
             )
-            Row(
+            TextField(
+                value = port,
+                onValueChange = onPortChange,
+                label = { Text(stringResource(R.string.remote_port)) },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                colors = fieldColors(),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 16.dp, top = 12.dp, end = 16.dp)
-            ) {
-                TextField(
-                    value = port,
-                    onValueChange = onPortChange,
-                    label = { Text(stringResource(R.string.remote_port)) },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    colors = fieldColors(),
-                    modifier = Modifier.weight(1f)
-                )
-                TextField(
-                    value = localPort,
-                    onValueChange = onLocalPortChange,
-                    label = { Text(stringResource(R.string.local_port)) },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    colors = fieldColors(),
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 12.dp)
-                )
-            }
+            )
             TextField(
                 value = password,
                 onValueChange = onPasswordChange,
@@ -156,6 +142,33 @@ fun AddServerScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 16.dp, top = 12.dp, end = 16.dp)
+            )
+            TextField(
+                value = localPort,
+                onValueChange = onLocalPortChange,
+                label = { Text(stringResource(R.string.local_port)) },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                colors = fieldColors(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, top = 12.dp, end = 16.dp)
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 20.dp, top = 16.dp, end = 20.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.verify_certificate),
+                    fontSize = 18.sp,
+                    modifier = Modifier.weight(1f)
+                )
+                Switch(checked = true, onCheckedChange = {})
+            }
+            HorizontalDivider(
+                modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp)
             )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -179,19 +192,6 @@ fun AddServerScreen(
                 ) {
                     Text(stringResource(R.string.qr_generate_button))
                 }
-            }
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 20.dp, top = 16.dp, end = 20.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.verify_certificate),
-                    fontSize = 18.sp,
-                    modifier = Modifier.weight(1f)
-                )
-                Switch(checked = true, onCheckedChange = {})
             }
             Button(
                 onClick = { onSave(host, port, password, localPort) },

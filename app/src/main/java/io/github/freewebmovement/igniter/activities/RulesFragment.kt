@@ -18,16 +18,16 @@ import androidx.fragment.app.Fragment
 import io.github.freewebmovement.igniter.IgniterApplication
 import io.github.freewebmovement.igniter.R
 import io.github.freewebmovement.igniter.common.dialog.AppSheet
+import io.github.freewebmovement.igniter.connection.Socks5Gate
+import io.github.freewebmovement.igniter.connection.TunnelLogParser
 import io.github.freewebmovement.igniter.persistence.DomainRulesManager
 import io.github.freewebmovement.igniter.theme.IgniterTheme
 import io.github.freewebmovement.igniter.ui.rules.RuleItem
 import io.github.freewebmovement.igniter.ui.rules.RulesScreen
-import java.io.BufferedReader
-import java.io.InputStreamReader
 import java.util.ArrayDeque
+import java.util.Date
 import java.util.LinkedHashMap
 import java.util.Locale
-import java.util.regex.Pattern
 
 /**
  * Rules page with three tabs:
@@ -49,6 +49,7 @@ class RulesFragment : Fragment() {
 
     private var mRuleItems by mutableStateOf<List<RuleItem>>(emptyList())
     private var mEmptyHint by mutableStateOf("")
+    private val mLogParser = TunnelLogParser()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
@@ -78,7 +79,11 @@ class RulesFragment : Fragment() {
                         },
                         onAddDomain = { showAddDialog() },
                         onClearDomains = {
-                            mEntries.clear()
+                            if (mTab == TAB_UNREACHABLE) {
+                                Socks5Gate.clearUnreachable(requireContext())
+                            } else {
+                                mEntries.clear()
+                            }
                             rebuildList()
                         },
                         onOpenClashEditor = {
@@ -114,27 +119,28 @@ class RulesFragment : Fragment() {
     private fun pollLoop() {
         while (mRunning) {
             try {
-                val output = readLogcat()
+                val output = mLogParser.readLogcat(mSinceTime)
                 if (output.isNotEmpty()) {
                     val fresh = filterNewLines(output)
                     if (fresh.isNotEmpty()) {
-                        val hits = parseHits(fresh)
+                        val hits = mLogParser.parseHits(fresh)
                         mHandler.post {
                             if (!mRunning || !isAdded) {
                                 return@post
                             }
                             for (hit in hits) {
-                                val key = hit[0] ?: continue
+                                val full = hit.domain ?: continue
+                                val key = rootDomain(full)
                                 var e = mEntries[key]
                                 if (e == null) {
                                     e = Entry()
                                     e.domain = key
-                                    e.isIp = isIpLike(key)
+                                    e.isIp = TunnelLogParser.isIpLike(full)
                                     mEntries[key] = e
                                 }
                                 e.count++
-                                if (hit[1] != null) {
-                                    e.clashPolicy = hit[1]
+                                if (hit.policy != null) {
+                                    e.clashPolicy = hit.policy
                                 }
                             }
                             if (mTab == TAB_AUTO) {
@@ -143,6 +149,7 @@ class RulesFragment : Fragment() {
                         }
                     }
                 }
+                mSinceTime = sSinceFormat.format(Date(System.currentTimeMillis() - SINCE_WINDOW_MS))
             } catch (ignored: Exception) {
             }
             try {
@@ -173,54 +180,6 @@ class RulesFragment : Fragment() {
         return sb.toString()
     }
 
-    private fun readLogcat(): String {
-        val p = Runtime.getRuntime().exec(
-            arrayOf("logcat", "-d", "-t", "1000", "-s", "GoLog:V", "*:S"))
-        val sb = StringBuilder(16384)
-        BufferedReader(InputStreamReader(p.inputStream)).use { r ->
-            val buf = CharArray(8192)
-            while (true) {
-                val n = r.read(buf)
-                if (n == -1) break
-                sb.append(buf, 0, n)
-            }
-        }
-        p.waitFor()
-        return sb.toString()
-    }
-
-    private fun isIpLike(s: String): Boolean {
-        if ("N/A" == s) {
-            return true
-        }
-        return Regex("[0-9a-fA-F:.]+").matches(s)
-    }
-
-    private fun cleanPolicy(p: String?): String? {
-        if (p == null) {
-            return null
-        }
-        val i = p.indexOf('[')
-        return if (i > 0) p.substring(0, i) else p
-    }
-
-    private fun parseHits(log: String): List<Array<String?>> {
-        val hits = mutableListOf<Array<String?>>()
-        for (p in listOf(TUN2SOCKS_TCP, TUN2SOCKS_UDP)) {
-            val m = p.matcher(log)
-            while (m.find()) {
-                hits.add(arrayOf(m.group(1)?.trim()?.lowercase(Locale.US), null))
-            }
-        }
-        for (p in listOf(CLASH_TCP, CLASH_UDP)) {
-            val m = p.matcher(log)
-            while (m.find()) {
-                hits.add(arrayOf(m.group(1)?.trim()?.lowercase(Locale.US), cleanPolicy(m.group(2))))
-            }
-        }
-        return hits
-    }
-
     private fun rebuildList() {
         val entries = mutableListOf<Entry>()
         if (mTab == TAB_MANUAL) {
@@ -243,6 +202,16 @@ class RulesFragment : Fragment() {
                 e.clashPolicy = mRules.getPolicy(site)
                 entries.add(e)
             }
+        } else if (mTab == TAB_UNREACHABLE) {
+            for (site in Socks5Gate.getUnreachable(requireContext())) {
+                if (mFilter.isNotEmpty() && !site.contains(mFilter)) {
+                    continue
+                }
+                val e = Entry()
+                e.domain = site
+                e.clashPolicy = "UNREACHABLE"
+                entries.add(e)
+            }
         } else {
             for (e in mEntries.values) {
                 if (mFilter.isNotEmpty() && !e.domain.contains(mFilter)) {
@@ -262,6 +231,7 @@ class RulesFragment : Fragment() {
             when (mTab) {
                 TAB_MANUAL -> R.string.domain_monitor_empty_manual
                 TAB_FOREIGN -> R.string.domain_monitor_empty_foreign
+                TAB_UNREACHABLE -> R.string.domain_monitor_empty_unreachable
                 else -> R.string.domain_monitor_empty_auto
             })
         mRuleItems = entries.map { buildRuleItem(it) }
@@ -293,6 +263,12 @@ class RulesFragment : Fragment() {
         } else if (locked != null) {
             statusText = getString(R.string.domain_monitor_locked, locked, e.count)
             statusColor = if (locked.contains("DIRECT")) COLOR_DIRECT else COLOR_PROXY
+        } else if (policy == "DNS_POLLUTED") {
+            statusText = getString(R.string.domain_monitor_dns_polluted, e.count)
+            statusColor = COLOR_PROXY
+        } else if (policy == "UNREACHABLE") {
+            statusText = getString(R.string.domain_monitor_unreachable)
+            statusColor = COLOR_DEFAULT
         } else if (policy != null) {
             statusText = getString(R.string.domain_monitor_auto, policy, e.count)
             statusColor = if (policy.contains("DIRECT")) COLOR_DIRECT else COLOR_PROXY
@@ -326,16 +302,68 @@ class RulesFragment : Fragment() {
     }
 
     private fun addDomain(domain: String, policy: String) {
-        val d = domain.trim().lowercase(Locale.US)
-        if (d.isEmpty()) {
-            return
-        }
+        val d = extractDomain(domain) ?: return
         mRules.setRule(d, policy)
         switchTab(TAB_MANUAL)
     }
 
+    /**
+     * Accepts either a bare domain (returned unchanged) or a URI such as
+     * `https://www.example.com:443/path`, `trojan://user@example.com:443` or
+     * `example.com:443`, and returns the host/domain part. Returns null when
+     * the input has nothing usable as a domain.
+     */
+    private fun extractDomain(raw: String): String? {
+        var s = raw.trim().lowercase(Locale.US)
+        if (s.isEmpty()) {
+            return null
+        }
+        val hasScheme = s.contains("://")
+        val looksLikeUri = hasScheme || s.contains('/') || s.contains(':') || s.contains('@')
+        if (!looksLikeUri) {
+            return if (isHostLike(s)) s else null
+        }
+        if (hasScheme) {
+            s = s.substring(s.indexOf("://") + 3)
+        }
+        val at = s.lastIndexOf('@')
+        if (at >= 0) {
+            s = s.substring(at + 1)
+        }
+        val slash = s.indexOf('/')
+        if (slash >= 0) {
+            s = s.substring(0, slash)
+        }
+        if (s.startsWith("[") && s.contains(']')) {
+            s = s.substring(1, s.indexOf(']'))
+        } else {
+            val colon = s.lastIndexOf(':')
+            if (colon >= 0) {
+                s = s.substring(0, colon)
+            }
+        }
+        return if (isHostLike(s)) s else null
+    }
+
+    private fun isHostLike(s: String): Boolean {
+        if (s.isEmpty() || s.length > 253) {
+            return false
+        }
+        for (c in s) {
+            if (!(c.isLetterOrDigit() || c == '.' || c == '-' || c == '_')) {
+                return false
+            }
+        }
+        return true
+    }
+
     companion object {
         private const val POLL_INTERVAL_MS = 1500L
+
+        // Rolling -T watermark: each poll asks logcat for lines logged after
+        // "now - SINCE_WINDOW_MS"; overlapping lines are deduplicated below.
+        private const val SINCE_WINDOW_MS = 4000L
+        private val sSinceFormat = java.text.SimpleDateFormat("MM-dd HH:mm:ss.SSS", java.util.Locale.US)
 
         // logcat -d re-reads the same tail of the buffer on every poll, so raw
         // lines must be deduplicated or every hit would be recounted each time.
@@ -344,22 +372,36 @@ class RulesFragment : Fragment() {
         private const val TAB_MANUAL = 0
         private const val TAB_AUTO = 1
         private const val TAB_FOREIGN = 2
+        private const val TAB_UNREACHABLE = 3
 
         private val COLOR_DIRECT = Color(0xFF2E7D32)
         private val COLOR_PROXY = Color(0xFFC62828)
         private val COLOR_DEFAULT = Color(0xFF757575)
 
-        // go-tun2socks format: [tun2socks] [proxy] [tcp] [N/A] www.google.com:443
-        // domain sits right after the bracket (bracket content is always "N/A")
-        private val TUN2SOCKS_TCP = Pattern.compile(
-            "\\[tun2socks\\] \\[proxy\\] \\[tcp\\] \\[[^\\]]*\\]\\s+([A-Za-z0-9_.-]+):\\d+")
-        private val TUN2SOCKS_UDP = Pattern.compile(
-            "\\[tun2socks\\] \\[proxy\\] \\[udp\\] \\[[^\\]]*\\]\\s+([A-Za-z0-9_.-]+):\\d+")
-        // Clash rule log lines: [TCP] 127.0.0.1:59270 --> cdnws.api.huya.com:443 match DomainSuffix(huya.com) using DIRECT
-        private val CLASH_TCP = Pattern.compile(
-            "\\[TCP\\]\\s+[0-9a-fA-F.:]+\\s*-->\\s*([A-Za-z0-9_.-]+):\\d+\\s+match\\s+.*using\\s+(\\S+)")
-        private val CLASH_UDP = Pattern.compile(
-            "\\[UDP\\]\\s+[0-9a-fA-F.:]+\\s*-->\\s*([A-Za-z0-9_.-]+):\\d+\\s+match\\s+.*using\\s+(\\S+)")
+        /** Compound public suffixes whose registrable domain spans three labels
+         *  (a.b.com.cn stays b.com.cn; a.b.co.uk stays b.co.uk). */
+        private val COMPOUND_SUFFIXES = setOf(
+            "com.cn", "net.cn", "org.cn", "gov.cn", "edu.cn", "ac.cn",
+            "com.hk", "com.tw", "org.tw", "com.sg", "com.my", "com.au",
+            "net.au", "co.uk", "org.uk", "ac.uk", "gov.uk", "co.jp",
+            "or.jp", "ne.jp", "ac.jp", "co.kr", "or.kr", "co.nz",
+            "com.br", "com.mx", "com.tr", "com.ar", "com.vn", "com.ph",
+            "com.th", "co.id", "com.id", "co.in"
+        )
+
+        /** Collapses subdomains to their registrable domain so a.t.com and
+         *  b.t.com both surface as t.com in the auto list. IPs stay untouched. */
+        private fun rootDomain(host: String): String {
+            if (TunnelLogParser.isIpLike(host)) {
+                return host
+            }
+            val labels = host.split('.')
+            if (labels.size <= 2) {
+                return host
+            }
+            val suffix = labels.takeLast(2).joinToString(".")
+            return labels.takeLast(if (suffix in COMPOUND_SUFFIXES) 3 else 2).joinToString(".")
+        }
 
         @JvmStatic
         fun newInstance(): RulesFragment = RulesFragment()
@@ -368,6 +410,7 @@ class RulesFragment : Fragment() {
     private val mHandler = Handler(Looper.getMainLooper())
     private val mEntries = LinkedHashMap<String, Entry>()
     // Tracks raw logcat lines already counted so a line is never counted twice.
+    private var mSinceTime: String? = null
     private val mSeenOrder = ArrayDeque<String>()
     private val mSeenSet = HashSet<String>()
 

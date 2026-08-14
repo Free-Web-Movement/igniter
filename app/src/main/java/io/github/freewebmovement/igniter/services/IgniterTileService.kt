@@ -28,7 +28,11 @@ class IgniterTileService : TileService(), TrojanConnection.Callback {
     override fun onStartListening() {
         super.onStartListening()
         Log.i(TAG, "onStartListening")
-        mConnection.connect(this, this)
+        // Only bind while the tunnel is actually running. Binding to a stopped
+        // service keeps a dead :proxy process alive as an idle zombie.
+        if (IgniterApplication.getApplication().trojanPreferences.isVpnActive()) {
+            mConnection.connect(this, this)
+        }
     }
 
     override fun onStopListening() {
@@ -58,6 +62,9 @@ class IgniterTileService : TileService(), TrojanConnection.Callback {
     override fun onStateChanged(state: Int, msg: String?) {
         Log.i(TAG, "onStateChanged# state: $state, msg: $msg")
         updateTile(state)
+        if (state == ProxyService.STOPPED && mConnection.isConnected()) {
+            mConnection.disconnect(this)
+        }
     }
 
     override fun onTestResult(testUrl: String?, connected: Boolean, delay: Long, @NonNull error: String) {
@@ -116,6 +123,11 @@ class IgniterTileService : TileService(), TrojanConnection.Callback {
         val service = mConnection.getService()
         if (service == null) {
             mTapPending = true
+            if (!mConnection.isConnected()) {
+                // The tile only binds while the tunnel is running; connect on
+                // demand so a tap can start a stopped tunnel.
+                mConnection.connect(this, this)
+            }
         } else {
             try {
                 val state = service.getState()
