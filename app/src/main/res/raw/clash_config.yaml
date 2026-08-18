@@ -346,6 +346,7 @@ rules:
   - DOMAIN-SUFFIX,bytedance.net,DIRECT
   - DOMAIN-SUFFIX,bytedns.net,DIRECT
   - DOMAIN-SUFFIX,byteimg.com,DIRECT
+
   - DOMAIN-SUFFIX,c-ctrip.com,DIRECT
   - DOMAIN-SUFFIX,c-nfa.jd.com,DIRECT
   - DOMAIN-SUFFIX,c-t.work,DIRECT
@@ -500,12 +501,12 @@ rules:
   - DOMAIN-SUFFIX,dockerone.com,DIRECT
   - DOMAIN-SUFFIX,dockone.io,DIRECT
   - DOMAIN-SUFFIX,dogedoge.com,DIRECT
+  - DOMAIN-SUFFIX,douyin.com,DIRECT
   - DOMAIN-SUFFIX,donews.com,DIRECT
   - DOMAIN-SUFFIX,dongting.com,DIRECT
   - DOMAIN-SUFFIX,douban.com,DIRECT
   - DOMAIN-SUFFIX,douban.fm,DIRECT
   - DOMAIN-SUFFIX,doubanio.com,DIRECT
-  - DOMAIN-SUFFIX,douyin.com,DIRECT
   - DOMAIN-SUFFIX,douyu.com,DIRECT
   - DOMAIN-SUFFIX,douyu.tv,DIRECT
   - DOMAIN-SUFFIX,douyucdn.cn,DIRECT
@@ -986,10 +987,10 @@ rules:
   - DOMAIN-SUFFIX,pos.baidu.com,DIRECT
   - DOMAIN-SUFFIX,pps.tv,DIRECT
   - DOMAIN-SUFFIX,ppsimg.com,DIRECT
+  - DOMAIN-SUFFIX,pstatp.com,DIRECT
   - DOMAIN-SUFFIX,prestodb-china.com,DIRECT
   - DOMAIN-SUFFIX,promote.biz.weibo.cn,DIRECT
   - DOMAIN-SUFFIX,psbc.com,DIRECT
-  - DOMAIN-SUFFIX,pstatp.com,DIRECT
   - DOMAIN-SUFFIX,pubyun.com,DIRECT
   - DOMAIN-SUFFIX,pups.bdimg.com,DIRECT
   - DOMAIN-SUFFIX,push.qq.com,DIRECT
@@ -1113,8 +1114,8 @@ rules:
   - DOMAIN-SUFFIX,smtcdns.com,DIRECT
   - DOMAIN-SUFFIX,smzdm.com,DIRECT
   - DOMAIN-SUFFIX,snapdrop.net,DIRECT
-  - DOMAIN-SUFFIX,snippet.pos.baidu.com,DIRECT
   - DOMAIN-SUFFIX,snssdk.com,DIRECT
+  - DOMAIN-SUFFIX,snippet.pos.baidu.com,DIRECT
   - DOMAIN-SUFFIX,so.com,DIRECT
   - DOMAIN-SUFFIX,sobar.baidu.com,DIRECT
   - DOMAIN-SUFFIX,sobartop.baidu.com,DIRECT

@@ -169,14 +169,14 @@ class ProxyService : VpnService(), TestConnection.OnResultListener {
     }
 
     /**
-     * Apps the user manually set to bypass the tunnel (不代理). They are added
-     * to the VPN's disallowed-app list so their traffic never enters the
-     * tunnel and is never auto-tested by the Socks5Gate.
+     * Apps the user selected to route through the VPN tunnel (代理). All other
+     * apps bypass the tunnel and connect directly.
      */
-    private fun getBypassAppPackageNames(): Set<String> {
+    private fun getProxyAppPackageNames(): Set<String> {
         if (mExemptAppDataSource == null) {
             mExemptAppDataSource = ExemptAppDataManager(app)
         }
+        // ensures that new exempted app list can be applied on proxy after modification.
         return mExemptAppDataSource!!.loadExemptAppPackageNameSet()
     }
 
@@ -237,13 +237,15 @@ class ProxyService : VpnService(), TestConnection.OnResultListener {
         startForegroundNotification(getString(R.string.notification_channel_id))
         setState(STARTING)
 
-        // All apps go through the tunnel by default; the Socks5Gate
-        // auto-detect decides per domain whether to connect directly or via
-        // Clash. Only Igniter itself (to avoid loops: it must reach Clash and
-        // the physical DNS directly) and the apps the user manually set to
-        // 不代理 bypass the VPN.
-        val directPackageNames = mutableSetOf(getPackageName())
-        directPackageNames.addAll(getBypassAppPackageNames())
+        val proxyPackageNames = getProxyAppPackageNames()
+        val directPackageNames = mutableSetOf<String>()
+        for (packageName in mExemptAppDataSource?.getAllInstalledPackageNames() ?: emptySet()) {
+            if (packageName !in proxyPackageNames) {
+                directPackageNames.add(packageName)
+            }
+        }
+        // Igniter itself always bypasses the VPN tunnel to avoid loops.
+        directPackageNames.add(getPackageName())
 
         // VPN setup performs blocking I/O (port probing, native startup) and must
         // not run on the main thread.

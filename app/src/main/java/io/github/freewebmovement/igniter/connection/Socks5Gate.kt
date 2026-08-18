@@ -165,6 +165,14 @@ class Socks5Gate(
 
         @JvmStatic
         @Synchronized
+        fun removeUnreachable(context: Context, domain: String) {
+            val set = getUnreachable(context).toMutableSet()
+            set.remove(domain)
+            unreachablePrefs(context).edit().putString(UNREACHABLE_KEY, set.joinToString("||")).apply()
+        }
+
+        @JvmStatic
+        @Synchronized
         fun clearUnreachable(context: Context) {
             unreachablePrefs(context).edit().remove(UNREACHABLE_KEY).apply()
         }
@@ -425,7 +433,9 @@ class Socks5Gate(
         if (getUnreachable(app).contains(root)) {
             return AutoRoute.UNREACHABLE
         }
-        val decision = when (lookupPolicy(host)) {
+        val policy = lookupPolicy(host)
+        val isMajorForeign = rulesManager.lookupMajorForeignPolicy(host) != null
+        val decision = when (policy) {
             POLICY_DIRECT -> {
                 val ip = resolveRealIp(host)
                 when {
@@ -435,14 +445,15 @@ class Socks5Gate(
                 }
             }
             POLICY_PROXY -> {
-                when {
-                    probeProxy(host, port) -> AutoRoute.PROXY
-                    else -> {
-                        val ip = resolveRealIp(host)
-                        when {
-                            ip != null && probeDirect(ip, host, port) -> AutoRoute.DIRECT
-                            else -> AutoRoute.UNREACHABLE
-                        }
+                if (probeProxy(host, port)) {
+                    AutoRoute.PROXY
+                } else if (isMajorForeign) {
+                    AutoRoute.PROXY
+                } else {
+                    val ip = resolveRealIp(host)
+                    when {
+                        ip != null && probeDirect(ip, host, port) -> AutoRoute.DIRECT
+                        else -> AutoRoute.UNREACHABLE
                     }
                 }
             }
@@ -802,9 +813,7 @@ class Socks5Gate(
         for ((rule, policy) in rulesManager.getRules()) {
             if (suffixMatch(rule, host)) return policy
         }
-        for (site in rulesManager.getMajorForeignSites()) {
-            if (suffixMatch(site, host)) return POLICY_PROXY
-        }
+        rulesManager.lookupMajorForeignPolicy(host)?.let { return it }
         for (r in builtinRules) {
             when (r.type) {
                 "DOMAIN" -> if (host == r.value) return r.policy

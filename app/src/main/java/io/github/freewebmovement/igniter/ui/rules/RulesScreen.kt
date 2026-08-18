@@ -48,16 +48,18 @@ data class RuleItem(
     val statusText: String,
     val statusColor: Color,
     val policy: String?,
-    val showUnlock: Boolean
+    val showUnlock: Boolean,
+    val showHide: Boolean = false,
+    val showDelete: Boolean = false,
+    val showBlock: Boolean = false,
+    val isGroupHeader: Boolean = false,
+    val companyName: String? = null,
+    val companyDefaultPolicy: String? = null
 )
 
 private val Teal = Color(0xFF008577)
 private val UnselectedTab = Color(0xFFE0E0E0)
 
-/**
- * Rules page: manual / auto / curated-foreign tabs with search, per-domain
- * Proxy / Direct / Unlock actions and the add-clear-editor top bar menu.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RulesScreen(
@@ -67,7 +69,11 @@ fun RulesScreen(
     onTabSelected: (Int) -> Unit,
     onSetProxy: (String) -> Unit,
     onSetDirect: (String) -> Unit,
+    onSetBlock: (String) -> Unit,
     onUnlock: (String) -> Unit,
+    onHideDomain: (String) -> Unit,
+    onUnhideDomain: (String) -> Unit,
+    onDeleteDomain: (String) -> Unit,
     onAddDomain: () -> Unit,
     onClearDomains: () -> Unit,
     onOpenClashEditor: () -> Unit
@@ -151,7 +157,7 @@ fun RulesScreen(
                     .padding(start = 12.dp, top = 10.dp, end = 12.dp)
             ) {
                 RuleTab(
-                    text = stringResource(R.string.domain_monitor_tab_manual),
+                    text = stringResource(R.string.domain_monitor_tab_proxy),
                     selected = tab == 0,
                     modifier = Modifier.weight(1f),
                     onClick = {
@@ -160,7 +166,7 @@ fun RulesScreen(
                     }
                 )
                 RuleTab(
-                    text = stringResource(R.string.domain_monitor_tab_auto),
+                    text = stringResource(R.string.domain_monitor_tab_direct),
                     selected = tab == 1,
                     modifier = Modifier.weight(1f),
                     onClick = {
@@ -169,7 +175,7 @@ fun RulesScreen(
                     }
                 )
                 RuleTab(
-                    text = stringResource(R.string.domain_monitor_tab_foreign),
+                    text = stringResource(R.string.domain_monitor_tab_blocked),
                     selected = tab == 2,
                     modifier = Modifier.weight(1f),
                     onClick = {
@@ -221,12 +227,20 @@ fun RulesScreen(
             } else {
                 LazyColumn(modifier = Modifier.weight(1f)) {
                     items(items) { item ->
-                        RuleRow(
-                            item = item,
-                            onSetProxy = { onSetProxy(item.domain) },
-                            onSetDirect = { onSetDirect(item.domain) },
-                            onUnlock = { onUnlock(item.domain) }
-                        )
+                        if (item.isGroupHeader) {
+                            GroupHeaderRow(text = item.domain)
+                        } else {
+                            RuleRow(
+                                item = item,
+                                onSetProxy = { onSetProxy(item.domain) },
+                                onSetDirect = { onSetDirect(item.domain) },
+                                onSetBlock = { onSetBlock(item.domain) },
+                                onUnlock = { onUnlock(item.domain) },
+                                onHide = { onHideDomain(item.domain) },
+                                onUnhide = { onUnhideDomain(item.domain) },
+                                onDelete = { onDeleteDomain(item.domain) }
+                            )
+                        }
                         HorizontalDivider(color = Color(0xFFE0E0E0))
                     }
                 }
@@ -259,11 +273,33 @@ private fun RuleTab(
 }
 
 @Composable
+private fun GroupHeaderRow(text: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFFE8F5E9))
+            .padding(start = 12.dp, top = 8.dp, end = 12.dp, bottom = 8.dp)
+    ) {
+        Text(
+            text = text,
+            color = Color(0xFF2E7D32),
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
 private fun RuleRow(
     item: RuleItem,
     onSetProxy: () -> Unit,
     onSetDirect: () -> Unit,
-    onUnlock: () -> Unit
+    onSetBlock: () -> Unit,
+    onUnlock: () -> Unit,
+    onHide: () -> Unit,
+    onUnhide: () -> Unit,
+    onDelete: () -> Unit
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -297,11 +333,35 @@ private fun RuleRow(
             onClick = onSetDirect,
             modifier = Modifier.padding(start = 4.dp)
         )
+        if (item.showBlock) {
+            PolicyChip(
+                text = stringResource(R.string.domain_monitor_btn_block),
+                selected = false,
+                onClick = onSetBlock,
+                modifier = Modifier.padding(start = 4.dp)
+            )
+        }
         if (item.showUnlock) {
             PolicyChip(
                 text = stringResource(R.string.domain_monitor_btn_unlock),
                 selected = false,
                 onClick = onUnlock,
+                modifier = Modifier.padding(start = 4.dp)
+            )
+        }
+        if (item.showHide) {
+            PolicyChip(
+                text = stringResource(R.string.domain_monitor_btn_privacy),
+                selected = false,
+                onClick = onHide,
+                modifier = Modifier.padding(start = 4.dp)
+            )
+        }
+        if (item.showDelete) {
+            PolicyChip(
+                text = stringResource(R.string.common_delete),
+                selected = false,
+                onClick = onDelete,
                 modifier = Modifier.padding(start = 4.dp)
             )
         }
