@@ -27,6 +27,24 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val _domainRouteCount = MutableLiveData(0)
     val domainRouteCount: LiveData<Int> = _domainRouteCount
 
+    data class TestResult(val serverKey: String, val connected: Boolean, val delay: Long)
+
+    private val _testResult = MutableLiveData<TestResult?>()
+    val testResult: LiveData<TestResult?> = _testResult
+
+    var testingServerKey: String? = null
+        private set
+
+    fun setTestingServer(key: String?) {
+        testingServerKey = key
+    }
+
+    fun postTestResult(connected: Boolean, delay: Long) {
+        val key = testingServerKey ?: return
+        _testResult.postValue(TestResult(key, connected, delay))
+        testingServerKey = null
+    }
+
     fun setProxyState(state: Int) {
         _proxyState.postValue(state)
     }

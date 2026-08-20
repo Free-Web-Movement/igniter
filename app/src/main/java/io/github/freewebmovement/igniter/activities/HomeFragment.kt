@@ -44,6 +44,7 @@ class HomeFragment : Fragment() {
     private var mDomainRouteCount by mutableStateOf(0)
     private var mServers by mutableStateOf<List<Server>>(emptyList())
     private var mPingData by mutableStateOf<Map<String, ServerPingManager.PingInfo>>(emptyMap())
+    private var mTestResults by mutableStateOf<Map<String, Pair<Boolean, Long>>>(emptyMap())
     private var mCurrentHost by mutableStateOf("")
     private var mCurrentPort by mutableStateOf(0)
 
@@ -85,20 +86,27 @@ class HomeFragment : Fragment() {
                         domainRouteCount = mDomainRouteCount,
                         servers = mServers,
                         pingData = mPingData,
+                        testResults = mTestResults,
                         currentHost = mCurrentHost,
                         currentPort = mCurrentPort,
-                        onTestConnection = { (activity as? MainActivity)?.testConnection() },
                         onImportFromFile = { fileImportLauncher.launch("text/plain") },
                         onConnectClick = {
                             val act = activity as? MainActivity ?: return@HomeTopBar
                             val state = act.getProxyState()
                             if (state == ProxyService.STARTED || state == ProxyService.STARTING) {
                                 act.stopProxy()
+                                homeViewModel.setTestingServer(null)
+                                val key = "${mCurrentHost}:${mCurrentPort}"
+                                mTestResults = mTestResults - key
                             } else {
+                                val host = mCurrentHost
+                                val port = mCurrentPort
+                                if (host.isNotEmpty()) {
+                                    homeViewModel.setTestingServer("$host:$port")
+                                }
                                 act.startProxy()
                             }
                         },
-                        onTestClick = { (activity as? MainActivity)?.testConnection() },
                         onDomainRouteClick = { (activity as? MainActivity)?.openRulesTab() },
                         onAddServerClick = {
                             addServerLauncher.launch(
@@ -110,15 +118,38 @@ class HomeFragment : Fragment() {
                         onServerPlay = { server ->
                             val act = activity as? MainActivity ?: return@HomeTopBar
                             act.onServerSelected(toTrojanConfig(server))
+                            homeViewModel.setTestingServer("${server.hostname}:${server.port}")
                             act.startProxy()
                         },
-                        onServerStop = { _ -> (activity as? MainActivity)?.stopProxy() },
+                        onServerStop = { server ->
+                            val act = activity as? MainActivity ?: return@HomeTopBar
+                            val config = IgniterApplication.getApplication().trojanConfig
+                            if (server.hostname == config.getRemoteAddr() &&
+                                server.port == config.getRemotePort()
+                            ) {
+                                act.stopProxy()
+                                homeViewModel.setTestingServer(null)
+                                mTestResults = mTestResults - "${server.hostname}:${server.port}"
+                            }
+                        },
+                        onServerTest = { _ ->
+                            (activity as? MainActivity)?.testConnection()
+                        },
                         onServerEdit = { server ->
                             val intent = Intent(requireContext(), AddServerActivity::class.java)
                             intent.putExtra(AddServerActivity.EXTRA_SERVER_ID, server.id)
                             editServerLauncher.launch(intent)
                         },
                         onServerDelete = { server ->
+                            val act = activity as? MainActivity
+                            if (act != null) {
+                                val config = IgniterApplication.getApplication().trojanConfig
+                                if (server.hostname == config.getRemoteAddr() &&
+                                    server.port == config.getRemotePort()
+                                ) {
+                                    act.stopProxy()
+                                }
+                            }
                             serverViewModel.deleteServer(server)
                         }
                     )
@@ -132,6 +163,9 @@ class HomeFragment : Fragment() {
 
         homeViewModel.proxyState.observe(viewLifecycleOwner) {
             mProxyState = it
+            if (it == ProxyService.STARTED) {
+                view?.postDelayed({ (activity as? MainActivity)?.testConnection() }, TEST_DELAY_MS)
+            }
             refreshCurrentServer()
         }
         homeViewModel.serverSummary.observe(viewLifecycleOwner) { mServerSummary = it }
@@ -146,6 +180,12 @@ class HomeFragment : Fragment() {
         }
 
         ServerPingManager.pingData.observe(viewLifecycleOwner) { mPingData = it }
+
+        homeViewModel.testResult.observe(viewLifecycleOwner) { result ->
+            if (result != null) {
+                mTestResults = mTestResults + (result.serverKey to Pair(result.connected, result.delay))
+            }
+        }
 
         refreshCurrentServer()
     }
@@ -177,7 +217,13 @@ class HomeFragment : Fragment() {
         ServerPingService.stop(requireContext())
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+    }
+
     companion object {
+        private const val TEST_DELAY_MS = 3000L
+
         @JvmStatic
         fun newInstance(): HomeFragment {
             return HomeFragment()

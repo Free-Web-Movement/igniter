@@ -181,6 +181,7 @@ fun SettingsScreen(
                 onClick = onBackgroundLimitsTap
             )
             HorizontalDivider(color = Color(0xFFE0E0E0))
+            AboutSection()
         }
     }
 }
@@ -210,6 +211,34 @@ private fun SettingActionRow(
                 color = Color(0xFF757575)
             )
         }
+    }
+}
+
+@Composable
+private fun AboutSection() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 20.dp, top = 16.dp, end = 20.dp, bottom = 20.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.about_title),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF212121)
+        )
+        Text(
+            text = stringResource(R.string.about_description),
+            fontSize = 14.sp,
+            color = Color(0xFF424242),
+            modifier = Modifier.padding(top = 8.dp)
+        )
+        Text(
+            text = stringResource(R.string.about_dns_protection),
+            fontSize = 13.sp,
+            color = Color(0xFF008577),
+            modifier = Modifier.padding(top = 8.dp)
+        )
     }
 }
 

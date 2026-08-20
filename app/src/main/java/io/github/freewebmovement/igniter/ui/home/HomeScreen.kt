@@ -5,11 +5,14 @@ import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -74,16 +77,17 @@ fun HomeScreen(
     domainRouteCount: Int,
     servers: List<Server>,
     pingData: Map<String, ServerPingManager.PingInfo>,
+    testResults: Map<String, Pair<Boolean, Long>>,
     currentHost: String,
     currentPort: Int,
     modifier: Modifier = Modifier,
     onConnectClick: () -> Unit,
-    onTestClick: () -> Unit,
     onDomainRouteClick: () -> Unit,
     onAddServerClick: () -> Unit,
     onServerSelected: (Server) -> Unit,
     onServerPlay: (Server) -> Unit,
     onServerStop: (Server) -> Unit,
+    onServerTest: (Server) -> Unit,
     onServerEdit: (Server) -> Unit,
     onServerDelete: (Server) -> Unit
 ) {
@@ -114,54 +118,51 @@ fun HomeScreen(
             }
         )
 
-        Button(
-            onClick = onConnectClick,
-            enabled = proxyState != ProxyService.STOPPING,
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF008577)),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 20.dp)
-                .height(48.dp)
-        ) {
-            Text(
-                text = when (proxyState) {
-                    ProxyService.STARTING, ProxyService.STARTED, ProxyService.STOPPING ->
-                        stringResource(R.string.home_btn_stop)
-                    else -> stringResource(R.string.home_btn_start)
-                },
-                fontSize = 20.sp
+        if (servers.isEmpty()) {
+            HomeEmptyState(onAddServerClick = onAddServerClick)
+        } else {
+            Button(
+                onClick = onConnectClick,
+                enabled = proxyState != ProxyService.STOPPING,
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF008577)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 20.dp)
+                    .height(48.dp)
+            ) {
+                Text(
+                    text = when (proxyState) {
+                        ProxyService.STARTING, ProxyService.STARTED, ProxyService.STOPPING ->
+                            stringResource(R.string.home_btn_stop)
+                        else -> stringResource(R.string.home_btn_start)
+                    },
+                    fontSize = 20.sp
+                )
+            }
+
+            HomeRouteCard(
+                routeSummary = routeSummary,
+                domainRouteCount = domainRouteCount,
+                onDomainRouteClick = onDomainRouteClick,
+                modifier = Modifier.padding(top = 20.dp)
+            )
+
+            HomeServerSection(
+                servers = servers,
+                pingData = pingData,
+                testResults = testResults,
+                currentHost = currentHost,
+                currentPort = currentPort,
+                running = proxyState == ProxyService.STARTED,
+                onAddServerClick = onAddServerClick,
+                onServerSelected = onServerSelected,
+                onServerPlay = onServerPlay,
+                onServerStop = onServerStop,
+                onServerTest = onServerTest,
+                onServerMore = { moreServer = it },
+                modifier = Modifier.padding(top = 20.dp)
             )
         }
-
-        OutlinedButton(
-            onClick = onTestClick,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 20.dp)
-        ) {
-            Text(stringResource(R.string.home_test_connection))
-        }
-
-        HomeRouteCard(
-            routeSummary = routeSummary,
-            domainRouteCount = domainRouteCount,
-            onDomainRouteClick = onDomainRouteClick,
-            modifier = Modifier.padding(top = 20.dp)
-        )
-
-        HomeServerSection(
-            servers = servers,
-            pingData = pingData,
-            currentHost = currentHost,
-            currentPort = currentPort,
-            running = proxyState == ProxyService.STARTED,
-            onAddServerClick = onAddServerClick,
-            onServerSelected = onServerSelected,
-            onServerPlay = onServerPlay,
-            onServerStop = onServerStop,
-            onServerMore = { moreServer = it },
-            modifier = Modifier.padding(top = 20.dp)
-        )
     }
 
     moreServer?.let { server ->
@@ -223,15 +224,46 @@ private fun HomeStatusCard(state: Int, summary: String) {
                 .padding(top = 6.dp),
             textAlign = androidx.compose.ui.text.style.TextAlign.Center
         )
-        Text(
-            text = stringResource(R.string.home_dns_protected),
-            fontSize = 13.sp,
-            color = Color(0xFF008577),
+    }
+}
+
+@Composable
+private fun HomeEmptyState(onAddServerClick: () -> Unit) {
+    HomeCard(modifier = Modifier.padding(top = 20.dp)) {
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 12.dp),
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-        )
+                .padding(vertical = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = stringResource(R.string.home_empty_no_server),
+                fontSize = 16.sp,
+                color = Color(0xFF757575),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+            Text(
+                text = stringResource(R.string.home_empty_add_prompt),
+                fontSize = 13.sp,
+                color = Color(0xFF9E9E9E),
+                modifier = Modifier.padding(top = 8.dp),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+            Button(
+                onClick = onAddServerClick,
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF008577)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 20.dp)
+                    .height(48.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.home_add_server),
+                    fontSize = 16.sp
+                )
+            }
+        }
     }
 }
 
@@ -292,6 +324,7 @@ private fun HomeRouteCard(
 private fun HomeServerSection(
     servers: List<Server>,
     pingData: Map<String, ServerPingManager.PingInfo>,
+    testResults: Map<String, Pair<Boolean, Long>>,
     currentHost: String,
     currentPort: Int,
     running: Boolean,
@@ -299,6 +332,7 @@ private fun HomeServerSection(
     onServerSelected: (Server) -> Unit,
     onServerPlay: (Server) -> Unit,
     onServerStop: (Server) -> Unit,
+    onServerTest: (Server) -> Unit,
     onServerMore: (Server) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -318,15 +352,18 @@ private fun HomeServerSection(
             Text(stringResource(R.string.home_add_server))
         }
         servers.forEach { server ->
+            val key = "${server.hostname}:${server.port}"
             ServerCard(
                 server = server,
                 pingText = formatPingText(server, pingData),
                 pingColor = formatPingColor(server, pingData),
+                testResult = testResults[key],
                 isCurrent = server.hostname == currentHost && server.port == currentPort,
                 isActive = running && server.hostname == currentHost && server.port == currentPort,
                 onSelect = { onServerSelected(server) },
                 onPlay = { onServerPlay(server) },
                 onStop = { onServerStop(server) },
+                onTest = { onServerTest(server) },
                 onMore = { onServerMore(server) },
                 modifier = Modifier.padding(top = 4.dp)
             )
@@ -339,11 +376,13 @@ private fun ServerCard(
     server: Server,
     pingText: String,
     pingColor: Color,
+    testResult: Pair<Boolean, Long>?,
     isCurrent: Boolean,
     isActive: Boolean,
     onSelect: () -> Unit,
     onPlay: () -> Unit,
     onStop: () -> Unit,
+    onTest: () -> Unit,
     onMore: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -388,13 +427,18 @@ private fun ServerCard(
             }
             IconButton(
                 onClick = onPlay,
-                enabled = !isActive,
-                modifier = Modifier.size(44.dp)
+                modifier = Modifier
+                    .size(44.dp)
+                    .background(
+                        if (isActive) Color(0xFF008577).copy(alpha = 0.15f) else Color.Transparent,
+                        RoundedCornerShape(22.dp)
+                    )
             ) {
                 Image(
                     painter = painterResource(R.drawable.ic_action_play),
                     contentDescription = stringResource(R.string.server_list_play),
-                    alpha = if (isActive) 0.4f else 1f
+                    colorFilter = if (isActive) ColorFilter.tint(Color(0xFF008577)) else null,
+                    alpha = 1f
                 )
             }
             IconButton(
@@ -407,6 +451,21 @@ private fun ServerCard(
                     contentDescription = stringResource(R.string.server_list_stop),
                     alpha = if (isActive) 1f else 0.4f
                 )
+            }
+            if (isActive) {
+                IconButton(
+                    onClick = onTest,
+                    modifier = Modifier
+                        .size(44.dp)
+                        .background(Color(0xFF1565C0).copy(alpha = 0.1f), RoundedCornerShape(22.dp))
+                ) {
+                    Text(
+                        text = "G",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1565C0)
+                    )
+                }
             }
             IconButton(
                 onClick = onMore,
@@ -426,6 +485,19 @@ private fun ServerCard(
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.padding(top = 2.dp)
         )
+        if (testResult != null) {
+            val (success, delay) = testResult
+            Text(
+                text = if (success) {
+                    stringResource(R.string.server_test_success, delay)
+                } else {
+                    stringResource(R.string.server_test_failed)
+                },
+                fontSize = 12.sp,
+                color = if (success) ColorPingExcellent else ColorPingPoor,
+                modifier = Modifier.padding(top = 2.dp)
+            )
+        }
     }
 }
 

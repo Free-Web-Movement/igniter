@@ -98,6 +98,9 @@ class Socks5Gate(
         private const val UNREACHABLE_PREF = "unreachable_domains"
         private const val UNREACHABLE_KEY = "domains"
 
+        /** Unreachable domains expire after 24 hours and are retried. */
+        private const val UNREACHABLE_TTL_MS = 24 * 60 * 60 * 1000L
+
         /** Well-known IPs returned by DNS poisoning (GFW fake answers). */
         private val KNOWN_POLLUTED_IPS = setOf(
             "0.0.0.0",
@@ -151,30 +154,78 @@ class Socks5Gate(
 
         @JvmStatic
         fun getUnreachable(context: Context): List<String> {
+            val now = System.currentTimeMillis()
             val raw = unreachablePrefs(context).getString(UNREACHABLE_KEY, "") ?: ""
-            return if (raw.isEmpty()) emptyList() else raw.split("||").filter { it.isNotEmpty() }
+            if (raw.isEmpty()) return emptyList()
+            val entries = mutableListOf<String>()
+            val alive = mutableListOf<String>()
+            for (entry in raw.split("||")) {
+                if (entry.isEmpty()) continue
+                val parts = entry.split(":", limit = 2)
+                if (parts.size == 2) {
+                    val domain = parts[0]
+                    val ts = parts[1].toLongOrNull() ?: 0L
+                    if (now - ts < UNREACHABLE_TTL_MS) {
+                        entries.add(domain)
+                        alive.add(entry)
+                    }
+                } else {
+                    entries.add(entry)
+                    alive.add(entry)
+                }
+            }
+            if (alive.size != raw.split("||").filter { it.isNotEmpty() }.size) {
+                unreachablePrefs(context).edit().putString(UNREACHABLE_KEY, alive.joinToString("||")).apply()
+            }
+            return entries
         }
 
         @JvmStatic
         @Synchronized
         fun addUnreachable(context: Context, domain: String) {
-            val set = getUnreachable(context).toMutableSet()
-            set.add(domain)
-            unreachablePrefs(context).edit().putString(UNREACHABLE_KEY, set.joinToString("||")).apply()
+            val entries = getUnreachableRawEntries(context).toMutableMap()
+            entries[domain] = System.currentTimeMillis()
+            unreachablePrefs(context).edit().putString(
+                UNREACHABLE_KEY,
+                entries.entries.joinToString("||") { "${it.key}:${it.value}" }
+            ).apply()
         }
 
         @JvmStatic
         @Synchronized
         fun removeUnreachable(context: Context, domain: String) {
-            val set = getUnreachable(context).toMutableSet()
-            set.remove(domain)
-            unreachablePrefs(context).edit().putString(UNREACHABLE_KEY, set.joinToString("||")).apply()
+            val entries = getUnreachableRawEntries(context).toMutableMap()
+            entries.remove(domain)
+            unreachablePrefs(context).edit().putString(
+                UNREACHABLE_KEY,
+                entries.entries.joinToString("||") { "${it.key}:${it.value}" }
+            ).apply()
         }
 
         @JvmStatic
         @Synchronized
         fun clearUnreachable(context: Context) {
             unreachablePrefs(context).edit().remove(UNREACHABLE_KEY).apply()
+        }
+
+        @JvmStatic
+        private fun getUnreachableRawEntries(context: Context): Map<String, Long> {
+            val now = System.currentTimeMillis()
+            val raw = unreachablePrefs(context).getString(UNREACHABLE_KEY, "") ?: ""
+            if (raw.isEmpty()) return emptyMap()
+            val result = mutableMapOf<String, Long>()
+            for (entry in raw.split("||")) {
+                if (entry.isEmpty()) continue
+                val parts = entry.split(":", limit = 2)
+                if (parts.size == 2) {
+                    val domain = parts[0]
+                    val ts = parts[1].toLongOrNull() ?: 0L
+                    if (now - ts < UNREACHABLE_TTL_MS) {
+                        result[domain] = ts
+                    }
+                }
+            }
+            return result
         }
 
         /**

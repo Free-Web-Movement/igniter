@@ -150,6 +150,15 @@
     <string name="home_no_server_info">No Server Configured</string>
     <string name="home_server_section">Server</string>
     <string name="home_add_server">Add Server</string>
+    <string name="home_empty_no_server">No servers configured</string>
+    <string name="home_empty_add_prompt">Add a server to get started</string>
+    <string name="server_list_test">Test</string>
+    <string name="server_test_success">Google: OK %1$dms</string>
+    <string name="server_test_failed">Google: Failed</string>
+
+    <string name="about_title">About Igniter</string>
+    <string name="about_description">A lightweight Trojan proxy client for Android. Supports Clash rule-based routing, domain-level traffic splitting, per-app VPN bypass, and LAN sharing.</string>
+    <string name="about_dns_protection">Built-in DNS pollution protection for secure name resolution.</string>
     <string name="home_route_title">Proxy Route</string>
     <string name="home_route_clash">tun2socks → Clash(%1$s) → trojan(127.0.0.1:%2$d) → %3$s</string>
     <string name="home_route_direct">tun2socks → trojan(127.0.0.1:%1$d) → %2$s</string>

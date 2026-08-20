@@ -1,6 +1,7 @@
 package io.github.freewebmovement.igniter.connection
 
 import android.os.AsyncTask
+import android.util.Log
 import androidx.annotation.NonNull
 import java.lang.ref.WeakReference
 import java.net.InetSocketAddress
@@ -20,6 +21,7 @@ class TestConnection(
 
     override fun doInBackground(vararg strings: String): TestResult {
         val testUrl = strings[0]
+        Log.i("TestConnection", "Connecting to $testUrl via SOCKS5 $mProxyHost:$mProxyPort")
         return try {
             val startTime = System.currentTimeMillis()
             val proxyAddress = InetSocketAddress(mProxyHost, mProxyPort.toInt())
@@ -28,8 +30,11 @@ class TestConnection(
             connection.connectTimeout = DEFAULT_TIMEOUT
             connection.readTimeout = DEFAULT_TIMEOUT
             connection.connect()
-            TestResult(testUrl, true, "", System.currentTimeMillis() - startTime)
+            val delay = System.currentTimeMillis() - startTime
+            Log.i("TestConnection", "Connected to $testUrl in ${delay}ms")
+            TestResult(testUrl, true, "", delay)
         } catch (e: Exception) {
+            Log.e("TestConnection", "Failed to connect to $testUrl: ${e.javaClass.simpleName}: ${e.message}")
             TestResult(testUrl, false, e.message ?: "", 0)
         }
     }

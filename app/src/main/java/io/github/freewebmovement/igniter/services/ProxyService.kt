@@ -72,11 +72,13 @@ class ProxyService : VpnService(), TestConnection.OnResultListener {
         }
 
         override fun testConnection(testUrl: String) {
+            val port = app.trojanConfig.getLocalPort()
+            Log.i(TAG, "testConnection: state=$state, port=$port, url=$testUrl")
             if (this@ProxyService.state != STARTED) {
+                Log.w(TAG, "testConnection: service not STARTED, aborting")
                 onResult(TUN2SOCKS5_SERVER_HOST, false, 0L, "ProxyService not yet connected.")
                 return
             }
-            val port = app.trojanConfig.getLocalPort()
             TestConnection(TUN2SOCKS5_SERVER_HOST, port.toLong(), this@ProxyService).execute(testUrl)
         }
 
@@ -237,15 +239,21 @@ class ProxyService : VpnService(), TestConnection.OnResultListener {
         startForegroundNotification(getString(R.string.notification_channel_id))
         setState(STARTING)
 
-        val proxyPackageNames = getProxyAppPackageNames()
-        val directPackageNames = mutableSetOf<String>()
-        for (packageName in mExemptAppDataSource?.getAllInstalledPackageNames() ?: emptySet()) {
-            if (packageName !in proxyPackageNames) {
-                directPackageNames.add(packageName)
+        // Igniter itself always bypasses the VPN tunnel to avoid loops.
+        val directPackageNames = mutableSetOf(getPackageName())
+
+        // When Clash is enabled, Socks5Gate handles per-domain routing for ALL
+        // apps, so no app is excluded from the VPN (except Igniter itself).
+        // Only when Clash is disabled does the per-app exempt list apply.
+        val enableClash = app.trojanPreferences.getEnableClash()
+        if (!enableClash) {
+            val proxyPackageNames = getProxyAppPackageNames()
+            for (packageName in mExemptAppDataSource?.getAllInstalledPackageNames() ?: emptySet()) {
+                if (packageName !in proxyPackageNames) {
+                    directPackageNames.add(packageName)
+                }
             }
         }
-        // Igniter itself always bypasses the VPN tunnel to avoid loops.
-        directPackageNames.add(getPackageName())
 
         // VPN setup performs blocking I/O (port probing, native startup) and must
         // not run on the main thread.

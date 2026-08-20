@@ -36,17 +36,17 @@ fun HomeTopBar(
     domainRouteCount: Int,
     servers: List<Server>,
     pingData: Map<String, ServerPingManager.PingInfo>,
+    testResults: Map<String, Pair<Boolean, Long>>,
     currentHost: String,
     currentPort: Int,
-    onTestConnection: () -> Unit,
     onImportFromFile: () -> Unit,
     onConnectClick: () -> Unit,
-    onTestClick: () -> Unit,
     onDomainRouteClick: () -> Unit,
     onAddServerClick: () -> Unit,
     onServerSelected: (Server) -> Unit,
     onServerPlay: (Server) -> Unit,
     onServerStop: (Server) -> Unit,
+    onServerTest: (Server) -> Unit,
     onServerEdit: (Server) -> Unit,
     onServerDelete: (Server) -> Unit
 ) {
@@ -67,15 +67,6 @@ fun HomeTopBar(
                             expanded = menuExpanded,
                             onDismissRequest = { menuExpanded = false }
                         ) {
-                            DropdownMenuItem(
-                                text = {
-                                    Text(stringResource(R.string.main_menu_action_test_connection))
-                                },
-                                onClick = {
-                                    menuExpanded = false
-                                    onTestConnection()
-                                }
-                            )
                             DropdownMenuItem(
                                 text = {
                                     Text(stringResource(R.string.server_list_menu_import_from_file))
@@ -103,18 +94,19 @@ fun HomeTopBar(
             domainRouteCount = domainRouteCount,
             servers = servers,
             pingData = pingData,
+            testResults = testResults,
             currentHost = currentHost,
             currentPort = currentPort,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
             onConnectClick = onConnectClick,
-            onTestClick = onTestClick,
             onDomainRouteClick = onDomainRouteClick,
             onAddServerClick = onAddServerClick,
             onServerSelected = onServerSelected,
             onServerPlay = onServerPlay,
             onServerStop = onServerStop,
+            onServerTest = onServerTest,
             onServerEdit = onServerEdit,
             onServerDelete = onServerDelete
         )

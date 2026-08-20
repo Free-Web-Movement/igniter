@@ -427,7 +427,10 @@ class MainActivity : AppCompatActivity(), AppSheetHost, TrojanConnection.Callbac
     }
 
     override fun onTestResult(testUrl: String?, connected: Boolean, delay: Long, error: String) {
-        runOnUiThread { showTestConnectionResult(testUrl, connected, delay, error) }
+        runOnUiThread {
+            homeViewModel.postTestResult(connected, delay)
+            showTestConnectionResult(testUrl, connected, delay, error)
+        }
     }
 
     private fun showTestConnectionResult(testUrl: String?, connected: Boolean, delay: Long, error: String) {

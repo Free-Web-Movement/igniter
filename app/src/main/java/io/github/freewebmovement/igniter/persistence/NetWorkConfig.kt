@@ -140,16 +140,12 @@ object NetWorkConfig {
             // The embedded Clash library kills the whole process on startup errors
             // (log.Fatalf -> os.Exit). Avoid the most common one: a busy SOCKS port.
             clashSocksPort = findFreePort(clashSocksPort)
-            var trojanCandidate = app.trojanConfig.getLocalPort()
-            if (trojanCandidate == clashSocksPort) {
-                trojanCandidate = findFreePort(clashSocksPort)
-            }
-            trojanPort = applyTrojanPort(app, findFreePort(trojanCandidate))
-            if (trojanPort == clashSocksPort) {
-                trojanPort = applyTrojanPort(app, findFreePort())
-            }
+            // Trojan must listen on a different port than Clash SOCKS; use the
+            // next free port after clashSocksPort so they never collide.
+            trojanPort = applyTrojanPort(app, clashSocksPort + 1)
         } else {
-            trojanPort = applyTrojanPort(app, findFreePort(app.trojanConfig.getLocalPort()))
+            val userPort = app.trojanConfig.getLocalPort()
+            trojanPort = applyTrojanPort(app, if (userPort in 1..65535) userPort else io.github.freewebmovement.igniter.constants.Clash.DEFAULT_PORT)
         }
 
         JNIHelper.start(app.storage.path.trojanConfig!!)

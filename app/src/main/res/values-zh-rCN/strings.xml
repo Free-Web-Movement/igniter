@@ -150,6 +150,15 @@
     <string name="home_no_server_info">当前没有服务器信息</string>
     <string name="home_server_section">服务器</string>
     <string name="home_add_server">添加服务器</string>
+    <string name="home_empty_no_server">没有配置服务器</string>
+    <string name="home_empty_add_prompt">请添加服务器以开始使用</string>
+    <string name="server_list_test">测试</string>
+    <string name="server_test_success">Google: 正常 %1$dms</string>
+    <string name="server_test_failed">Google: 不通</string>
+
+    <string name="about_title">关于 Igniter</string>
+    <string name="about_description">一款轻量级 Android Trojan 代理客户端。支持 Clash 规则分流、域名级流量拆分、按应用绕过 VPN 及局域网共享。</string>
+    <string name="about_dns_protection">内置 DNS 防污染功能，保障安全的域名解析。</string>
     <string name="home_route_title">代理链路</string>
     <string name="home_route_clash">tun2socks → Clash(%1$s) → trojan(127.0.0.1:%2$d) → %3$s</string>
     <string name="home_route_direct">tun2socks → trojan(127.0.0.1:%1$d) → %2$s</string>
