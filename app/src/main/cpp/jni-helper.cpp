@@ -36,11 +36,15 @@ extern "C" {
     JNIEXPORT void JNICALL Java_io_github_freewebmovement_igniter_JNIHelper_stop(JNIEnv *env, jclass) {
 
         if (trojanThread != nullptr) {
-            trojanService->stop();
+            if (trojanService != nullptr) {
+                trojanService->stop();
+            }
             trojanThread->join();
             delete trojanService;
             delete trojanConfig;
             delete trojanThread;
+            trojanService = nullptr;
+            trojanConfig = nullptr;
             trojanThread = nullptr;
         }
     }

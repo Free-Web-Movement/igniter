@@ -17,11 +17,12 @@ class API {
 
         val call = httpClient.newCall(request)
         return try {
-            val response = call.execute()
-            assert(response.body != null)
-            val body = response.body!!.string()
-            val gson = Gson()
-            gson.fromJson(body, Array<Server>::class.java)
+            call.execute().use { response ->
+                assert(response.body != null)
+                val body = response.body!!.string()
+                val gson = Gson()
+                gson.fromJson(body, Array<Server>::class.java)
+            }
         } catch (e: IOException) {
             throw RuntimeException(e)
         }

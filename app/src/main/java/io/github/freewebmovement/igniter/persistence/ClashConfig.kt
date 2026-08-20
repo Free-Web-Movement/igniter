@@ -52,11 +52,11 @@ class ClashConfig(private val filename: String) {
 
     @Throws(IOException::class)
     private fun loadFromFile(file: String) {
-        val fileInputStream = FileInputStream(file)
-        yaml = Yaml()
-        @Suppress("UNCHECKED_CAST")
-        data = yaml.load<Any?>(fileInputStream) as MutableMap<String, Any?>
-        fileInputStream.close()
+        FileInputStream(file).use { fileInputStream ->
+            yaml = Yaml()
+            @Suppress("UNCHECKED_CAST")
+            data = yaml.load<Any?>(fileInputStream) as MutableMap<String, Any?>
+        }
         if (data == null) {
             throw IOException("empty clash config")
         }

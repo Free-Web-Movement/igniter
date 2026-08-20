@@ -329,6 +329,7 @@ class Socks5Gate(
         } catch (e: IOException) {
         }
         server = null
+        autoCache.clear()
         // Held connections die with the tunnel; do not leave stale domains behind.
         pendingPrefs().edit().remove(PENDING_KEY).apply()
         getSystemService().cancel(PENDING_NOTIFY_ID)
@@ -519,6 +520,9 @@ class Socks5Gate(
             }
         }
         if (decision != AutoRoute.UNREACHABLE) {
+            if (autoCache.size > 4096) {
+                autoCache.clear()
+            }
             autoCache[root] = decision
         }
         Log.i(TAG, "auto-decision $host -> $decision")
@@ -528,15 +532,15 @@ class Socks5Gate(
     /** TCP connect + data-response probe against the resolved real IP. */
     private fun probeDirect(ip: InetAddress, host: String, port: Int): Boolean {
         var socket: Socket? = null
+        var ssl: SSLSocket? = null
         return try {
             socket = Socket()
             socket!!.connect(InetSocketAddress(ip, port), PROBE_CONNECT_TIMEOUT_MS)
             if (port == 443) {
-                val ssl = SSLContext.getDefault().socketFactory
+                ssl = SSLContext.getDefault().socketFactory
                     .createSocket(socket!!, host, port, true) as SSLSocket
                 ssl.soTimeout = PROBE_TLS_TIMEOUT_MS
                 ssl.startHandshake()
-                ssl.close()
                 true
             } else {
                 socket!!.soTimeout = PROBE_READ_TIMEOUT_MS
@@ -549,6 +553,7 @@ class Socks5Gate(
         } catch (e: Exception) {
             false
         } finally {
+            runCatching { ssl?.close() }
             runCatching { socket?.close() }
         }
     }
@@ -563,17 +568,17 @@ class Socks5Gate(
      */
     private fun probeProxy(host: String, port: Int): Boolean {
         var socket: Socket? = null
+        var ssl: SSLSocket? = null
         return try {
             socket = Socket()
             socket!!.connect(InetSocketAddress("127.0.0.1", clashPort), PROBE_CONNECT_TIMEOUT_MS)
             socket!!.soTimeout = PROBE_READ_TIMEOUT_MS
             socks5Connect(socket!!, host, port)
             if (port == 443) {
-                val ssl = SSLContext.getDefault().socketFactory
+                ssl = SSLContext.getDefault().socketFactory
                     .createSocket(socket!!, host, port, true) as SSLSocket
                 ssl.soTimeout = PROBE_TLS_TIMEOUT_MS
                 ssl.startHandshake()
-                ssl.close()
                 true
             } else {
                 socket!!.getOutputStream().write(
@@ -587,6 +592,7 @@ class Socks5Gate(
         } catch (e: Exception) {
             false
         } finally {
+            runCatching { ssl?.close() }
             runCatching { socket?.close() }
         }
     }

@@ -41,10 +41,10 @@ object NetWorkConfig {
     @JvmStatic
     fun isPortTaken(ip: String, port: Int, timeout: Int): Boolean {
         return try {
-            val socket = Socket()
-            socket.connect(InetSocketAddress(ip, port), timeout)
-            socket.close()
-            true
+            Socket().use { socket ->
+                socket.connect(InetSocketAddress(ip, port), timeout)
+                true
+            }
         } catch (ce: IOException) {
             false
         }
