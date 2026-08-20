@@ -6,6 +6,14 @@ apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion 36
+    signingConfigs {
+        release {
+            storeFile file('/tmp/keys/android.jks')
+            storePassword 'Free-Web-Movement@2023'
+            keyAlias 'key0'
+            keyPassword 'Free-Web-Movement@2023'
+        }
+    }
     defaultConfig {
         applicationId "io.github.freewebmovement.igniter"
         minSdkVersion 21
@@ -32,6 +40,7 @@ android {
 
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             ndk.debugSymbolLevel 'FULL'
