@@ -1,11 +1,11 @@
 package io.github.freewebmovement.igniter
 
 /**
- * JNI bridge to the trojan-rs native library.
+ * JNI bridge to the trojan native library.
  *
  * Replaces the old C++ jni-helper. [JNIHelper] keeps the legacy
  * [start]/[terminate] API so existing call sites are untouched; the new
- * [TrojanNative] object exposes the full trojan-rs capability.
+ * [TrojanNative] object exposes the full trojan capability.
  */
 object JNIHelper {
     private var isStarted = false
@@ -35,7 +35,7 @@ object JNIHelper {
 }
 
 /**
- * trojan-rs native API. The client runs a local SOCKS5 listener and tunnels
+ * trojan native API. The client runs a local SOCKS5 listener and tunnels
  * through a remote trojan server (same behaviour as the old C++ client).
  */
 object TrojanNative {
