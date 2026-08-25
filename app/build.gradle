@@ -4,6 +4,23 @@ apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'org.jetbrains.kotlin.plugin.compose'
 apply plugin: 'kotlin-kapt'
 
+// ---------------------------------------------------------------------------
+// trojan-rs native library — auto-build when remote HEAD changes
+// ---------------------------------------------------------------------------
+def trojanStamp = file("${rootProject.projectDir}/.build/trojan-rs/.stamp")
+def trojanScript = file("${rootProject.projectDir}/scripts/setup-trojan.sh")
+
+tasks.register('buildTrojanNative') {
+    description = 'Clone/pull trojan-rs and build libtrojan.so if the remote has changed'
+    outputs.file(trojanStamp)
+    doLast {
+        exec {
+            executable trojanScript
+            args rootProject.projectDir
+        }
+    }
+}
+
 android {
     compileSdkVersion 36
     signingConfigs {
@@ -134,5 +151,12 @@ dependencies {
     testRuntimeOnly(libs.junit.platform.launcher)
 
     implementation files('src/libs/golibs.aar')
+}
+
+// Wire trojan native build before compilation
+afterEvaluate {
+    tasks.matching { it.name.startsWith('pre') && it.name.endsWith('Build') }.configureEach {
+        dependsOn 'buildTrojanNative'
+    }
 }
 
