@@ -7,16 +7,33 @@ apply plugin: 'kotlin-kapt'
 // ---------------------------------------------------------------------------
 // trojan-rs native library — auto-build when remote HEAD changes
 // ---------------------------------------------------------------------------
-def trojanStamp = file("${rootProject.projectDir}/.build/trojan-rs/.stamp")
 def trojanScript = file("${rootProject.projectDir}/scripts/setup-trojan.sh")
 
 tasks.register('buildTrojanNative') {
     description = 'Clone/pull trojan-rs and build libtrojan.so if the remote has changed'
-    outputs.file(trojanStamp)
+    outputs.dir(file("${rootProject.projectDir}/app/libs"))
     doLast {
         exec {
             executable trojanScript
             args rootProject.projectDir
+        }
+    }
+}
+
+// Verify .so files exist after the task runs; fail fast if build produced nothing
+tasks.register('verifyTrojanNative') {
+    description = 'Verify libtrojan.so exists for all ABIs'
+    dependsOn 'buildTrojanNative'
+    doLast {
+        def abis = ['arm64-v8a', 'armeabi-v7a', 'x86_64', 'x86']
+        def libsDir = file("${rootProject.projectDir}/app/libs")
+        for (abi in abis) {
+            def so = new File(libsDir, "${abi}/libtrojan.so")
+            if (!so.exists()) {
+                throw new GradleException(
+                    "libtrojan.so not found for ${abi}. " +
+                    "Run: ./scripts/setup-trojan.sh")
+            }
         }
     }
 }
@@ -153,10 +170,13 @@ dependencies {
     implementation files('src/libs/golibs.aar')
 }
 
-// Wire trojan native build before compilation
-afterEvaluate {
-    tasks.matching { it.name.startsWith('pre') && it.name.endsWith('Build') }.configureEach {
-        dependsOn 'buildTrojanNative'
+// Wire trojan native build into every build variant.
+// mergeJniLibFolders is the task that actually consumes app/libs/<abi>/*.so,
+// so it must depend on verifyTrojanNative which in turn depends on buildTrojanNative.
+android.applicationVariants.all { variant ->
+    def variantName = variant.name.capitalize()
+    tasks.matching { it.name == "merge${variantName}JniLibFolders" }.configureEach {
+        dependsOn 'verifyTrojanNative'
     }
 }
 
