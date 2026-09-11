@@ -14,6 +14,16 @@ This project is a first and important step towards the free web. It allows peopl
 |--------|----------|----------|------|
 | ![服务器](docs/screenshots/home.png) | ![代理应用](docs/screenshots/proxy-apps.png) | ![分流规则](docs/screenshots/rules.png) | ![设置](docs/screenshots/settings.png) |
 
+## Supported Android Versions
+
+| 项目 | 版本 |
+|------|------|
+| 最低支持 (minSdk) | Android 5.0 Lollipop (API 21) |
+| 目标版本 (targetSdk) | Android 15 (API 35) |
+| 编译版本 (compileSdk) | Android 16 (API 36) |
+
+支持的 CPU 架构：`arm64-v8a`、`armeabi-v7a`、`x86`、`x86_64`。
+
 ## Name
 
 The current name Igniter will be replace by `free web proxy` when most of the original source codes are migrated.
