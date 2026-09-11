@@ -47,6 +47,7 @@ class HomeFragment : Fragment() {
     private var mTestResults by mutableStateOf<Map<String, Pair<Boolean, Long>>>(emptyMap())
     private var mCurrentHost by mutableStateOf("")
     private var mCurrentPort by mutableStateOf(0)
+    private var mPendingStartAfterStop = false
 
     private val addServerLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -114,12 +115,19 @@ class HomeFragment : Fragment() {
                         },
                         onServerSelected = { server ->
                             (activity as? MainActivity)?.onServerSelected(toTrojanConfig(server))
+                            refreshCurrentServer()
                         },
                         onServerPlay = { server ->
                             val act = activity as? MainActivity ?: return@HomeTopBar
                             act.onServerSelected(toTrojanConfig(server))
                             homeViewModel.setTestingServer("${server.hostname}:${server.port}")
-                            act.startProxy()
+                            val state = act.getProxyState()
+                            if (state == ProxyService.STARTED || state == ProxyService.STARTING) {
+                                mPendingStartAfterStop = true
+                                act.stopProxy()
+                            } else {
+                                act.startProxy()
+                            }
                         },
                         onServerStop = { server ->
                             val act = activity as? MainActivity ?: return@HomeTopBar
@@ -165,6 +173,10 @@ class HomeFragment : Fragment() {
             mProxyState = it
             if (it == ProxyService.STARTED) {
                 view?.postDelayed({ (activity as? MainActivity)?.testConnection() }, TEST_DELAY_MS)
+            }
+            if (it == ProxyService.STOPPED && mPendingStartAfterStop) {
+                mPendingStartAfterStop = false
+                (activity as? MainActivity)?.startProxy()
             }
             refreshCurrentServer()
         }

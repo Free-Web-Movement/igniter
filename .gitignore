@@ -63,5 +63,8 @@ fastlane/screenshots
 fastlane/test_output
 fastlane/readme.md
 
-# Prebuilt native trojan .so (built via trojan-rs/android/build.sh)
+# Prebuilt native trojan .so (built via scripts/setup-trojan.sh)
 app/libs/
+
+# trojan-rs build cache
+.build/
