@@ -60,6 +60,8 @@ class ExemptAppDataManager(private val app: IgniterApplication) : ExemptAppDataS
 
     override fun getAllAppInfoList(): List<AppInfo> {
         val applicationInfoList = queryCurrentInstalledApps()
+        // Keep the system-app filter in sync with what the platform reports.
+        app.systemAppsConfig.updateFromInstalledApps(applicationInfoList)
 
         val appInfoList = ArrayList<AppInfo>()
         for (applicationInfo in applicationInfoList) {

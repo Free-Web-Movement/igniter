@@ -76,7 +76,8 @@ fun RulesScreen(
     onDeleteDomain: (String) -> Unit,
     onAddDomain: () -> Unit,
     onClearDomains: () -> Unit,
-    onOpenClashEditor: () -> Unit
+    onOpenClashEditor: () -> Unit,
+    onOpenDomainRulesEditor: () -> Unit
 ) {
     var search by remember { mutableStateOf("") }
     var tab by remember { mutableStateOf(0) }
@@ -120,6 +121,15 @@ fun RulesScreen(
                                 onClick = {
                                     menuExpanded = false
                                     onOpenClashEditor()
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = {
+                                    Text(stringResource(R.string.domain_rules_editor_menu))
+                                },
+                                onClick = {
+                                    menuExpanded = false
+                                    onOpenDomainRulesEditor()
                                 }
                             )
                         }

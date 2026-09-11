@@ -27,6 +27,7 @@ private val Teal = Color(0xFF008577)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ClashEditorScreen(
+    title: String,
     text: String,
     onTextChange: (String) -> Unit,
     onLoad: () -> Unit,
@@ -36,7 +37,7 @@ fun ClashEditorScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.main_menu_action_clash_editor_file_editor)) },
+                title = { Text(title) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Teal,
                     titleContentColor = Color.White

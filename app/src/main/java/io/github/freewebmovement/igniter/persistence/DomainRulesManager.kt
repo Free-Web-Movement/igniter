@@ -3,7 +3,9 @@ package io.github.freewebmovement.igniter.persistence
 import android.content.Context
 import android.content.SharedPreferences
 import android.text.TextUtils
+import android.util.Log
 import io.github.freewebmovement.igniter.IgniterApplication
+import org.yaml.snakeyaml.Yaml
 import java.util.Locale
 
 /**
@@ -30,16 +32,27 @@ class DomainRulesManager(private val context: Context) {
         private const val KEY_PRIVATE_DOMAINS = "private_domains"
         private const val KEY_BLOCKED_DOMAINS = "blocked_domains"
 
+        private const val TAG = "DomainRules"
+
         /**
-         * Major foreign websites grouped by company.
-         * The default policy for every company is [POLICY_PROXY] unless
-         * the user overrides it via [setCompanyDefaultPolicy].
+         * Built-in fallback for the curated company list. The authoritative
+         * list is loaded from the hand-editable YAML file
+         * (`config_domain_rules.yaml`, seeded from res/raw/domain_rules.yaml).
+         * This fallback is only used when that file is missing or unparsable.
          */
         @JvmField
-        val MAJOR_FOREIGN_COMPANIES = linkedMapOf(
+        val DEFAULT_FOREIGN_COMPANIES = linkedMapOf(
             "Google" to listOf(
                 "youtube.com", "googlevideo.com", "google.com",
-                "googleapis.com", "gstatic.com", "googleusercontent.com"
+                "googleapis.com", "gstatic.com", "googleusercontent.com",
+                // Play Store APK/video CDN hosts. These are NOT google.com
+                // subdomains, so without them plays an app download that
+                // resolves to a Google CDN IP gets auto-decision DIRECT:
+                // great firewall blocks those on 443 and the download dies
+                // at 0 bytes with CANNOT_CONNECT.
+                "gvt1.com", "gvt2.com", "gvt3.com", "gvt0.com",
+                "ggpht.com", "android.clients.google.com",
+                "play.googleapis.com", "dl.google.com", "market.android.com"
             ),
             "Meta" to listOf(
                 "facebook.com", "instagram.com", "whatsapp.com", "messenger.com"
@@ -68,10 +81,78 @@ class DomainRulesManager(private val context: Context) {
             "Amazon" to listOf("amazon.com", "imdb.com")
         )
 
-        /** Flat list of all foreign domains. */
+        /**
+         * Built-in fallback for the known-unreachable list. The authoritative
+         * list is loaded from the same hand-editable YAML file.
+         */
         @JvmField
-        val MAJOR_FOREIGN_SITES: List<String> =
-            MAJOR_FOREIGN_COMPANIES.values.flatten()
+        val DEFAULT_UNREACHABLE: List<String> = listOf(
+            "fbcdn.net", "twimg.com"
+        )
+    }
+
+    /** Company -> domains, loaded from the YAML rules file. */
+    private val companies: Map<String, List<String>>
+
+    /** Domains known to be unreachable directly, loaded from the same file. */
+    private val unreachableDomains: List<String>
+
+    init {
+        val rules = loadRules()
+        companies = rules.first
+        unreachableDomains = rules.second
+    }
+
+    /**
+     * Parses the hand-editable rules file. Returns the curated company map and
+     * the unreachable list; falls back to the built-in defaults when the file
+     * is missing, empty or malformed.
+     */
+    private fun loadRules(): Pair<Map<String, List<String>>, List<String>> {
+        val path = app?.storage?.path?.domainRules
+        if (path != null) {
+            val text = Storage.read(path)?.toString(Charsets.UTF_8)
+            if (!text.isNullOrBlank()) {
+                try {
+                    @Suppress("UNCHECKED_CAST")
+                    val root = Yaml().load<Any?>(text) as? Map<String, Any?>
+                    if (root != null &&
+                        (root.containsKey("companies") || root.containsKey("unreachable"))
+                    ) {
+                        // The file is authoritative: an explicitly emptied list
+                        // stays empty instead of being repopulated with defaults.
+                        return Pair(
+                            parseCompanies(root["companies"]),
+                            parseUnreachable(root["unreachable"])
+                        )
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to parse domain rules, using built-in defaults", e)
+                }
+            }
+        }
+        return Pair(DEFAULT_FOREIGN_COMPANIES, DEFAULT_UNREACHABLE)
+    }
+
+    private fun parseCompanies(node: Any?): Map<String, List<String>> {
+        val result = linkedMapOf<String, List<String>>()
+        val map = node as? Map<*, *> ?: return result
+        for ((key, value) in map) {
+            val company = key as? String ?: continue
+            val list = value as? List<*> ?: continue
+            val domains = list.mapNotNull { (it as? String)?.trim()?.lowercase(Locale.US) }
+                .filter { it.isNotEmpty() }
+            if (domains.isNotEmpty()) {
+                result[company] = domains
+            }
+        }
+        return result
+    }
+
+    private fun parseUnreachable(node: Any?): List<String> {
+        val list = node as? List<*> ?: return emptyList()
+        return list.mapNotNull { (it as? String)?.trim()?.lowercase(Locale.US) }
+            .filter { it.isNotEmpty() }
     }
 
     // MODE_MULTI_PROCESS: the rule list is written from the main process
@@ -89,10 +170,28 @@ class DomainRulesManager(private val context: Context) {
     // ── Foreign-site company queries ──────────────────────────────────
 
     /** @return the curated company -> domain list. */
-    fun getMajorForeignCompanies(): Map<String, List<String>> = MAJOR_FOREIGN_COMPANIES
+    fun getMajorForeignCompanies(): Map<String, List<String>> = companies
 
     /** @return all curated foreign domains (flat list). */
-    fun getMajorForeignSites(): List<String> = MAJOR_FOREIGN_SITES
+    fun getMajorForeignSites(): List<String> = companies.values.flatten()
+
+    /**
+     * @return the manually maintained list of domains known to be unreachable
+     *         directly. These are never probed direct: the proxy is tested and
+     *         used when it connects, otherwise the domain stays unreachable.
+     */
+    fun getUnreachableDomains(): List<String> = unreachableDomains
+
+    /** @return true when [host] (or a parent domain) is in the unreachable list. */
+    fun isUnreachableDomain(host: String): Boolean {
+        val h = host.lowercase(Locale.US)
+        for (domain in unreachableDomains) {
+            if (h == domain || h.endsWith(".$domain")) {
+                return true
+            }
+        }
+        return false
+    }
 
     /**
      * Returns the effective company map after filtering out user-deleted
@@ -102,7 +201,7 @@ class DomainRulesManager(private val context: Context) {
         val deletedCompanies = getDeletedCompanies()
         val deletedDomains = getDeletedDomains()
         val result = linkedMapOf<String, List<String>>()
-        for ((company, domains) in MAJOR_FOREIGN_COMPANIES) {
+        for ((company, domains) in companies) {
             if (company in deletedCompanies) continue
             val visible = domains.filter { it !in deletedDomains }
             if (visible.isNotEmpty()) {
@@ -256,7 +355,7 @@ class DomainRulesManager(private val context: Context) {
      * company's list.
      */
     fun lookupMajorForeignPolicy(host: String): String? {
-        for ((company, domains) in MAJOR_FOREIGN_COMPANIES) {
+        for ((company, domains) in companies) {
             for (domain in domains) {
                 if (host == domain || host.endsWith(".$domain")) {
                     return getCompanyDefaultPolicy(company)
@@ -268,7 +367,7 @@ class DomainRulesManager(private val context: Context) {
 
     /** @return the company name that owns [host], or null. */
     fun lookupCompany(host: String): String? {
-        for ((company, domains) in MAJOR_FOREIGN_COMPANIES) {
+        for ((company, domains) in companies) {
             for (domain in domains) {
                 if (host == domain || host.endsWith(".$domain")) {
                     return company
@@ -289,13 +388,20 @@ class DomainRulesManager(private val context: Context) {
     fun getEffectiveRules(): MutableMap<String, String> {
         val out = LinkedHashMap<String, String>()
         val deletedDomains = getDeletedDomains()
-        for ((company, domains) in MAJOR_FOREIGN_COMPANIES) {
+        for ((company, domains) in companies) {
             if (company in getDeletedCompanies()) continue
             val policy = getCompanyDefaultPolicy(company)
             for (site in domains) {
                 if (site !in deletedDomains) {
                     out[site] = policy
                 }
+            }
+        }
+        // Known-unreachable domains must always go through the proxy in Clash;
+        // a manual rule below still wins.
+        for (site in unreachableDomains) {
+            if (site !in deletedDomains) {
+                out[site] = POLICY_PROXY
             }
         }
         out.putAll(getRules())

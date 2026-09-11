@@ -26,6 +26,8 @@ class Path internal constructor(val context: Context) {
     var caCert: String? = null
     @JvmField
     var systemApps: String? = null
+    @JvmField
+    var domainRules: String? = null
 
     init {
         dirs[CACHE] = context.cacheDir
@@ -37,6 +39,7 @@ class Path internal constructor(val context: Context) {
         exemptedAppList = get(FILES, context.getString(R.string.exempted_app_list_config))
         caCert = get(FILES, context.getString(R.string.ca_cert_config))
         systemApps = get(FILES, context.getString(R.string.system_apps_config))
+        domainRules = get(FILES, context.getString(R.string.domain_rules_config))
     }
 
     fun get(type: Int, filename: String): String? {

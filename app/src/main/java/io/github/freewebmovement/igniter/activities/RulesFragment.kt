@@ -116,6 +116,14 @@ class RulesFragment : Fragment() {
                         },
                         onOpenClashEditor = {
                             startActivity(Intent(context, ClashFileEditorActivity::class.java))
+                        },
+                        onOpenDomainRulesEditor = {
+                            startActivity(
+                                Intent(context, ClashFileEditorActivity::class.java).putExtra(
+                                    ClashFileEditorActivity.EXTRA_TARGET,
+                                    ClashFileEditorActivity.TARGET_DOMAIN_RULES
+                                )
+                            )
                         }
                     )
                 }

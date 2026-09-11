@@ -3,5 +3,8 @@
     <string name="clash_editor_load">Load</string>
     <string name="clash_editor_reset">Reset</string>
     <string name="clash_editor_save">Save</string>
+    <string name="domain_rules_editor_title">Domain rules editor</string>
+    <string name="domain_rules_editor_menu">Edit domain rules</string>
+    <string name="domain_rules_saved_hint">Saved. Reconnect the VPN to apply.</string>
 
 </resources>

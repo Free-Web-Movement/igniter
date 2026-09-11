@@ -1,0 +1,103 @@
+# ============================================================================
+# 域名规则 / Domain routing rules
+# ============================================================================
+# 本文件可在设备上手动编辑：修改后重连 VPN 即可生效，无需重新编译。
+#   设备路径：files/config_domain_rules.yaml（应用私有目录，首启自动生成）
+#   默认来源：res/raw/domain_rules.yaml
+#
+# 语法：YAML。以 # 开头的行是注释。
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# 国外域名，按公司分组。每个公司下的域名默认走代理（Proxy）。
+# 新增域名：在对应公司下加一行 "- example.com"。
+# 新增公司：加一个公司块（公司名: 换行缩进后写域名）。
+# 注意：域名不要带 "www." 前缀，匹配会自动包含其所有子域名。
+# ----------------------------------------------------------------------------
+companies:
+  Google:
+    - youtube.com
+    - googlevideo.com
+    - google.com
+    - googleapis.com
+    - gstatic.com
+    - googleusercontent.com
+    - gvt1.com
+    - gvt2.com
+    - gvt3.com
+    - gvt0.com
+    - ggpht.com
+    - android.clients.google.com
+    - play.googleapis.com
+    - dl.google.com
+    - market.android.com
+  Meta:
+    - facebook.com
+    - instagram.com
+    - whatsapp.com
+    - messenger.com
+  "X (Twitter)":
+    - twitter.com
+    - x.com
+  "TikTok / ByteDance":
+    - tiktok.com
+    - tiktokcdn.com
+    - tiktoktv.com
+    - tiktokv.com
+    - byteoversea.com
+    - musical.ly
+  Wikipedia:
+    - wikipedia.org
+  GitHub:
+    - github.com
+    - githubusercontent.com
+    - gitlab.com
+  Twitch:
+    - twitch.tv
+  Reddit:
+    - reddit.com
+  Netflix:
+    - netflix.com
+  OpenAI:
+    - openai.com
+    - chatgpt.com
+  Anthropic:
+    - anthropic.com
+    - claude.ai
+  Cloudflare:
+    - cloudflare.com
+  Medium:
+    - medium.com
+  Quora:
+    - quora.com
+  Pinterest:
+    - pinterest.com
+  Telegram:
+    - telegram.org
+    - t.me
+  Discord:
+    - discord.com
+  Spotify:
+    - spotify.com
+  Apple:
+    - apple.com
+    - icloud.com
+  Microsoft:
+    - microsoft.com
+    - live.com
+    - bing.com
+  Amazon:
+    - amazon.com
+    - imdb.com
+
+# ----------------------------------------------------------------------------
+# 无法连接的域名（已知直连被阻断）。
+# 行为：不做直连探测，直接测试代理连通性——
+#   代理能通：走代理；代理不通：保持「不可达」状态。
+# 一行一个域名；同一公司的域名在注释下分组。
+# ----------------------------------------------------------------------------
+unreachable:
+  # Meta CDN
+  - fbcdn.net
+  # X / Twitter 图片 CDN
+  - twimg.com

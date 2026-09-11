@@ -3,5 +3,8 @@
     <string name="clash_editor_load">加载</string>
     <string name="clash_editor_reset">重置</string>
     <string name="clash_editor_save">保存</string>
+    <string name="domain_rules_editor_title">域名规则编辑</string>
+    <string name="domain_rules_editor_menu">编辑域名规则</string>
+    <string name="domain_rules_saved_hint">已保存，重连 VPN 后生效</string>
 
 </resources>

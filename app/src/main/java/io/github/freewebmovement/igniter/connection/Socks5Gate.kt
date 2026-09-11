@@ -101,6 +101,13 @@ class Socks5Gate(
         /** Unreachable domains expire after 24 hours and are retried. */
         private const val UNREACHABLE_TTL_MS = 24 * 60 * 60 * 1000L
 
+        /**
+         * Domains on the hand-maintained unreachable list are re-probed after
+         * this shorter cooldown, so a transient outage recovers quickly instead
+         * of waiting for the 24h dynamic-unreachable TTL.
+         */
+        private const val UNREACHABLE_LIST_RETRY_MS = 5 * 60 * 1000L
+
         /** Well-known IPs returned by DNS poisoning (GFW fake answers). */
         private val KNOWN_POLLUTED_IPS = setOf(
             "0.0.0.0",
@@ -288,6 +295,12 @@ class Socks5Gate(
     /** Cached auto-detection results, keyed by registrable domain. */
     private val autoCache = ConcurrentHashMap<String, AutoRoute>()
 
+    /**
+     * Earliest time (epoch ms) to re-probe a domain on the hand-maintained
+     * unreachable list after a failed proxy test, keyed by registrable domain.
+     */
+    private val unreachableListRetry = ConcurrentHashMap<String, Long>()
+
     @Volatile
     private var running = false
     private var server: ServerSocket? = null
@@ -447,8 +460,12 @@ class Socks5Gate(
                 AutoRoute.PROXY, AutoRoute.DNS_POLLUTED ->
                     route(client, input, output, host, req.port, POLICY_PROXY)
                 AutoRoute.UNREACHABLE -> {
-                    addUnreachable(app, host)
-                    Log.w(TAG, "$host unreachable both direct and proxy, refusing")
+                    // Hand-maintained unreachable-list domains use Socks5Gate's
+                    // own short retry cooldown, not the 24h dynamic list.
+                    if (!rulesManager.isUnreachableDomain(host)) {
+                        addUnreachable(app, host)
+                    }
+                    Log.w(TAG, "$host unreachable, refusing")
                     try {
                         writeReply(output, REP_REFUSED)
                         client.close()
@@ -481,11 +498,42 @@ class Socks5Gate(
         if (manual != null) {
             return if (manual == POLICY_DIRECT) AutoRoute.DIRECT else AutoRoute.PROXY
         }
-        autoCache[root]?.let { return it }
-        if (getUnreachable(app).contains(root)) {
-            return AutoRoute.UNREACHABLE
+        // Domains on the hand-maintained unreachable list are known to fail on a
+        // direct connection, so they are never probed direct. The proxy is
+        // tested instead: when it connects the domain goes PROXY and is cached,
+        // otherwise it is refused and re-probed after a short cooldown.
+        if (rulesManager.isUnreachableDomain(host)) {
+            // A cached PROXY result is reused; a failed proxy probe is retried
+            // after a short cooldown so a transient outage recovers quickly.
+            autoCache[root]?.let { return it }
+            val now = System.currentTimeMillis()
+            val retryAt = unreachableListRetry[root]
+            if (retryAt != null && now < retryAt) {
+                return AutoRoute.UNREACHABLE
+            }
+            val decision = if (probeProxy(host, port)) AutoRoute.PROXY else AutoRoute.UNREACHABLE
+            if (decision == AutoRoute.PROXY) {
+                unreachableListRetry.remove(root)
+                if (autoCache.size > 4096) {
+                    autoCache.clear()
+                }
+                autoCache[root] = decision
+            } else {
+                unreachableListRetry[root] = now + UNREACHABLE_LIST_RETRY_MS
+            }
+            Log.i(TAG, "auto-decision $host -> $decision (unreachable list)")
+            return decision
         }
         val policy = lookupPolicy(host)
+        // Only cache/auto mode applies to domains with NO explicit rule.
+        // An explicit rule (curated or builtin) must win over a cached
+        // probe result, otherwise a stale DIRECT decision sticks forever.
+        if (policy == null) {
+            autoCache[root]?.let { return it }
+            if (getUnreachable(app).contains(root)) {
+                return AutoRoute.UNREACHABLE
+            }
+        }
         val isMajorForeign = rulesManager.lookupMajorForeignPolicy(host) != null
         val decision = when (policy) {
             POLICY_DIRECT -> {
@@ -642,6 +690,14 @@ class Socks5Gate(
                     return
                 }
             }
+            // The read timeouts set during the handshake are only meant to keep
+            // probing and connecting from hanging forever. They must NOT stay
+            // active for the life of the tunnel: a large download (e.g. a Play
+            // Store APK) keeps one direction idle for long stretches, and a
+            // SocketTimeoutException in pump() would silently kill the relay
+            // (closing a socket's stream closes the whole socket).
+            client.soTimeout = 0
+            upstream.soTimeout = 0
             writeReply(output, REP_SUCCEEDED)
             val upInput = BufferedInputStream(upstream.getInputStream())
             val upOutput = BufferedOutputStream(upstream.getOutputStream())
@@ -799,6 +855,10 @@ class Socks5Gate(
             val relayAddr = InetSocketAddress(InetAddress.getByAddress(relayIp), (hi shl 8) or lo)
 
             writeReply(output, REP_SUCCEEDED, "127.0.0.1", clientUdp.localPort)
+            // Handshake-time read timeouts must not kill long-lived UDP relay
+            // sessions (the QUIC/HTTP3 path uses exactly this association).
+            client.soTimeout = 0
+            up?.soTimeout = 0
 
             val lastClientAddr = AtomicReference<SocketAddress>(null)
             thread(name = "igniter-gate-udp-c2s", isDaemon = true) {

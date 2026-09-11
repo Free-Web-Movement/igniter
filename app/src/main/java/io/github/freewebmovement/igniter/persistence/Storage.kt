@@ -198,20 +198,23 @@ class Storage(context: Context) {
             path.countryMmdb,
             path.clashConfig,
             path.trojanConfig,
-            path.systemApps
+            path.systemApps,
+            path.domainRules
         )
         val ids = intArrayOf(
             R.raw.cacert,
             R.raw.country,
             R.raw.clash_config,
             R.raw.config,
-            R.raw.system_apps
+            R.raw.system_apps,
+            R.raw.domain_rules
         )
-        for (i in 0 until ids.size - 1) {
+        // Create-once semantics: never overwrite a file that already exists, so
+        // user edits (and the system-app auto-update written back below) survive
+        // an app restart.
+        for (i in ids.indices) {
             check(paths[i]!!, ids[i])
         }
-        // Keep this line before system apps filters can be edited.
-        reset(paths[ids.size - 1]!!, ids[ids.size - 1])
     }
 
     fun check(filename: String, resId: Int) {
