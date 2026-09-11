@@ -95,7 +95,7 @@ for i in "${!ABIS[@]}"; do
     target="${RUST_TARGETS[$i]}"
     echo "=== building $abi ($target) ==="
     rustup target add "$target" >/dev/null 2>&1 || true
-    cargo ndk -t "$abi" -o "$LIBS_DIR" build --release --lib 2>&1
+    (cd "$BUILD_DIR" && cargo ndk -t "$abi" -o "$LIBS_DIR" build --release --lib) 2>&1
 done
 
 # ── write stamp ──────────────────────────────────────────────────────────────
